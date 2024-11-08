@@ -177,6 +177,8 @@ class ParticleSegmentationModel:
       self.circularity_threshold=circularity_threshold
 
     def get_psd_data(self):
+        if self.segments is None:
+              self.segments = dp.get_segments(self.masks, self.scaling_factor)
         psd_data = dp.get_psd_data(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
         self.psd_data = {'differential': list(zip(tuple(self.bins), tuple(psd_data[1]))), 'cumulative':list(zip(tuple(self.bins), tuple(psd_data[2][::-1])))}
         return self.psd_data
