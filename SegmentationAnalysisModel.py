@@ -7,12 +7,33 @@ import sys
 import ParticleSegmentationModel as psa
 import logger_config
 
+<<<<<<< HEAD
 #industry standard
 bins=[0, 38, 106, 1000, 8000] #bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
 
 class SegmentationAnalysisModel:
     def __init__(self, imagePath,scalingFactor):
         self.imagePath=imagePath
+=======
+class SegmentationAnalysisModel:
+    def __init__(self, image_folder_path,sampleID,scalingFactor):
+        self.sampleID = sampleID
+        self.image_folder_path=image_folder_path
+        file_extensions = ['.png', '.bmp']
+        self.imagePath = None
+
+        # Loop through extensions and check for existence
+        for ext in file_extensions:
+            self.imageName = f"{self.sampleID}{ext}"
+            self.imagePath = os.path.join(image_folder_path, self.imageName)
+            
+            if os.path.exists(self.imagePath):
+                print(f"Image found: {self.imagePath}")
+                break
+        else:
+            # If no file with the listed extensions is found, raise an error
+            raise FileNotFoundError(f"No file with extensions {file_extensions} found for {self.sampleID} in folder {image_folder_path}")
+>>>>>>> f2f4764ab8cd1447df3f23470385e00bb1733106
 
         self.scalingStamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
         print(self.scalingStamp)
