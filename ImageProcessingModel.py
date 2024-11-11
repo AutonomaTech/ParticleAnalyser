@@ -37,28 +37,40 @@ class ImageProcessingModel:
           plt.show()  # Show the image
       else:
           print(f"Error: Image {self.imageName} not found at {self.imagePath}")
-
  
   #def cropImage(self):
 
   #overlay images to improve border contrast of rocks
   def overlayImage(self):
-      if not os.path.exists(self.imagePath):
-          print(f"Error: Image {self.imageName} not found at {self.imagePath}")
-          return
-        
-      base_image = Image.open(self.imagePath).convert("RGBA")
-      final_image = base_image.copy()
+    if not os.path.exists(self.imagePath):
+        print(f"Error: Image {self.imageName} not found at {self.imagePath}")
+        return
 
-      for _ in range(10):
-          final_image = Image.alpha_composite(final_image, base_image)
+    # Check file size
+    image_size_mb = os.path.getsize(self.imagePath) / (1024 * 1024)  # Size in MB
 
-      base_image_path = os.path.join(self.image_folder_path, f"base_image_{self.sampleID}.png")
-      final_image_path = self.imagePath  
-      base_image.save(base_image_path)
-      print(f"Base image saved as: {base_image_path}")
+    # Load and convert the image to RGBA
+    base_image = Image.open(self.imagePath).convert("RGBA")
 
-      final_image.save(final_image_path)
-      print(f"Final overlaid image saved as: {final_image_path}")
+    # If the image size is over 8 MB, resize it to 50% of the original dimensions
+    if image_size_mb > 8:
+        width, height = base_image.size
+        base_image = base_image.resize((width // 2, height // 2), Image.LANCZOS)
+        print(f"Image size was over 8MB, resized to {width // 2}x{height // 2}.")
 
+    # Create a final image for the overlay operation
+    final_image = base_image.copy()
+
+    # Overlay the image on itself 10 times
+    for _ in range(10):
+        final_image = Image.alpha_composite(final_image, base_image)
+
+    # Save the base and final overlaid images
+    base_image_path = os.path.join(self.image_folder_path, f"base_image_{self.sampleID}.png")
+    final_image_path = os.path.splitext(self.imagePath)[0] + ".png"
+    base_image.save(base_image_path)
+    print(f"Base image saved as: {base_image_path}")
+
+    final_image.save(final_image_path)
+    print(f"Final overlaid image saved as: {final_image_path}")
 

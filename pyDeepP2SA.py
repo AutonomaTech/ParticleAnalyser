@@ -45,6 +45,8 @@ min_mask_region_area: This parameter likely represents the minimum area threshol
 def generate_masks(image, sam_checkpoint,
                    points_per_side, pred_iou_thresh, stability_score_thresh,
                    crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh):
+
+                   
     model_type = "vit_h"
     device = "cuda" if torch.cuda.is_available() else "cpu"
 

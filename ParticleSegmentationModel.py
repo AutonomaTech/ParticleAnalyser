@@ -54,11 +54,11 @@ class ParticleSegmentationModel:
         self.points_per_side = 150
         #points_per_batch=128
         self.pred_iou_thresh = 0.75
-        self.stability_score_thresh = 0.92
+        self.stability_score_thresh = 0.93
         #stability_score_offset=0.8
         self.crop_n_layers = 2
         self.crop_n_points_downscale_factor = 2
-        self.min_mask_region_area = 1.0
+        self.min_mask_region_area = 0.0
         self.box_nms_tresh = 0.85 
         #use_m2m=True,
         self.image = cv2.imread(self.image_path)
@@ -170,6 +170,7 @@ class ParticleSegmentationModel:
         if self.segments is None:
             self.segments = dp.get_segments(self.masks, self.scaling_factor)
         dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        
     def setdiameter_threshold(self,diameter_threshold):
         self.diameter_threshold=diameter_threshold
     
