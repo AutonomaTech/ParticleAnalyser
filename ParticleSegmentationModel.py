@@ -4,6 +4,8 @@ import pyDeepP2SA as dp
 import cv2
 import logger_config
 import json
+import numpy as np
+from PIL import Image
 from datetime import datetime
 
 logger = logger_config.get_logger(__name__)
@@ -52,16 +54,18 @@ class ParticleSegmentationModel:
         self.segments = None
         # default settings, can be overriden
         self.points_per_side = 150
-        #points_per_batch=128
-        self.pred_iou_thresh = 0.75
-        self.stability_score_thresh = 0.93
-        #stability_score_offset=0.8
+        self.points_per_batch=128
+        self.pred_iou_thresh = 0.8
+        self.stability_score_thresh = 0.92
+        self.stability_score_offset=0.8
         self.crop_n_layers = 2
         self.crop_n_points_downscale_factor = 2
-        self.min_mask_region_area = 0.0
-        self.box_nms_tresh = 0.85 
-        #use_m2m=True,
-        self.image = cv2.imread(self.image_path)
+        self.min_mask_region_area = 0.5
+        self.box_nms_tresh = 0.9
+        self.use_m2m=True,
+
+        openedImage = Image.open(self.image_path)
+        self.image= np.array( openedImage.convert("RGB"))
         
         self.psd_bins_data = None  # this is data for plotting
         self.psd_data = None
@@ -86,19 +90,25 @@ class ParticleSegmentationModel:
 
     def generate_mask(self):
         logger.info(
-            "Generating masks - image: {}, scaling factor: {} um/px, sam_checkpoint: {}, points_per_side: {}, pred_iou_thresh: {}, stability_score_thresh: {}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}",
-            self.image_path, self.scaling_factor, self.sam_checkpoint_path, self.points_per_side, self.pred_iou_thresh,
-            self.stability_score_thresh, self.crop_n_layers, self.crop_n_points_downscale_factor,
-            self.min_mask_region_area, self.box_nms_tresh)
+            "Generating masks - image: {}, scaling factor: {} um/px, sam_checkpoint: {}, points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
+            stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
+            self.image_path, self.scaling_factor, self.sam_checkpoint_path, self.points_per_side,self.points_per_batch, self.pred_iou_thresh,
+            self.stability_score_thresh, self.stability_score_offset,self.crop_n_layers, self.crop_n_points_downscale_factor,
+            self.min_mask_region_area, self.box_nms_tresh, self.use_m2m)
         start_time = datetime.now()
-        masks = dp.generate_masks(self.image, self.sam_checkpoint_path, points_per_side=self.points_per_side,
+        masks = dp.generate_masks(self.image, self.sam_checkpoint_path, 
+                                  points_per_side=self.points_per_side, 
+                                  points_per_batch=self.points_per_batch,
                                   pred_iou_thresh=self.pred_iou_thresh,
                                   stability_score_thresh=self.stability_score_thresh,
+                                  stability_score_offset=self.stability_score_offset,
                                   crop_n_layers=self.crop_n_layers,
                                   crop_n_points_downscale_factor=self.crop_n_points_downscale_factor,
                                   min_mask_region_area=self.min_mask_region_area,
-                                  box_nms_tresh=self.box_nms_tresh)
-
+                                  box_nms_tresh=self.box_nms_tresh,
+                                  use_m2m=self.use_m2m)
+        #self.setdiameter_threshold(10)
+        #self.masks=dp.deleteWrongAreas(masks,self.scaling_factor,self.diameter_threshold)
         self.masks = masks
         end_time = datetime.now()
         execution_time = end_time - start_time
@@ -170,7 +180,7 @@ class ParticleSegmentationModel:
         if self.segments is None:
             self.segments = dp.get_segments(self.masks, self.scaling_factor)
         dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
-        
+
     def setdiameter_threshold(self,diameter_threshold):
         self.diameter_threshold=diameter_threshold
     

@@ -8,7 +8,9 @@ import torchvision
 from skimage.transform import resize
 import cv2
 import matplotlib.pyplot as plt
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+from sam2.build_sam import build_sam2
+from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+#from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from matplotlib.patches import Rectangle
 import pandas as pd
 import seaborn as sns
@@ -42,58 +44,126 @@ crop_n_points_downscale_factor: This parameter may control how much the number o
 min_mask_region_area: This parameter likely represents the minimum area threshold for a mask region to be considered valid. Regions below this threshold might be discarded as noise or artifacts.
 
 """
-def generate_masks(image, sam_checkpoint,
-                   points_per_side, pred_iou_thresh, stability_score_thresh,
-                   crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh):
+def generate_masks(image, sam2_checkpoint,
+                   points_per_side, points_per_batch, pred_iou_thresh, stability_score_thresh,stability_score_offset,
+                   crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh,use_m2m):
 
-                   
+
     model_type = "vit_h"
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    #device = "cuda" if torch.cuda.is_available() else "cpu"
+    # select the device for computation
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"using device: {device}")
 
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-    sam.to(device=device)
+    if device.type == "cuda":
+        # use bfloat16 for the entire notebook
+        torch.autocast("cuda", dtype=torch.bfloat16).__enter__()
+        # turn on tfloat32 for Ampere GPUs (https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices)
+        if torch.cuda.get_device_properties(0).major >= 8:
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+    elif device.type == "mps":
+        print(
+            "\nSupport for MPS devices is preliminary. SAM 2 is trained with CUDA and might "
+            "give numerically different outputs and sometimes degraded performance on MPS. "
+            "See e.g. https://github.com/pytorch/pytorch/issues/84936 for a discussion."
+        )
 
-    mask_generator_ = SamAutomaticMaskGenerator(
-        model=sam,
+    #sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    #sam.to(device=device)
+
+    model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
+
+    sam2 = build_sam2(model_cfg, sam2_checkpoint, device=device, apply_postprocessing=False)
+
+    mask_generator_2= SAM2AutomaticMaskGenerator(
+        model=sam2,
         points_per_side=points_per_side,
+        points_per_batch=points_per_batch,
         pred_iou_thresh=pred_iou_thresh,
         stability_score_thresh=stability_score_thresh,
+        stability_score_offset=stability_score_offset,
         crop_n_layers=crop_n_layers,
         crop_n_points_downscale_factor=crop_n_points_downscale_factor,
         min_mask_region_area=min_mask_region_area,
-        box_nms_thresh=box_nms_tresh
+        box_nms_thresh=box_nms_tresh,
+        use_m2m=use_m2m
     )
 
-    masks = mask_generator_.generate(image)
+    masks = mask_generator_2.generate(image)
+
     return masks
+
+def deleteWrongAreas(masks, pixel_to_micron, diameter_threshold):
+    # List to store valid masks after deletion
+    valid_masks = []
+
+    # Iterate over each mask in the input list
+    for mask in masks:
+        # Extract the segmentation mask
+        segmentation = mask['segmentation']
+
+        # Create a labeled mask where the segmentation is true
+        labeled_mask = np.zeros_like(segmentation, dtype=np.uint8)
+        labeled_mask[segmentation] = 1
+        
+        # Label the regions in the mask (connected components)
+        labeled_mask = measure.label(labeled_mask)
+        labeled_mask = clear_border(labeled_mask)  # Remove labels touching the border
+
+        # Store the valid segments from the current mask
+        valid_mask = np.zeros_like(segmentation, dtype=np.uint8)
+
+        # Loop through each labeled region to check its properties
+        for region in measure.regionprops(labeled_mask):
+            # Calculate the diameter (major axis length)
+            diameter = region.major_axis_length * pixel_to_micron  # Convert to micron/desired unit
+            
+            # If diameter is smaller than the threshold, keep the region in the valid mask
+            if diameter <= diameter_threshold:
+                # Mark the region in the valid_mask
+                valid_mask[labeled_mask == region.label] = 1
+
+        # Add valid masks to the list of valid_masks
+        if np.any(valid_mask):
+            valid_masks.append({'segmentation': valid_mask, 'area': np.sum(valid_mask)})
+
+    return valid_masks
 
 def visualise_masks(image, masks):
     def show_anns(anns, borders=True):
         if len(anns) == 0:
             return
-        sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
+        sorted_anns = sorted(anns, key=lambda x: x['area'], reverse=True)
         ax = plt.gca()
         ax.set_autoscale_on(False)
 
         img = np.ones((sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1], 4))
-        img[:, :, 3] = 0
+        img[:, :, 3] = 0  # Set transparency to 0 (fully transparent)
+
         for ann in sorted_anns:
             m = ann['segmentation']
-            color_mask = np.concatenate([np.random.random(3), [0.5]])
-            img[m] = color_mask
+            color_mask = np.concatenate([np.random.random(3), [0.5]])  # Random color with 50% transparency
+            img[m] = color_mask  # Apply mask with the color and alpha value
+
             if borders:
-                import cv2
-                contours, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                contours, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # Try to smooth contours
                 contours = [cv2.approxPolyDP(contour, epsilon=0.01, closed=True) for contour in contours]
-                cv2.drawContours(img, contours, -1, (0, 0, 1, 0.4), thickness=1)
+                cv2.drawContours(img, contours, -1, (0, 0, 1, 0.4), thickness=1)  # Draw contour with transparency
 
         ax.imshow(img)
 
+    # Plot the original image with masks overlaid
     plt.figure(figsize=(20, 20))
     plt.imshow(image)
     show_anns(masks)
-    plt.axis('off')
+    plt.axis('off')  # Hide axis
     plt.show()
 
 def save_masks_image(image, masks, filename):

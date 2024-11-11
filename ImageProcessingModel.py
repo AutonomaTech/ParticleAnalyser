@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import cv2
 
 class ImageProcessingModel:
   def __init__(self, image_folder_path,sampleID):
@@ -21,6 +22,7 @@ class ImageProcessingModel:
       else:
           # If no file with the listed extensions is found, raise an error
           raise FileNotFoundError(f"No file with extensions {file_extensions} found for {self.sampleID} in folder {image_folder_path}")
+  
   def getImagePath(self):
       return self.imagePath
 
@@ -37,19 +39,32 @@ class ImageProcessingModel:
           plt.show()  # Show the image
       else:
           print(f"Error: Image {self.imageName} not found at {self.imagePath}")
- 
-  #def cropImage(self):
 
+  #get width of image for mm/pixels ratio
+  def getWidth(self):
+    image = Image.open(self.imagePath)
+    return image.width 
+
+  #def cropImage(self):
+  def getIntensity(self):
+      image = Image.open(self.imagePath)
+      image_np = np.array(image)
+      image_cv = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)  # Convert RGB to BGR for OpenCV compatibility
+
+      # Convert the image to grayscale
+      gray_image = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
+
+      # Calculate the average intensity
+      return np.mean(gray_image)
+      
   #overlay images to improve border contrast of rocks
   def overlayImage(self):
     if not os.path.exists(self.imagePath):
         print(f"Error: Image {self.imageName} not found at {self.imagePath}")
         return
-
-    # Check file size
+        
     image_size_mb = os.path.getsize(self.imagePath) / (1024 * 1024)  # Size in MB
 
-    # Load and convert the image to RGBA
     base_image = Image.open(self.imagePath).convert("RGBA")
 
     # If the image size is over 8 MB, resize it to 50% of the original dimensions
@@ -57,8 +72,6 @@ class ImageProcessingModel:
         width, height = base_image.size
         base_image = base_image.resize((width // 2, height // 2), Image.LANCZOS)
         print(f"Image size was over 8MB, resized to {width // 2}x{height // 2}.")
-
-    # Create a final image for the overlay operation
     final_image = base_image.copy()
 
     # Overlay the image on itself 10 times
