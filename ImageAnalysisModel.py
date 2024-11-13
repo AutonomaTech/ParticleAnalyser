@@ -86,7 +86,10 @@ class ImageAnalysisModel:
     def saveResults(self):
         if self.p.bins is None:
             raise ValueError("Bins are not defined. Please ensure that 'bins' is properly initialized.")
+        if self.imageProcessor is None:
+            raise ValueError("Image is not initialised")
 
+        self.folder_path=self.imageProcessor.getImageFolder()
         self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
 
         self.p.setdiameter_threshold(10)
