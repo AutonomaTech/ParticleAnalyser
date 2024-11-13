@@ -47,7 +47,6 @@ class ImageProcessingModel:
 
         if filename.startswith(self.sampleID) and any(filename.endswith(ext) for ext in self.file_extensions):
             image_path = os.path.join(self.image_folder_path, filename)
-            print(image_path)
 
             with Image.open(image_path) as img:
                 width = img.width
