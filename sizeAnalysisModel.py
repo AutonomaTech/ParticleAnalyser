@@ -49,7 +49,7 @@ class sizeAnalysisModel:
         # except:
         #         self.sampleId=""
         # finally:
-            logger.info("For sampleId: {}, tot_area:{}, scaling_num:{},scaling_fact:{},scaling_stamp:{},intensity:{},analysis_time:{},bin_num:{} ",
+        logger.info("For sampleId: {}, tot_area:{}, scaling_num:{},scaling_fact:{},scaling_stamp:{},intensity:{},analysis_time:{},bin_num:{} ",
                         self.sampleId,self.tot_area,self.scaling_num,self.scaling_fact,self.scaling_stamp,self.intensity,self.analysis_time,
                         self.rows)
 
