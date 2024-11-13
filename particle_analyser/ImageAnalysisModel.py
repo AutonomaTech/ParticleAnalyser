@@ -78,13 +78,10 @@ class ImageAnalysisModel:
     #SampleID.csv 
     #SampleID_distribution.txt
     def savePsdData(self):
-        if self.p.bins is not None:
-            self.p.get_psd_data()
-            self.distributions_filename = os.path.join(self.folder_path, f"{self.sampleID}_distribution.txt")
-            self.p.save_psd_as_txt(self.sampleID, self.folder_path)
-            print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
-        else:
-            print("p is none")
+        self.p.get_psd_data()
+        self.distributions_filename = os.path.join(self.folder_path, f"{self.sampleID}_distribution.txt")
+        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
+        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
 
     def saveResults(self):
         if self.p.bins is None:
@@ -127,14 +124,23 @@ class ImageAnalysisModel:
     
     def loadSegments(self,checkpoint_folder,bins):
         #load segments from json file in case no gpu available  - save them onto csv and _distribution.txt files
-        self.setFolderPath()
+        try:
+            self.setFolderPath()
+            self.json_masks_filename = os.path.join(self.folder_path, f"{self.sampleID}_segments.txt")
+            
+            if not os.path.exists(self.json_masks_filename):
+                raise FileNotFoundError(f"The file {self.json_masks_filename} was not found.")
+            
+            self.loadModel(checkpoint_folder)
+            self.setBins(bins)
+            self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
+            self.p.save_segments_as_csv(self.json_masks_filename, self.csv_filename)
+            self.savePsdData()
         
-        self.json_masks_filename=os.path.join(self.folder_path, f"{self.sampleID}_segments.txt")
-        self.loadModel(checkpoint_folder)
-        self.setBins(bins)
-        self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
-        self.p.save_segments_as_csv(self.json_masks_filename, self.csv_filename)
-        self.savePsdData()
+        except FileNotFoundError as e:
+            raise e
+        except Exception as e:
+            raise Exception(f"An unexpected error occurred: {e}")
     """
     def saveMasks(self):
         #save mask in json file
