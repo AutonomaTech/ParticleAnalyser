@@ -1,27 +1,30 @@
 import xml.etree.ElementTree as ET
 import logger_config
-import csv
+import os
 from xml.dom import minidom
 from datetime import datetime
 
 logger = logger_config.get_logger(__name__)
 
-
+##Every value will be in milimeter
 class sizeAnalysisModel:
     def __init__(self, sampleId,sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
-                 analysis_time=None, bin_num=None,minmum_area=None):
+                 analysis_time=None,diameter_threshold=None,circularity_threshold=None):
 
         self.tot_area = tot_area
+
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
-        self.minmum_area=minmum_area
+        self.minmum_area=0
+        self.diameterThreshold=diameter_threshold
+        self.circularity_threshold=circularity_threshold
+        self.sieveDesc=[]
         self.scaling_num = scaling_num
         self.scaling_fact = scaling_fact
         self.scaling_stamp = scaling_stamp
         self.intensity = intensity
         self.date_time = ""
         self.analysis_time = analysis_time
-        self.rows = bin_num
         self.particles = []
         self.sampleId = sampleId
         self.over_s_value = 0
@@ -35,23 +38,6 @@ class sizeAnalysisModel:
         self.xmlstring=""
 
 
-    # Todo--processing file name to grab sample id
-    def __retrieveSampleId(self):
-        """
-        Retrieving Sample Id and then compare with Sample ids the specified folders, if sample Id not existed in that file
-        Keep processing,if already existed in the file, then skipped ouver
-        """
-        # try:
-        #     if self.segments_file_path.endswith('.csv'):
-
-        #         self.sampleId= self.segments_file_path.split('.csv')[0]
-
-        # except:
-        #         self.sampleId=""
-        # finally:
-        logger.info("For sampleId: {}, tot_area:{}, scaling_num:{},scaling_fact:{},scaling_stamp:{},intensity:{},analysis_time:{},bin_num:{} ",
-                        self.sampleId,self.tot_area,self.scaling_num,self.scaling_fact,self.scaling_stamp,self.intensity,self.analysis_time,
-                        self.rows)
 
 
 
@@ -78,12 +64,14 @@ class sizeAnalysisModel:
                             "circularity": circularity
                         }
                         self.particles.append(item)
+                print(len(self.particles))
                 self.__countUnderSValue()
                 self.__countOverSValue()
                 self.__countMeanSize()
                 self.__countD90()
                 self.__countD10()
                 self.__countD50()
+                self.__countMinimumArea()
 
 
         except :
@@ -91,24 +79,34 @@ class sizeAnalysisModel:
 
     def __countOverSValue(self):
         """
-        This function counts  OverS (8) [%] value
+        This function counts OverS (8) [%] value based on particles that exceed
+        both diameter and circularity thresholds.
         """
         overSValue = 0
         overSValuePercentage = 0
         if len(self.particles) == 0:
-            logger.error("There is no particles for OverS (8) [%] value to be processed")
+            logger.error("There are no particles for OverS (8) [%] value to be processed")
             return
 
-        diameters = [particle['diameter'] for particle in self.particles]
+        # Filter particles by diameter and circularity thresholds
+        filtered_particles = [particle for particle in self.particles if
+                              particle['diameter'] / 1000 > self.diameterThreshold and particle[
+                                  'circularity'] / 1000 > self.circularity_threshold]
 
-        for diameter in diameters:
-            if diameter / 1000 > 8:
+        # Extract areas from the filtered particles
+        areas = [particle['area'] for particle in filtered_particles]
+
+        # Count the particles with area >= 8
+        for area in areas:
+            if area / 1000 >= 8:
                 overSValue += 1
 
+        # Calculate the percentage of particles with area >= 8
         if overSValue > 0:
-            overSValuePercentage = overSValue / len(self.particles) * 100
+            overSValuePercentage = overSValue / len(filtered_particles) * 100
 
-        overSValuePercentage=  format(max(float( overSValuePercentage), 0), '.8f' )
+        # Format the percentage value
+        overSValuePercentage = format(max(float(overSValuePercentage), 0), '.8f')
 
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
@@ -116,25 +114,37 @@ class sizeAnalysisModel:
 
     def __countUnderSValue(self):
         """
-        This function counts UnderS (0.15) [%] value
-
+        This function counts UnderS (0.15) [%] value based on particles that are
+        filtered by diameter and circularity thresholds, and then counts those with
+        area < 0.15.
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for UnderS (0.15) [%] value to be processed")
+            logger.error("There are no particles for UnderS (0.15) [%] value to be processed")
             return
 
         underSValue = 0
         underSValuePercentage = 0
 
-        diameters = [particle['diameter'] for particle in self.particles]
+        # Filter particles by diameter and circularity thresholds
+        filtered_particles = [particle for particle in self.particles if
+                              particle['diameter'] / 1000 > self.diameterThreshold and particle[
+                                  'circularity'] / 1000 > self.circularity_threshold]
 
-        for diameter in diameters:
-            if diameter / 1000 < 0.15:
+        # Extract areas from the filtered particles
+        areas = [particle['area'] for particle in filtered_particles]
+
+        # Count the particles with area < 0.15
+        for area in areas:
+            if area / 1000 < 0.15:
                 underSValue += 1
 
+        # Calculate the percentage of particles with area < 0.15
         if underSValue > 0:
-            underSValuePercentage = underSValue / len(self.particles) * 100
+            underSValuePercentage = underSValue / len(filtered_particles) * 100
+            if len(filtered_particles) == 0:  # Prevent division by zero
+                underSValuePercentage = 0
 
+        # Format the percentage value
         underSValuePercentage = format(max(float(underSValuePercentage), 0), '.8f')
 
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
@@ -156,7 +166,7 @@ class sizeAnalysisModel:
         for diameter in diameters:
             totalSize += diameter
 
-        meanSize = format(max(float( totalSize / len(self.particles) / 1000), 0), '.8f' )
+        meanSize = format(max(float( totalSize / len(self.particles)/1000), 0), '.8f' )
 
         logger.info("Mean Size : {}", meanSize)
 
@@ -211,6 +221,22 @@ class sizeAnalysisModel:
 
         logger.info("D90mm : {}", self.d_90)
 
+    def __countMinimumArea(self):
+        """
+        This function counts minimumArea of the particles
+        """
+        if len(self.particles) == 0:
+            logger.error("There is no particles for minimumArae to be processed")
+            return
+
+
+
+        areas = [particle['area'] for particle in self.particles]
+        sorted_areas = sorted(areas)
+        self.minmum_area = format(max(float( sorted_areas[0]), 0), '.8f')
+
+        logger.info("D90mm : {}", self.minmum_area)
+
     # Todo--fileFormat confirming
     def __filterDistribution(self):
         """
@@ -228,7 +254,17 @@ class sizeAnalysisModel:
 
             # Filter the bins from the input; these are assumed to be the values before "% Passing"
             bin_array = elements[1:elements.index('Bottom') + 1]
+            self.rows=len(bin_array)
+            for item in bin_array:
+                 try:
+                     num_item=float(item)
+                     mum_item_1000=num_item/1000
+                     self.sieveDesc.append(str(mum_item_1000))
+                 except:
+                     self.sieveDesc.append(item)
 
+            logger.info("bins:{} ", self.sieveDesc)
+            self.__format_sieveValues()
             # Find the indices for passing and retaining percentages
             passing_start = elements.index('% Passing') + 1
             retaining_start = elements.index('% Retained') + 1
@@ -251,8 +287,11 @@ class sizeAnalysisModel:
 
             self.passing = passing
             self.retaining = retaining
-        except:
-            logger.error("Distribution file can not be parsed ")
+            for item in self.passing:
+                print(item)
+
+        except Exception as e:
+            logger.error("Distribution file can not be parsed:{} ",e)
 
     def __generate_iso_datetime(self):
 
@@ -260,18 +299,9 @@ class sizeAnalysisModel:
 
         self.date_time= now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
     def __build_xml(self):
-        # CaCulate all the data
-        # self.__retrieveSampleId()
-        # if self.sampleId=="":
-        #     logger.info("No sampleId is retrieved")
-        #     return
+
         self.__countNumParticles()
-        # self.__countUnderSValue()
-        # self.__countOverSValue()
-        # self.__countMeanSize()
-        # self.__countD90()
-        # self.__countD10()
-        # self.__countD50()
+
         self.__filterDistribution()
         self.__generate_iso_datetime()
 
@@ -292,6 +322,7 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
         ET.SubElement(root, 'DateTime').text = self.date_time
         ET.SubElement(root, 'AnalysisTime').text = self.analysis_time
+        ET.SubElement(root, 'minmumArea').text = str(self.minmum_area)
         ET.SubElement(root, 'NumResultTables').text=str(1)
         ET.SubElement(root, 'NumSummaryData').text=str(8)
         result_table = ET.SubElement(root, 'ResultTable')
@@ -347,7 +378,19 @@ class sizeAnalysisModel:
         ET.SubElement(Mean_Size, 'Value').text = str(self.mean_size)
         self.xmlstring= ET.tostring(root, encoding='unicode', method='xml')
 
+    def __format_sieveValues(self):
 
+        self.sieveValues = []
+        if len(self.sieveDesc)>0:
+
+            for value in self.sieveDesc:
+                try:
+
+                    formatted_value = f"{float(value):.8f}"
+                except (ValueError, TypeError):
+
+                    formatted_value = "0.00000000"
+                self.sieveValues.append(formatted_value)
 
 
 
@@ -361,10 +404,12 @@ class sizeAnalysisModel:
         ET.SubElement(parent, 'MeshType').text = 'Mesh_MM'
         ET.SubElement(parent, 'NumRows').text = str(self.rows)
 
+
         sieve_desc = ET.SubElement(parent, 'SieveDesc')
         sieve_size = ET.SubElement(parent, 'SieveSize')
-        for desc, size in zip(['8', '1', '0.106', '0.038', 'Bottom'],
-                              ['8.00000000', '1.00000000', '0.10600000', '0.03800001', '0.00000000']):
+
+        for desc, size in zip(self.sieveDesc,
+                              self.sieveValues):
             ET.SubElement(sieve_desc, 'Value').text = desc
             ET.SubElement(sieve_size, 'Value').text = size
 
@@ -372,16 +417,28 @@ class sizeAnalysisModel:
         for value in distribution:
             ET.SubElement(distribution_node, 'Value').text = str(value)
 
+
+    ## get sample folder path
+    def __get_directory_path(self):
+        # use os.path.dirname
+        directory_path=""
+        if self.segments_file_path is not None:
+            directory_path = os.path.dirname(self.segments_file_path)
+        return directory_path
     def save_xml(self):
         self.__build_xml()
 
         if self.xmlstring=="":
-            logger.info("No xml file is generated")
+            logger.error("No xml file is generated given that no xmlString is build,please re-check")
             return
+
 
         reparsed = minidom.parseString(self.xmlstring)
         pretty_string = reparsed.toprettyxml(indent="  ")
         pretty_string_without_declaration = '\n'.join(pretty_string.split('\n')[1:])
         filename = f"{self.sampleId}.xml"
-        with open(filename, 'w', encoding='utf-8') as file:
+        folderPath = self.__get_directory_path()
+
+        filePath = folderPath + "/" + filename
+        with open(filePath, 'w', encoding='utf-8') as file:
             file.write(pretty_string_without_declaration)
