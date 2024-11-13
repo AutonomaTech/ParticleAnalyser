@@ -580,7 +580,16 @@ def calculate_totalArea(diameter_threshold, circularity_threshold,segments):
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+        # Check if both diameter_threshold and circularity_threshold are non-zero
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        # If both thresholds are 0, no filtering is applied
+        filtered_stat = stat
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()

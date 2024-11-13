@@ -11,7 +11,7 @@ sampleID = "modified gain"
 print()
 print(image_folder_path)
 #in um
-containerWidth=180000
+containerWidth=180
 #initialise analyser
 analyser=pa.ImageAnalysisModel(image_folder_path,sampleID,containerWidth)
 #industry standard
