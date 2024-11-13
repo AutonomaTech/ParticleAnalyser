@@ -8,7 +8,7 @@ logger = logger_config.get_logger(__name__)
 
 
 class sizeAnalysisModel:
-    def __init__(self, sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
+    def __init__(self, sampleId,sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
                  analysis_time=None, bin_num=None,minmum_area=None):
 
         self.tot_area = tot_area
@@ -23,7 +23,7 @@ class sizeAnalysisModel:
         self.analysis_time = analysis_time
         self.rows = bin_num
         self.particles = []
-        self.sampleId = ""
+        self.sampleId = sampleId
         self.over_s_value = 0
         self.under_s_value = 0
         self.d_10 = 0
@@ -41,14 +41,14 @@ class sizeAnalysisModel:
         Retrieving Sample Id and then compare with Sample ids the specified folders, if sample Id not existed in that file
         Keep processing,if already existed in the file, then skipped ouver
         """
-        try:
-            if self.segments_file_path.endswith('.csv'):
+        # try:
+        #     if self.segments_file_path.endswith('.csv'):
 
-                self.sampleId= self.segments_file_path.split('.csv')[0]
+        #         self.sampleId= self.segments_file_path.split('.csv')[0]
 
-        except:
-                self.sampleId=""
-        finally:
+        # except:
+        #         self.sampleId=""
+        # finally:
             logger.info("For sampleId: {}, tot_area:{}, scaling_num:{},scaling_fact:{},scaling_stamp:{},intensity:{},analysis_time:{},bin_num:{} ",
                         self.sampleId,self.tot_area,self.scaling_num,self.scaling_fact,self.scaling_stamp,self.intensity,self.analysis_time,
                         self.rows)
@@ -261,10 +261,10 @@ class sizeAnalysisModel:
         self.date_time= now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
     def __build_xml(self):
         # CaCulate all the data
-        self.__retrieveSampleId()
-        if self.sampleId=="":
-            logger.info("No sampleId is retrieved")
-            return
+        # self.__retrieveSampleId()
+        # if self.sampleId=="":
+        #     logger.info("No sampleId is retrieved")
+        #     return
         self.__countNumParticles()
         # self.__countUnderSValue()
         # self.__countOverSValue()
