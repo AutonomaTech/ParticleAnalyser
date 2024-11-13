@@ -94,7 +94,7 @@ class sizeAnalysisModel:
                                   'circularity'] / 1000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in filtered_particles]
+        areas = [particle['area'] for particle in self.particles]
 
         # Count the particles with area >= 8
         for area in areas:
@@ -131,7 +131,7 @@ class sizeAnalysisModel:
                                   'circularity'] / 1000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in filtered_particles]
+        areas = [particle['area'] for particle in self.particles]
 
         # Count the particles with area < 0.15
         for area in areas:
