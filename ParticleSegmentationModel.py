@@ -146,6 +146,11 @@ class ParticleSegmentationModel:
         if self.masks is None:
             self.generate_mask()
         dp.visualise_masks(self.image, self.masks)
+        
+    def opposite_masks(self):
+        if self.masks is None:
+            self.generate_mask()
+        dp.visualiseRemainingfromMasks(self.image, self.masks)
 
     def save_masks_to_csv(self, filename):
         if self.masks is None:

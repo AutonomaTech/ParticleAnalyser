@@ -26,23 +26,16 @@ class ImageAnalysisModel:
         self.sampleID = sampleID if sampleID else os.path.basename(image_folder_path)
         self.imageProcessor = ip.ImageProcessingModel(image_folder_path, self.sampleID)  
         self.imagePath = self.imageProcessor.getImagePath()
-        print(self.imageProcessor.getWidth())
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth(),containerWidth)
 
-        self.diameter_threshold = 100000
+        self.diameter_threshold =100000 #10cm
         self.folder_path=image_folder_path
         self.analysisTime = 0
         self.p = None
 
-    def visualiseMasks(self):
-        """
-        Calls the ParticleSegmentationModel to visualize generated masks, if available.
-        
-        Input: None
-        Output: Displays mask visualization.
-        """
-        self.p.visualiseMasks()
+    def oppositeMasks(self):
+        self.p.opposite_masks()
     def showImage(self):
         """
         Displays the processed image using the ImageProcessingModel.
@@ -161,7 +154,7 @@ class ImageAnalysisModel:
         print("-----------------------------------------------")
         print("Sample ID:", self.sampleID)
         print(f"Total Area: {self.totArea} um2")
-        print(f"Total Area: {self.totArea / 1_000_000} mm2")
+        print(f"Total Area: {self.totArea / 100_000_000} cm2")
         print("Scaling Factor:", self.Scaler.scalingFactor)
         print("Scaling Number:", self.Scaler.scalingNumber)
         self.intensity = self.imageProcessor.getIntensity()

@@ -6,11 +6,11 @@
   <CustomField4/>
   <CustomField5/>
   <NumParticles>5147</NumParticles>
-  <TotArea>8826914677.941196</TotArea>
+  <TotArea>50712591108.690285</TotArea>
   <ScalingNum>1688</ScalingNum>
-  <ScalingStamp>2024-11-15T14:39:47.318</ScalingStamp>
+  <ScalingStamp>2024-11-15T15:14:47.546</ScalingStamp>
   <Intensity>115.09888425137098</Intensity>
-  <DateTime>2024-11-15T14:39:49.634</DateTime>
+  <DateTime>2024-11-15T15:14:49.877</DateTime>
   <AnalysisTime/>
   <minmumArea>0</minmumArea>
   <NumResultTables>1</NumResultTables>
@@ -41,11 +41,11 @@
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>39.93792999</Value>
-        <Value>33.19305808</Value>
-        <Value>33.18068085</Value>
-        <Value>33.17323658</Value>
-        <Value>33.17323658</Value>
+        <Value>60.40226440</Value>
+        <Value>60.21936395</Value>
+        <Value>60.21936395</Value>
+        <Value>60.21191967</Value>
+        <Value>60.21191967</Value>
       </Distribution>
     </ResultColumns>
     <ResultColumns>
@@ -71,9 +71,9 @@
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>60.06207001</Value>
-        <Value>6.74487191</Value>
-        <Value>0.01237723</Value>
+        <Value>39.59773560</Value>
+        <Value>0.18290046</Value>
+        <Value>0.00000000</Value>
         <Value>0.00744428</Value>
         <Value>0.00000000</Value>
       </Distribution>

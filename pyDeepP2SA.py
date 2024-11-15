@@ -132,6 +132,33 @@ def visualise_masks(image, masks):
     plt.axis('off')  # Hide axis
     plt.show()
 
+def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
+    """
+    Visualizes the image with masked areas removed, leaving only unmasked regions visible.
+
+    Args:
+        image (numpy.ndarray): The original image as a NumPy array (H x W x C).
+        masks (list): A list of masks where each mask is a 2D NumPy array (H x W).
+        background_color (tuple): RGB color to replace masked areas (default is white).
+    """
+    # Create a combined mask from all individual masks
+    combined_mask = np.zeros((image.shape[0], image.shape[1]), dtype=bool)
+    for mask in masks:
+        combined_mask |= mask['segmentation']
+
+    # Convert the combined mask to a 3D boolean array (for RGB channels)
+    combined_mask_3d = np.stack([combined_mask] * 3, axis=-1)
+
+    # Replace the masked areas with the background color
+    modified_image = np.copy(image)
+    modified_image[combined_mask_3d] = background_color
+
+    # Plot the modified image
+    plt.figure(figsize=(20, 20))
+    plt.imshow(modified_image)
+    plt.axis('off')  # Hide axis
+    plt.show()
+
 def save_masks_image(image, masks, filename):
     def show_anns(anns):
         if len(anns) == 0:
