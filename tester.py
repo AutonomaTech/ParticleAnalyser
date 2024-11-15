@@ -28,5 +28,6 @@ analyser.showMasks()
 analyser.saveResults()
 """
 analyser.loadSegments(checkpoint_folder,bins)  
+analyser.analysewithCV2()
 
-analyser.formatResults()
+#analyser.formatResults()

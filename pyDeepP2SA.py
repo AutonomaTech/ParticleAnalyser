@@ -184,7 +184,7 @@ def find_smallest_area_with_SAM(input_filename):
         print(f"An error occurred: {e}")
     
     return smallest_area
-def detect_rocks(image, max_area):
+def detect_rocks_withCV2(image, max_area):
     """
     Detects potential rocks in the image by finding contours in the unmasked regions.
 
@@ -213,12 +213,8 @@ def detect_rocks(image, max_area):
 
     # Draw contours on the image
     cv2.drawContours(image_with_contours, filtered_contours, -1, (0, 255, 0), 2)  # Green contours
+    print(len(filtered_contours))
 
-    # Plot the result with contours
-    plt.figure(figsize=(20, 20))
-    plt.imshow(image_with_contours)
-    plt.axis('off')  # Hide axis
-    plt.show()
 
 
 def save_masks_image(image, masks, filename):

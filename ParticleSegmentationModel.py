@@ -284,10 +284,11 @@ class ParticleSegmentationModel:
         self.segments=dp.save_segments_as_csv(txt_filename, csv_filename,self.diameter_threshold)
     
     def generate_with_cv2(self, csv_filename):
-        if self.masks is None:
-            self.generate_mask()
-        leftoverImage=dp.visualiseRemainingfromMasks(self.image, self.masks)
+        #if self.masks is None:
+            #self.generate_mask()
+        #leftoverImage=dp.visualiseRemainingfromMasks(self.image, self.masks)
         min_area_found=dp.find_smallest_area_with_SAM(csv_filename)
-        dp.detect_rocks(leftoverImage, min_area_found)
+        print(min_area_found)
+        dp.detect_rocks_withCV2(self.image, float(min_area_found))
         
 

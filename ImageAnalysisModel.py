@@ -37,6 +37,7 @@ class ImageAnalysisModel:
     def analysewithCV2(self):
         self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
         self.p.generate_with_cv2(self.csv_filename)
+        
     def showImage(self):
         """
         Displays the processed image using the ImageProcessingModel.
