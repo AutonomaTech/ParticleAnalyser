@@ -144,20 +144,82 @@ def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
     # Create a combined mask from all individual masks
     combined_mask = np.zeros((image.shape[0], image.shape[1]), dtype=bool)
     for mask in masks:
-        combined_mask |= mask['segmentation']
+        combined_mask |= mask['segmentation']  # Assuming each mask is a dictionary with 'segmentation' key
 
     # Convert the combined mask to a 3D boolean array (for RGB channels)
     combined_mask_3d = np.stack([combined_mask] * 3, axis=-1)
 
     # Replace the masked areas with the background color
     modified_image = np.copy(image)
-    modified_image[combined_mask_3d] = background_color
 
-    # Plot the modified image
+    # Apply the background color to each channel (R, G, B) where the mask is True
+    for i in range(3):  # Loop over the three channels: Red, Green, Blue
+        modified_image[:, :, i][combined_mask] = background_color[i]
+
+    return modified_image
+
+def find_smallest_area_with_SAM(input_filename):
+    try:
+        # Read the CSV file into a list of dictionaries
+        with open(input_filename, mode='r') as infile:
+            reader = csv.DictReader(infile)
+            rows = list(reader)
+        
+        # Sort the rows by the 'area' field in ascending order (smallest first)
+        sorted_rows = sorted(rows, key=lambda row: float(row['area']))
+        
+        # Get the smallest area (the first entry in the sorted list)
+        smallest_area = sorted_rows[0]['area']
+        
+        # Write the sorted data back to the same CSV file
+        with open(input_filename, mode='w', newline='') as outfile:
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sorted_rows)
+        
+        print(f"Smallest Area: {smallest_area}")
+        
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
+    return smallest_area
+def detect_rocks(image, max_area):
+    """
+    Detects potential rocks in the image by finding contours in the unmasked regions.
+
+    Args:
+        image (numpy.ndarray): The input image with background areas removed.
+        min_area (int): Minimum area threshold for detected contours.
+        max_area (int): Maximum area threshold for detected contours.
+
+    Returns:
+        image_with_contours (numpy.ndarray): Image with contours drawn on detected rocks.
+    """
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply binary thresholding to isolate potential rocks (adjust threshold value as needed)
+    _, thresholded = cv2.threshold(gray_image, 1, 255, cv2.THRESH_BINARY)
+
+    # Find contours in the thresholded image
+    contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Filter contours based on area (min_area and max_area)
+    filtered_contours = [contour for contour in contours if 0 < cv2.contourArea(contour)< max_area]
+
+    # Create an empty image to draw contours
+    image_with_contours = np.copy(image)
+
+    # Draw contours on the image
+    cv2.drawContours(image_with_contours, filtered_contours, -1, (0, 255, 0), 2)  # Green contours
+
+    # Plot the result with contours
     plt.figure(figsize=(20, 20))
-    plt.imshow(modified_image)
+    plt.imshow(image_with_contours)
     plt.axis('off')  # Hide axis
     plt.show()
+
 
 def save_masks_image(image, masks, filename):
     def show_anns(anns):

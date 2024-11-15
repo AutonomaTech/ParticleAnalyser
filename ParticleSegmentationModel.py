@@ -146,11 +146,12 @@ class ParticleSegmentationModel:
         if self.masks is None:
             self.generate_mask()
         dp.visualise_masks(self.image, self.masks)
-        
+
     def opposite_masks(self):
         if self.masks is None:
             self.generate_mask()
         dp.visualiseRemainingfromMasks(self.image, self.masks)
+        dp.find_smallest_area_with_SAM
 
     def save_masks_to_csv(self, filename):
         if self.masks is None:
@@ -281,5 +282,12 @@ class ParticleSegmentationModel:
     
     def save_segments_as_csv(self,txt_filename, csv_filename):
         self.segments=dp.save_segments_as_csv(txt_filename, csv_filename,self.diameter_threshold)
+    
+    def generate_with_cv2(self, csv_filename):
+        if self.masks is None:
+            self.generate_mask()
+        leftoverImage=dp.visualiseRemainingfromMasks(self.image, self.masks)
+        min_area_found=dp.find_smallest_area_with_SAM(csv_filename)
+        dp.detect_rocks(leftoverImage, min_area_found)
         
 
