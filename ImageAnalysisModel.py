@@ -113,6 +113,7 @@ class ImageAnalysisModel:
             self.p.generate_mask()
         
         calculateAnalysisTime(self.p.getExecutionTime())
+        self.p.setdiameter_threshold(self.diameter_threshold)
 
     def savePsdData(self):
         """
