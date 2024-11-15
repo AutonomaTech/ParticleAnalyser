@@ -25,11 +25,13 @@ class ImageAnalysisModel:
         """
         self.sampleID = sampleID if sampleID else os.path.basename(image_folder_path)
         self.imageProcessor = ip.ImageProcessingModel(image_folder_path, self.sampleID)  
-        self.diameter_threshold = 100000
         self.imagePath = self.imageProcessor.getImagePath()
+        print(self.imageProcessor.getWidth())
+        self.Scaler = cs.ContainerScalerModel(containerWidth)
+        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth(),containerWidth)
 
-        self.ContainerScaler = cs.ContainerScalerModel(containerWidth, self.imageProcessor.getWidth())
-
+        self.diameter_threshold = 100000
+        self.folder_path=image_folder_path
         self.analysisTime = 0
         self.p = None
 
@@ -88,7 +90,7 @@ class ImageAnalysisModel:
             return CHECKPOINT_PATH
 
         CHECKPOINT_PATH = loadSamModel(checkpoint_folder)
-        self.p = psa.ParticleSegmentationModel(self.imagePath, CHECKPOINT_PATH, self.ContainerScaler.scalingFactor)
+        self.p = psa.ParticleSegmentationModel(self.imagePath, CHECKPOINT_PATH, self.Scaler.scalingFactor)
 
     def analyseParticles(self, checkpoint_folder, testing):
         """
@@ -158,12 +160,13 @@ class ImageAnalysisModel:
         self.totArea = self.p.get_totalArea()
         print("-----------------------------------------------")
         print("Sample ID:", self.sampleID)
-        print("Total Area:", self.totArea)
-        print("Scaling Factor:", self.ContainerScaler.scalingFactor)
-        print("Scaling Number:", self.ContainerScaler.scalingNumber)
+        print(f"Total Area: {self.totArea} um2")
+        print(f"Total Area: {self.totArea / 1_000_000} mm2")
+        print("Scaling Factor:", self.Scaler.scalingFactor)
+        print("Scaling Number:", self.Scaler.scalingNumber)
         self.intensity = self.imageProcessor.getIntensity()
         print("Intensity:", self.intensity)
-        print("Scaling Stamp:", self.ContainerScaler.scalingStamp)
+        print("Scaling Stamp:", self.Scaler.scalingStamp)
         print("Analysis Time:", self.analysisTime)
         print("Number of Particles:", self.numberofBins)
         print("Diameter Threshold:", self.p.diameter_threshold)
@@ -172,8 +175,8 @@ class ImageAnalysisModel:
         print(f"CSV file: {self.csv_filename}")
         
         formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
-                                         self.totArea, self.ContainerScaler.scalingNumber,
-                                         self.ContainerScaler.scalingFactor, self.ContainerScaler.scalingStamp,
+                                         self.totArea, self.Scaler.scalingNumber,
+                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
                                          self.p.circularity_threshold)
         formatter.save_xml()
@@ -234,10 +237,12 @@ class ImageAnalysisModel:
     def crop_image(self):
         self.imageProcessor.cropImage()
         self.imagePath=self.imageProcessor.getImagePath()
+        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
     
     def evenLighting(self):
         self.imageProcessor.even_out_lighting()
         self.imagePath=self.imageProcessor.getImagePath()
+        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
         
     def overlayImage(self):
         """
@@ -249,4 +254,5 @@ class ImageAnalysisModel:
         """
         self.imageProcessor.overlayImage()
         self.imagePath=self.imageProcessor.getImagePath()
+        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 

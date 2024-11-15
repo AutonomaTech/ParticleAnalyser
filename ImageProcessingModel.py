@@ -77,25 +77,22 @@ class ImageProcessingModel:
 
     def getWidth(self):
         """
-        Returns the maximum width of an image in the folder with the same sample ID.
+        Returns width of an image in the folder with the same sample ID.
         Useful for determining the mm/pixel ratio.
 
         Inputs:None
 
         Outputs:
-            int: The maximum width of the images found.
+            int:  width of the images found.
         """
-        max_width = 0
-        for filename in os.listdir(self.image_folder_path):
-            if filename.startswith(self.sampleID) and any(filename.endswith(ext) for ext in self.file_extensions):
-                image_path = os.path.join(self.image_folder_path, filename)
-
-                with Image.open(image_path) as img:
-                    width = img.width
-                    if width > max_width:
-                        max_width = width
+        try:
+            with Image.open(self.imagePath) as img:
+                width, _ = img.size
+            return width
+        except Exception as e:
+            print(f"Error opening image at {self.imagePath}: {e}")
+            return None
         
-        return max_width
 
     def getIntensity(self):
         """
