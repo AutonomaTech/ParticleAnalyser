@@ -198,17 +198,17 @@ class ParticleSegmentationModel:
             logger.error("No mask to identify spheres!")
             return
         if self.segments is None:
-            self.segments = dp.get_segments(self.masks, self.scaling_factor)
+            self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
         dp.plot_psd(self.diameter_threshold, self.circularity_threshold, num_bins, self.segments)
 
     def get_psd_bins(self, display=False):
         if self.segments is None:
-            self.segments = dp.get_segments(self.masks, self.scaling_factor)
+            self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
         self.psd_bins_data = dp.get_psd_data(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
 
     def plot_psd_bins(self, display=False):
         if self.segments is None:
-            self.segments = dp.get_segments(self.masks, self.scaling_factor)
+            self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
         dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
 
     def setdiameter_threshold(self,diameter_threshold):
@@ -220,14 +220,14 @@ class ParticleSegmentationModel:
 
     def get_psd_data(self):
         if self.segments is None:
-              self.segments = dp.get_segments(self.masks, self.scaling_factor)
+              self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
         psd_data = dp.get_psd_data(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
         self.psd_data = {'differential': list(zip(tuple(self.bins), tuple(psd_data[1]))), 'cumulative':list(zip(tuple(self.bins), tuple(psd_data[2][::-1])))}
         return self.psd_data
 
     def get_totalArea(self):
       if self.segments is None:
-          self.segments = dp.get_segments(self.masks, self.scaling_factor)
+          self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
       return dp.calculate_totalArea(self.diameter_threshold, self.circularity_threshold,self.segments)
 
 
@@ -244,13 +244,13 @@ class ParticleSegmentationModel:
             logger.error("No mask to identify spheres!")
             return
         if self.segments is None:
-            self.segments = dp.get_segments(self.masks, self.scaling_factor)
+            self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
 
         dp.save_psd(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments, filename)
 
     def save_segments(self,filename):
         if self.segments is None:
-            self.segments = dp.get_segments(self.masks, self.scaling_factor)
+            self.segments = dp.get_segments(self.masks, self.scaling_factor,self.diameter_threshold)
         with open(filename, 'w') as file:
             json.dump(self.segments, file)
 
@@ -275,6 +275,6 @@ class ParticleSegmentationModel:
         dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
     
     def save_segments_as_csv(self,txt_filename, csv_filename):
-        self.segments=dp.save_segments_as_csv(txt_filename, csv_filename)
+        self.segments=dp.save_segments_as_csv(txt_filename, csv_filename,self.diameter_threshold)
         
 

@@ -237,7 +237,7 @@ def save_masks_to_csv(masks, csv_directory, pixel_to_micron,diameter_threshold):
                                   'diameter': diameter, 'circularity': circularity})
 
 
-def get_segments(masks, pixel_to_micron):
+def get_segments(masks, pixel_to_micron, diameter_threshold=0):
 
         segments = []
         for mask in masks:
@@ -267,9 +267,10 @@ def get_segments(masks, pixel_to_micron):
                 # Calculate circularity as 4π(area/perimeter^2)
                 circularity = (4 * np.pi * area) / (perimeter ** 2)
 
-                # Write region props to CSV file
-                segments.append({'area': area, 'perimeter': perimeter,
-                                 'diameter': diameter, 'circularity': circularity})
+                if diameter_threshold!=0 and diameter < diameter_threshold:
+                    # Write region props to CSV file
+                    segments.append({'area': area, 'perimeter': perimeter,
+                                    'diameter': diameter, 'circularity': circularity})
 
         return segments
 
@@ -604,7 +605,15 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        # If both thresholds are 0, no filtering is applied
+        filtered_stat = stat
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()
@@ -975,28 +984,40 @@ def box_plots_spheres(csv_file):
     ax.set_title('Box Plot - Cenospheres vs Solid Spheres')
     plt.show()
 
-def save_segments_as_csv(txt_filename, csv_filename):
+def save_segments_as_csv(txt_filename, csv_filename, diameter_threshold):
     try:
-        segments = [] 
+        filtered_segments = []
         
+        # Load the JSON data from the text file
         with open(txt_filename, 'r') as file:
             content = file.read()
 
         data = json.loads(content)
+        
+        # Validate that the data is a list of dictionaries
         if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
             print("Error: The data format is incorrect.")
             return
-        segments.extend(data) 
-        fieldnames = segments[0].keys()
 
-        # Write the segments (rows of data) to the CSV file
-        with open(csv_filename, mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            for row in segments:
-                writer.writerow(row)
+        # Filter segments based on the diameter threshold
+        filtered_segments = [segment for segment in data if segment.get("diameter", float('inf')) < diameter_threshold]
 
-        return segments
+        # Get fieldnames for CSV from the first segment
+        if filtered_segments:
+            fieldnames = filtered_segments[0].keys()
         
+            # Write the filtered segments to the CSV file
+            with open(csv_filename, mode='w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in filtered_segments:
+                    writer.writerow(row)
+
+            print(f"Saved {len(filtered_segments)} segments to {csv_filename} with diameter < {diameter_threshold}")
+        else:
+            print("No segments found with diameter below the threshold.")
+
+        return filtered_segments
+
     except Exception as e:
         print(f"Error while processing the file: {e}")

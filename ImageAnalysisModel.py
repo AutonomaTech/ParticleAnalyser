@@ -12,7 +12,7 @@ import ContainerScalerModel as cs
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, containerWidth, sampleID=None):
+    def __init__(self, image_folder_path, containerWidth, sampleID=None, ):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -25,7 +25,7 @@ class ImageAnalysisModel:
         """
         self.sampleID = sampleID if sampleID else os.path.basename(image_folder_path)
         self.imageProcessor = ip.ImageProcessingModel(image_folder_path, self.sampleID)  
-        
+        self.diameter_threshold = 100000
         self.imagePath = self.imageProcessor.getImagePath()
 
         self.ContainerScaler = cs.ContainerScalerModel(containerWidth, self.imageProcessor.getWidth())
@@ -141,7 +141,7 @@ class ImageAnalysisModel:
 
         self.folder_path = self.imageProcessor.getImageFolder()
         self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
-        self.p.setdiameter_threshold(10)
+        self.p.setdiameter_threshold(self.diameter_threshold)
         self.p.save_masks_to_csv(self.csv_filename)
         print(f"--> Masks saved to CSV file: {self.csv_filename}")
 
@@ -184,6 +184,7 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves segment data to JSON file.
         """
+        self.p.setdiameter_threshold(self.diameter_threshold)
         self.json_filename = os.path.join(self.folder_path, f"{self.sampleID}_segments.txt")
         self.p.save_segments(self.json_filename)
         print(f"Saving segments in {self.json_filename}")
@@ -208,6 +209,7 @@ class ImageAnalysisModel:
             self.loadModel(checkpoint_folder)
             self.setBins(bins)
             self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
+            self.p.setdiameter_threshold(self.diameter_threshold)
             self.p.save_segments_as_csv(self.json_masks_filename, self.csv_filename)
             self.savePsdData()
         

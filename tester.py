@@ -27,6 +27,6 @@ analyser.analyseParticles(checkpoint_folder,False)
 analyser.showMasks()
 analyser.saveResults()
 """
-#analyser.loadSegments(checkpoint_folder,bins)  
+analyser.loadSegments(checkpoint_folder,bins)  
 
-#analyser.formatResults()
+analyser.formatResults()
