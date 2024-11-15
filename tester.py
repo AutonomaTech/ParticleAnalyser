@@ -14,7 +14,8 @@ containerWidth=180
 #initialise analyser
 analyser=pa.ImageAnalysisModel(image_folder_path,containerWidth)
 #analyser.evenLighting()
-analyser.overlayImage()
+#analyser.overlayImage()
+#analyser.crop_image()
 #industry standard
 bins=[0, 38, 106, 1000, 8000] #bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
 

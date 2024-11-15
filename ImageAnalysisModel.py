@@ -41,15 +41,6 @@ class ImageAnalysisModel:
         Output: Displays mask visualization.
         """
         self.p.visualiseMasks()
-    def overlayImage(self):
-        """
-        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and 
-        reducing the size of the image if it is bigger than 8MB
-
-        Input: None
-        Output: lighter PNG file and containing the same image overlayed 10 times
-        """
-        self.imageProcessor.overlayImage()
     def showImage(self):
         """
         Displays the processed image using the ImageProcessingModel.
@@ -238,11 +229,21 @@ class ImageAnalysisModel:
             raise ValueError("Image not initialized. Please ensure that 'imageProcessor' is properly initialized.")
     
     def crop_image(self):
-        cropped_image=self.imageProcessor.cropImage()
-        # Save and display the cropped image
-        self.imageProcessor = self.imageProcessor.save_cropped_image(cropped_image)
+        self.imageProcessor.cropImage()
+        self.imagePath=self.imageProcessor.getImagePath()
     
     def evenLighting(self):
         self.imageProcessor.even_out_lighting()
+        self.imagePath=self.imageProcessor.getImagePath()
         
+    def overlayImage(self):
+        """
+        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and 
+        reducing the size of the image if it is bigger than 8MB
+
+        Input: None
+        Output: lighter PNG file and containing the same image overlayed 10 times
+        """
+        self.imageProcessor.overlayImage()
+        self.imagePath=self.imageProcessor.getImagePath()
 
