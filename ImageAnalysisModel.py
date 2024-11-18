@@ -206,7 +206,6 @@ class ImageAnalysisModel:
         print("Intensity:", self.intensity)
         print("Scaling Stamp:", self.Scaler.scalingStamp)
         print("Analysis Time:", self.analysisTime)
-        print("Number of Particles:", self.numberofBins)
         print(f"Diameter Threshold: {self.p.diameter_threshold} um")
         print(f"Circularity Threshold: {self.p.circularity_threshold} um")
         print("-----------------------------------------------")

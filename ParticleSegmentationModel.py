@@ -246,6 +246,8 @@ class ParticleSegmentationModel:
         if self.segments is None:
             self.segments = dp.get_segments(
                 self.masks, self.scaling_factor, self.diameter_threshold)
+            print()
+            print()
         return dp.calculate_totalArea(self.diameter_threshold, self.circularity_threshold, self.segments)
 
     def save_psd(self, filename):

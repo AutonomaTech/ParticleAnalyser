@@ -14,7 +14,7 @@ analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth)
 analyser.overlayImage()
 analyser.evenLighting()
 
-analyser.showImage()
+# analyser.showImage()
 # analyser.crop_image()
 # industry standard
 # bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
@@ -28,7 +28,7 @@ analyser.analyseParticles(checkpoint_folder,False)
 analyser.showMasks()
 analyser.saveResults()
 """
-# analyser.loadSegments(checkpoint_folder, bins)
-# analyser.analysewithCV2()
+analyser.loadSegments(checkpoint_folder, bins)
+analyser.analysewithCV2()
 
 # analyser.formatResults()

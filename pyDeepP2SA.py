@@ -376,6 +376,30 @@ def get_segments(masks, pixel_to_micron, diameter_threshold=0):
     return segments
 
 
+def calculate_overlapping_area(masks, pixel_to_micron):
+    """
+    Calculate the total overlapping area between masks.
+
+    Parameters:
+    - masks (list): A list of binary masks (2D NumPy arrays) where each mask represents a single object.
+
+    Returns:
+    - overlapping_area (float): The total overlapping area in pixels.
+    """
+    if not masks:
+        return 0
+
+    # Combine all masks into a single array
+    combined_mask = np.zeros_like(masks[0], dtype=np.uint8)
+    for mask in masks:
+        combined_mask += mask.astype(np.uint8)
+
+    # Count the number of overlapping pixels (pixels with value > 1)
+    overlapping_area_pixels = np.sum(combined_mask > 1)
+
+    print(overlapping_area_pixels*pixel_to_micron)
+
+
 def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixel_to_micron, display=False):
     fig, ax = plt.subplots()
 
