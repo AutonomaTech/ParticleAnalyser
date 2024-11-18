@@ -100,11 +100,15 @@ class sizeAnalysisModel:
         #                           'circularity'] / 1000000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in self.particles]
+        # areas = [particle['area'] for particle in self.particles]
+        diameters = [particle['diameter'] for particle in self.particles]
 
         # Count the particles with area >= 8
-        for area in areas:
-            if area / 1000000 >= 8:
+        # for area in areas:
+        #     if area / 1000000 >= 8:
+        #         overSValue += 1
+        for diameter in diameters:
+            if diameter / 1000 >= 8:
                 overSValue += 1
 
         # Calculate the percentage of particles with area >= 8
@@ -137,13 +141,16 @@ class sizeAnalysisModel:
         #                           'circularity'] / 1000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in self.particles]
+        # areas = [particle['area'] for particle in self.particles]
+        diameters = [particle['diameter'] for particle in self.particles]
 
         # Count the particles with area < 0.15
-        for area in areas:
-            if area / 1000000 < 0.15:
+        # for area in areas:
+        #     if area / 1000000 < 0.15:
+        #         underSValue += 1
+        for diameter in diameters:
+            if diameter / 1000 < 0.15:
                 underSValue += 1
-
         # Calculate the percentage of particles with area < 0.15
         if underSValue > 0:
             underSValuePercentage = underSValue / len(self.particles) * 100
