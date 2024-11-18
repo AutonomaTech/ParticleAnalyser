@@ -184,6 +184,9 @@ class ImageAnalysisModel:
 
         self.savePsdData()
 
+    def scalingFactor(self, scalingFactor):
+        self.Scaler.setScalingFactor(scalingFactor)
+
     def formatResults(self):
         """
         Formats and displays analysis results, and saves formatted results as XML.

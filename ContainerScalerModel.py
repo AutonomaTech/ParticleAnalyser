@@ -38,3 +38,6 @@ class ContainerScalerModel:
 
     def setScalingNumber(self, scalingNumber):
         self.scalingNumber = scalingNumber
+
+    def setScalingFactor(self, scalingFactor):
+        self.scalingFactor = scalingFactor
