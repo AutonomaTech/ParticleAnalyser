@@ -7,14 +7,14 @@ current_path = os.getcwd()
 image_folder_path = os.path.join(current_path, "Samples/0001")
 checkpoint_folder = os.path.join(current_path, "checkpoints")
 
-print()
-print(image_folder_path)
 # in um
 containerWidth = 180000
 # initialise analyser
 analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth)
-analyser.evenLighting()
 analyser.overlayImage()
+analyser.evenLighting()
+
+analyser.showImage()
 # analyser.crop_image()
 # industry standard
 # bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
@@ -28,7 +28,7 @@ analyser.analyseParticles(checkpoint_folder,False)
 analyser.showMasks()
 analyser.saveResults()
 """
-analyser.loadSegments(checkpoint_folder, bins)
+# analyser.loadSegments(checkpoint_folder, bins)
 # analyser.analysewithCV2()
 
-analyser.formatResults()
+# analyser.formatResults()
