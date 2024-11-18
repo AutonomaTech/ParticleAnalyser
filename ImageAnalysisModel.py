@@ -184,7 +184,7 @@ class ImageAnalysisModel:
 
         self.savePsdData()
 
-    def scalingFactor(self, scalingFactor):
+    def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
     def formatResults(self):
