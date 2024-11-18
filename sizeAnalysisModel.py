@@ -246,7 +246,7 @@ class sizeAnalysisModel:
 
         areas = [particle['area'] for particle in self.particles]
         sorted_areas = sorted(areas)
-        self.minmum_area = format(max(float( sorted_areas[0]/1000), 0), '.8f')
+        self.minmum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
         logger.info("Minimu Area : {}", self.minmum_area)
 
