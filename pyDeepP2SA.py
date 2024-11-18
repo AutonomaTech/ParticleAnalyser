@@ -354,14 +354,14 @@ def get_segments(masks, pixel_to_micron, diameter_threshold=0):
         cleared_mask = clear_border(labeled_mask)
 
         # Loop over each connected component and extract its region props
-        for region in measure.regionprops(cleared_mask):
+        for region in measure.regionprops(labeled_mask):
             # Convert area, perimeter, and diameter from pixels to micrometers
             area_pixels = region.area
             perimeter_pixels = region.perimeter
             diameter_pixels = region.major_axis_length
 
             # Convert measurements to microns
-            area = area_pixels * pixel_to_micron ** 2
+            area = area_pixels * (pixel_to_micron ** 2)
             perimeter = perimeter_pixels * pixel_to_micron
             diameter = diameter_pixels * pixel_to_micron
 
