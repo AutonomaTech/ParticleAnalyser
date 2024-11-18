@@ -248,6 +248,7 @@ class ParticleSegmentationModel:
                 self.masks, self.scaling_factor, self.diameter_threshold)
             print()
             print()
+            dp.calculate_overlapping_area(self.masks, self.scaling_factor)
         return dp.calculate_totalArea(self.diameter_threshold, self.circularity_threshold, self.segments)
 
     def save_psd(self, filename):
