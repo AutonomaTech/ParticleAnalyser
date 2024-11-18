@@ -1216,36 +1216,3 @@ def save_segments_as_csv(txt_filename, csv_filename, diameter_threshold):
 
     except Exception as e:
         print(f"Error while processing the file: {e}")
-
-
-def load_masks_from_txt(txt_filename):
-    """
-    Load multiple segmentation masks from a single text file.
-
-    Parameters:
-    - txt_filename (str): The path to the text file containing multiple masks.
-
-    Returns:
-    - masks (list): A list of dictionaries, where each dictionary contains:
-                    {'segmentation': 2D NumPy array of a mask}.
-    """
-    masks = []
-
-    # Read the entire content of the text file
-    with open(txt_filename, 'r') as f:
-        file_content = f.read()
-
-    # Split the content into separate mask blocks (assuming a blank line separates them)
-    # Change this if masks are separated differently
-    mask_blocks = file_content.strip().split('\n\n')
-
-    # Iterate over each block and process
-    for block in mask_blocks:
-        # Convert the block into a NumPy array (a single mask)
-        segmentation = np.array([list(map(int, line.split()))
-                                for line in block.splitlines()])
-
-        # Append the mask as a dictionary
-        masks.append({'segmentation': segmentation})
-
-    return masks

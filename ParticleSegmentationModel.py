@@ -273,29 +273,12 @@ class ParticleSegmentationModel:
         dp.save_psd(self.diameter_threshold, self.circularity_threshold,
                     self.bins, self.segments, filename)
 
-    def save_masks(self, filename):
-        """
+    def save_segments(self, filename):
         if self.segments is None:
             self.segments = dp.get_segments(
                 self.masks, self.scaling_factor, self.diameter_threshold)
         with open(filename, 'w') as file:
             json.dump(self.segments, file)
-        """
-        """
-        Save the segmentation masks from SAM to text files.
-
-        Parameters:
-        - masks (list): A list of dictionaries containing SAM masks. 
-                        Each dictionary has a key 'segmentation' with a binary mask (2D NumPy array).
-        - output_dir (str): Directory where the text files will be saved.
-
-        Returns:
-        - None
-        """
-        for i, mask in enumerate(self.masks):
-            if isinstance(mask, dict) and 'segmentation' in mask:
-                segmentation = mask['segmentation']
-                np.savetxt(filename, segmentation, fmt='%d')
 
     def open_segments(self, filename):
         # Open the file in read mode
@@ -318,12 +301,7 @@ class ParticleSegmentationModel:
         dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
 
     def save_segments_as_csv(self, txt_filename, csv_filename):
-        if self.masks is None:
-            self.masks = dp.load_masks_from_txt(txt_filename)
-        if self.segments is None:
-            self.segments = dp.get_segments(
-                self.masks, self.scaling_factor, self.diameter_threshold)
-        dp.save_segments_as_csv(
+        self.segments = dp.save_segments_as_csv(
             txt_filename, csv_filename, self.diameter_threshold)
 
     def generate_with_cv2(self, csv_filename):
