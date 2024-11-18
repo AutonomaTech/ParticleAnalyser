@@ -68,6 +68,7 @@ class ImageAnalysisModel:
         self.analysisTime = 0
         self.numberofBins = 0
         self.p = None
+        self.csv_filename = ""
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
