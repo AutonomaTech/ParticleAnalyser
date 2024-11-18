@@ -103,7 +103,7 @@ class sizeAnalysisModel:
 
         # Calculate the percentage of particles with area >= 8
         if overSValue > 0:
-            overSValuePercentage = overSValue / len(filtered_particles) * 100
+            overSValuePercentage = overSValue / len(self.particles) * 100
 
         # Format the percentage value
         overSValuePercentage = format(max(float(overSValuePercentage), 0), '.8f')
@@ -140,8 +140,8 @@ class sizeAnalysisModel:
 
         # Calculate the percentage of particles with area < 0.15
         if underSValue > 0:
-            underSValuePercentage = underSValue / len(filtered_particles) * 100
-            if len(filtered_particles) == 0:  # Prevent division by zero
+            underSValuePercentage = underSValue / len(self.particles) * 100
+            if len(self.particles) == 0:  # Prevent division by zero
                 underSValuePercentage = 0
 
         # Format the percentage value
