@@ -8,11 +8,11 @@
   <NumParticles>5147</NumParticles>
   <TotArea>50712591108.690285</TotArea>
   <ScalingNum>1688</ScalingNum>
-  <ScalingStamp>2024-11-15T15:14:47.546</ScalingStamp>
+  <ScalingStamp>2024-11-18T10:36:28.779</ScalingStamp>
   <Intensity>115.09888425137098</Intensity>
-  <DateTime>2024-11-15T15:14:49.877</DateTime>
+  <DateTime>2024-11-18T10:36:31.594</DateTime>
   <AnalysisTime/>
-  <minmumArea>0</minmumArea>
+  <minmumArea>11.37103839</minmumArea>
   <NumResultTables>1</NumResultTables>
   <NumSummaryData>8</NumSummaryData>
   <ResultTable>
@@ -83,25 +83,25 @@
     <Id>3</Id>
     <ColumnId>3</ColumnId>
     <Name>D10 [mm]</Name>
-    <Value>0</Value>
+    <Value>0.21327014</Value>
   </SummaryData>
   <SummaryData>
     <Id>1</Id>
     <ColumnId>1</ColumnId>
     <Name>D50 [mm]</Name>
-    <Value>0</Value>
+    <Value>2.06300239</Value>
   </SummaryData>
   <SummaryData>
     <Id>2</Id>
     <ColumnId>2</ColumnId>
     <Name>D90 [mm]</Name>
-    <Value>0</Value>
+    <Value>5.84177791</Value>
   </SummaryData>
   <SummaryData>
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>0</Value>
+    <Value>100.00000000</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
@@ -119,6 +119,6 @@
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Mean Size</Name>
-    <Value>0</Value>
+    <Value>2.86565656</Value>
   </SummaryData>
 </IAResult>

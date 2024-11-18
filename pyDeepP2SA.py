@@ -11,7 +11,7 @@ import cv2
 import matplotlib.pyplot as plt
 from sam2.build_sam import build_sam2
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
-#from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+# from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from matplotlib.patches import Rectangle
 import pandas as pd
 import seaborn as sns
@@ -45,13 +45,14 @@ crop_n_points_downscale_factor: This parameter may control how much the number o
 min_mask_region_area: This parameter likely represents the minimum area threshold for a mask region to be considered valid. Regions below this threshold might be discarded as noise or artifacts.
 
 """
-def generate_masks(image, sam2_checkpoint,
-                   points_per_side, points_per_batch, pred_iou_thresh, stability_score_thresh,stability_score_offset,
-                   crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh,use_m2m):
 
+
+def generate_masks(image, sam2_checkpoint,
+                   points_per_side, points_per_batch, pred_iou_thresh, stability_score_thresh, stability_score_offset,
+                   crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh, use_m2m):
 
     model_type = "vit_h"
-    #device = "cuda" if torch.cuda.is_available() else "cpu"
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
     # select the device for computation
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -75,14 +76,15 @@ def generate_masks(image, sam2_checkpoint,
             "See e.g. https://github.com/pytorch/pytorch/issues/84936 for a discussion."
         )
 
-    #sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-    #sam.to(device=device)
+    # sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    # sam.to(device=device)
 
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
 
-    sam2 = build_sam2(model_cfg, sam2_checkpoint, device=device, apply_postprocessing=False)
+    sam2 = build_sam2(model_cfg, sam2_checkpoint,
+                      device=device, apply_postprocessing=False)
 
-    mask_generator_2= SAM2AutomaticMaskGenerator(
+    mask_generator_2 = SAM2AutomaticMaskGenerator(
         model=sam2,
         points_per_side=points_per_side,
         points_per_batch=points_per_batch,
@@ -109,19 +111,25 @@ def visualise_masks(image, masks):
         ax = plt.gca()
         ax.set_autoscale_on(False)
 
-        img = np.ones((sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1], 4))
+        img = np.ones((sorted_anns[0]['segmentation'].shape[0],
+                      sorted_anns[0]['segmentation'].shape[1], 4))
         img[:, :, 3] = 0  # Set transparency to 0 (fully transparent)
 
         for ann in sorted_anns:
             m = ann['segmentation']
-            color_mask = np.concatenate([np.random.random(3), [0.5]])  # Random color with 50% transparency
+            # Random color with 50% transparency
+            color_mask = np.concatenate([np.random.random(3), [0.5]])
             img[m] = color_mask  # Apply mask with the color and alpha value
 
             if borders:
-                contours, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                contours, _ = cv2.findContours(
+                    m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # Try to smooth contours
-                contours = [cv2.approxPolyDP(contour, epsilon=0.01, closed=True) for contour in contours]
-                cv2.drawContours(img, contours, -1, (0, 0, 1, 0.4), thickness=1)  # Draw contour with transparency
+                contours = [cv2.approxPolyDP(
+                    contour, epsilon=0.01, closed=True) for contour in contours]
+                # Draw contour with transparency
+                cv2.drawContours(img, contours, -1,
+                                 (0, 0, 1, 0.4), thickness=1)
 
         ax.imshow(img)
 
@@ -131,6 +139,7 @@ def visualise_masks(image, masks):
     show_anns(masks)
     plt.axis('off')  # Hide axis
     plt.show()
+
 
 def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
     """
@@ -144,7 +153,8 @@ def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
     # Create a combined mask from all individual masks
     combined_mask = np.zeros((image.shape[0], image.shape[1]), dtype=bool)
     for mask in masks:
-        combined_mask |= mask['segmentation']  # Assuming each mask is a dictionary with 'segmentation' key
+        # Assuming each mask is a dictionary with 'segmentation' key
+        combined_mask |= mask['segmentation']
 
     # Convert the combined mask to a 3D boolean array (for RGB channels)
     combined_mask_3d = np.stack([combined_mask] * 3, axis=-1)
@@ -158,32 +168,35 @@ def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
 
     return modified_image
 
+
 def find_smallest_area_with_SAM(input_filename):
     try:
         # Read the CSV file into a list of dictionaries
         with open(input_filename, mode='r') as infile:
             reader = csv.DictReader(infile)
             rows = list(reader)
-        
+
         # Sort the rows by the 'area' field in ascending order (smallest first)
         sorted_rows = sorted(rows, key=lambda row: float(row['area']))
-        
+
         # Get the smallest area (the first entry in the sorted list)
         smallest_area = sorted_rows[0]['area']
-        
+
         # Write the sorted data back to the same CSV file
         with open(input_filename, mode='w', newline='') as outfile:
             fieldnames = reader.fieldnames
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(sorted_rows)
-        
+
         print(f"Smallest Area: {smallest_area}")
-        
+
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+
     return smallest_area
+
+
 def detect_rocks_withCV2(image, max_area):
     """
     Detects potential rocks in the image by finding contours in the unmasked regions.
@@ -203,18 +216,20 @@ def detect_rocks_withCV2(image, max_area):
     _, thresholded = cv2.threshold(gray_image, 1, 255, cv2.THRESH_BINARY)
 
     # Find contours in the thresholded image
-    contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Filter contours based on area (min_area and max_area)
-    filtered_contours = [contour for contour in contours if 0 < cv2.contourArea(contour)< max_area]
+    filtered_contours = [
+        contour for contour in contours if 0 < cv2.contourArea(contour) < max_area]
 
     # Create an empty image to draw contours
     image_with_contours = np.copy(image)
 
     # Draw contours on the image
-    cv2.drawContours(image_with_contours, filtered_contours, -1, (0, 255, 0), 2)  # Green contours
+    cv2.drawContours(image_with_contours, filtered_contours, -
+                     1, (0, 255, 0), 2)  # Green contours
     print(len(filtered_contours))
-
 
 
 def save_masks_image(image, masks, filename):
@@ -242,6 +257,7 @@ def save_masks_image(image, masks, filename):
     # plt.show()
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
 
+
 def save_masked_regions(image, masks, filename):
     # Convert the image to a numpy array
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -250,7 +266,6 @@ def save_masked_regions(image, masks, filename):
     def save_individual_mask(mask, mask_id, filename):
         # Use the mask to index into the image and extract the region
         masked_region = image_array * np.expand_dims(mask, axis=-1)
-
 
         # Convert the masked region back to an image
         masked_region_image = Image.fromarray(masked_region.astype(np.uint8))
@@ -263,6 +278,7 @@ def save_masked_regions(image, masks, filename):
     for mask_id, ann in enumerate(masks):
         mask = ann['segmentation']
         save_individual_mask(mask, mask_id, filename)
+
 
 def save_masks_as_images(image, masks, filename):
 
@@ -284,7 +300,7 @@ def save_masks_as_images(image, masks, filename):
         save_individual_mask(mask, mask_id, filename)
 
 
-def save_masks_to_csv(masks, csv_directory, pixel_to_micron,diameter_threshold):
+def save_masks_to_csv(masks, csv_directory, pixel_to_micron, diameter_threshold):
     with open(csv_directory, 'w', newline='') as csvfile:
         fieldnames = ['area', 'perimeter', 'diameter', 'circularity']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -318,48 +334,49 @@ def save_masks_to_csv(masks, csv_directory, pixel_to_micron,diameter_threshold):
                 circularity = (4 * np.pi * area) / (perimeter ** 2)
 
                 if diameter < diameter_threshold:
-                  writer.writerow({'area': area, 'perimeter': perimeter,
-                                  'diameter': diameter, 'circularity': circularity})
+                    writer.writerow({'area': area, 'perimeter': perimeter,
+                                    'diameter': diameter, 'circularity': circularity})
 
 
 def get_segments(masks, pixel_to_micron, diameter_threshold=0):
 
-        segments = []
-        for mask in masks:
-            # Extract the segmentation from the mask
-            segmentation = mask['segmentation']
+    segments = []
+    for mask in masks:
+        # Extract the segmentation from the mask
+        segmentation = mask['segmentation']
 
-            # Create a labeled mask using the segmentation and the 'true' value
-            labeled_mask = np.zeros_like(segmentation, dtype=np.uint8)
-            labeled_mask[segmentation] = 1
-            labeled_mask = measure.label(labeled_mask)
+        # Create a labeled mask using the segmentation and the 'true' value
+        labeled_mask = np.zeros_like(segmentation, dtype=np.uint8)
+        labeled_mask[segmentation] = 1
+        labeled_mask = measure.label(labeled_mask)
 
-            # Remove segments touching the border
-            cleared_mask = clear_border(labeled_mask)
+        # Remove segments touching the border
+        cleared_mask = clear_border(labeled_mask)
 
-            # Loop over each connected component and extract its region props
-            for region in measure.regionprops(cleared_mask):
-                # Convert area, perimeter, and diameter from pixels to micrometers
-                area_pixels = region.area
-                perimeter_pixels = region.perimeter
-                diameter_pixels = region.major_axis_length
+        # Loop over each connected component and extract its region props
+        for region in measure.regionprops(cleared_mask):
+            # Convert area, perimeter, and diameter from pixels to micrometers
+            area_pixels = region.area
+            perimeter_pixels = region.perimeter
+            diameter_pixels = region.major_axis_length
 
-                # Convert measurements to microns
-                area = area_pixels * pixel_to_micron ** 2
-                perimeter = perimeter_pixels * pixel_to_micron
-                diameter = diameter_pixels * pixel_to_micron
+            # Convert measurements to microns
+            area = area_pixels * pixel_to_micron ** 2
+            perimeter = perimeter_pixels * pixel_to_micron
+            diameter = diameter_pixels * pixel_to_micron
 
-                # Calculate circularity as 4π(area/perimeter^2)
-                circularity = (4 * np.pi * area) / (perimeter ** 2)
+            # Calculate circularity as 4π(area/perimeter^2)
+            circularity = (4 * np.pi * area) / (perimeter ** 2)
 
-                if diameter_threshold!=0 and diameter < diameter_threshold:
-                    # Write region props to CSV file
-                    segments.append({'area': area, 'perimeter': perimeter,
-                                    'diameter': diameter, 'circularity': circularity})
+            if diameter_threshold != 0 and diameter < diameter_threshold:
+                # Write region props to CSV file
+                segments.append({'area': area, 'perimeter': perimeter,
+                                'diameter': diameter, 'circularity': circularity})
 
-        return segments
+    return segments
 
-def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixel_to_micron, display = False):
+
+def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixel_to_micron, display=False):
     fig, ax = plt.subplots()
 
     for mask in masks:
@@ -378,7 +395,7 @@ def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixe
             minr, minc, maxr, maxc = region.bbox
 
             # Calculate the diameter
-            diameter = region.major_axis_length* pixel_to_micron
+            diameter = region.major_axis_length * pixel_to_micron
             circularity = (4 * region.area * np.pi) / (region.perimeter ** 2)
 
             # Filter based on the diameter and circularity thresholds
@@ -390,8 +407,8 @@ def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixe
                 ax.add_patch(rect)
 
                 # Add the diameter as text
-                #ax.text(minc, minr, f'D: {diameter:.2f}', color='red',
-                        #verticalalignment='top', bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 3})
+                # ax.text(minc, minr, f'D: {diameter:.2f}', color='red',
+                # verticalalignment='top', bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 3})
 
     ax.axis('off')
     if display == True:
@@ -399,6 +416,7 @@ def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixe
 
     else:
         plt.savefig('diameter_plot.png', bbox_inches='tight', pad_inches=0)
+
 
 def ind_mask(masks, diameter_threshold, circularity_threshold, pixel_to_micron, image, display=False):
     filtered_masks = []
@@ -486,26 +504,29 @@ def ind_mask(masks, diameter_threshold, circularity_threshold, pixel_to_micron, 
     if display == True:
         plt.show()
     else:
-        plt.savefig('individual_annotated_masks.png', bbox_inches='tight', pad_inches=0)
+        plt.savefig('individual_annotated_masks.png',
+                    bbox_inches='tight', pad_inches=0)
 
 
-def stat_sum(diameter_threshold, circularity_threshold,csv_directory):
+def stat_sum(diameter_threshold, circularity_threshold, csv_directory):
     stat = pd.read_csv(csv_directory)
 
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     summary = filtered_stat.describe()
 
     return summary
 
-def plot_boxplots(diameter_threshold,circularity_threshold,csv_directory):
+
+def plot_boxplots(diameter_threshold, circularity_threshold, csv_directory):
     stat = pd.read_csv(csv_directory)
-    stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    stat = stat[(stat['diameter'] > diameter_threshold) &
+                (stat['circularity'] > circularity_threshold)]
     data = [stat["area"].dropna(), stat["perimeter"].dropna(), stat["diameter"].dropna(),
-        stat["circularity"].dropna()]
+            stat["circularity"].dropna()]
 
     data_names = ["Area", "Perimeter", "Diameter", "Circularity"]
-
 
     # Create a figure and axes
     fig, axs = plt.subplots(1, 4, figsize=(15, 5))
@@ -528,11 +549,13 @@ def plot_boxplots(diameter_threshold,circularity_threshold,csv_directory):
     # Show the plot
     plt.show()
 
-def plot_psd_from_csv(diameter_threshold, circularity_threshold, num_bins,csv_directory):
+
+def plot_psd_from_csv(diameter_threshold, circularity_threshold, num_bins, csv_directory):
     stat = pd.read_csv(csv_directory)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     f, ax = plt.subplots()
     ax1 = sns.histplot(data=filtered_stat["diameter"], bins=num_bins, kde=True,
@@ -547,11 +570,13 @@ def plot_psd_from_csv(diameter_threshold, circularity_threshold, num_bins,csv_di
     plt.title("Particle size distribution")
     plt.show()
 
+
 def plot_psd(diameter_threshold, circularity_threshold, num_bins, segments):
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     f, ax = plt.subplots()
     ax1 = sns.histplot(data=filtered_stat["diameter"], bins=num_bins, kde=True,
@@ -569,17 +594,19 @@ def plot_psd(diameter_threshold, circularity_threshold, num_bins, segments):
 
 def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
 
-    bin_edges, counts, cumulative_area = get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative = True)
+    bin_edges, counts, cumulative_area = get_psd_data(
+        diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
 
     # append 0 for bottom
     plot_bins = [0] + bins[:]
-    
+
     # Create equal spacing for plotting
     equal_spacing = np.arange(len(plot_bins))
 
     # Plot the histogram on the primary axis
     f, ax = plt.subplots()
-    ax.bar(equal_spacing[:-1], counts, align='center', edgecolor='black', color='skyblue')
+    ax.bar(equal_spacing[:-1], counts, align='center',
+           edgecolor='black', color='skyblue')
 
     # Set the x-axis limits and ticks to match the equal spacing
     ax.set_xlim(min(equal_spacing), max(equal_spacing))
@@ -588,17 +615,21 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
 
     # Manually set the positions of the tick labels to be at the midpoints
     for i, (midpoint, label) in enumerate(zip(equal_spacing, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
-        ax.text(midpoint, -0.04, str(float(label)/1000), ha='center', va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+        ax.text(midpoint, -0.04, str(float(label)/1000), ha='center',
+                va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
 
     # Create the secondary axis for the cumulative area plot
     ax1 = ax.twinx()
-    ax1.plot(equal_spacing[::-1][:-1], cumulative_area, color='red', linewidth=2)
+    ax1.plot(equal_spacing[::-1][:-1],
+             cumulative_area, color='red', linewidth=2)
 
     # Convert the y-axis of the cumulative area plot to percentage
-    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
 
     # Set the labels for both axes
-    ax.set_xlabel('Particle size (mm)', labelpad=20)  # Adjust the labelpad value to move the title lower
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
     ax.set_ylabel('% Retained (Area %)')
     ax1.set_ylabel('Cumulative % passing (Area %)')
 
@@ -612,13 +643,15 @@ def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()
 
     # Calculate the histogram of areas
-    counts, bin_edges = np.histogram(filtered_stat['diameter'], bins=bins, weights=filtered_stat['area'])
+    counts, bin_edges = np.histogram(
+        filtered_stat['diameter'], bins=bins, weights=filtered_stat['area'])
     counts = counts / total_area * 100  # Convert counts to percentages of total area
 
     # Populate cumulative passing
@@ -635,7 +668,8 @@ def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
 
     # Plot the histogram on the primary axis
     f, ax = plt.subplots()
-    ax.bar(equal_spacing[:-1], counts, align='center', edgecolor='black', color='skyblue')
+    ax.bar(equal_spacing[:-1], counts, align='center',
+           edgecolor='black', color='skyblue')
 
     # Set the x-axis limits and ticks to match the equal spacing
     ax.set_xlim(min(equal_spacing), max(equal_spacing))
@@ -644,17 +678,21 @@ def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
 
     # Manually set the positions of the tick labels to be at the midpoints
     for i, (midpoint, label) in enumerate(zip(equal_spacing, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
-        ax.text(midpoint, -0.04, str(float(label)/1000), ha='center', va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+        ax.text(midpoint, -0.04, str(float(label)/1000), ha='center',
+                va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
 
     # Create the secondary axis for the cumulative area plot
     ax1 = ax.twinx()
-    ax1.plot(equal_spacing[::-1][:-1], cumulative_area, color='red', linewidth=2)
+    ax1.plot(equal_spacing[::-1][:-1],
+             cumulative_area, color='red', linewidth=2)
 
     # Convert the y-axis of the cumulative area plot to percentage
-    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
 
     # Set the labels for both axes
-    ax.set_xlabel('Particle size (mm)', labelpad=20)  # Adjust the labelpad value to move the title lower
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
     ax.set_ylabel('% Retained (Area %)')
     ax1.set_ylabel('Cumulative % passing (Area %)')
 
@@ -662,13 +700,16 @@ def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
 
     # Show the plot
     plt.show()
-def calculate_totalArea(diameter_threshold, circularity_threshold,segments):
+
+
+def calculate_totalArea(diameter_threshold, circularity_threshold, segments):
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-        # Check if both diameter_threshold and circularity_threshold are non-zero
+    # Check if both diameter_threshold and circularity_threshold are non-zero
     if diameter_threshold > 0 and circularity_threshold > 0:
-        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (stat['circularity'] < circularity_threshold)]
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+            stat['circularity'] < circularity_threshold)]
     elif diameter_threshold > 0:
         filtered_stat = stat[stat['diameter'] < diameter_threshold]
     elif circularity_threshold > 0:
@@ -681,7 +722,8 @@ def calculate_totalArea(diameter_threshold, circularity_threshold,segments):
     total_area = filtered_stat['area'].sum()
     return total_area
 
-def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative = True):
+
+def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True):
 
     # sort the bins first
     # because we are calculating bins we need to add a 0 at the front
@@ -691,7 +733,8 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
 
     # Apply diameter and circularity thresholds
     if diameter_threshold > 0 and circularity_threshold > 0:
-        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (stat['circularity'] < circularity_threshold)]
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+            stat['circularity'] < circularity_threshold)]
     elif diameter_threshold > 0:
         filtered_stat = stat[stat['diameter'] < diameter_threshold]
     elif circularity_threshold > 0:
@@ -702,15 +745,16 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()
-    
+
     # Calculate the histogram of areas
-    counts, bin_edges = np.histogram(filtered_stat['diameter'], bins=plot_bins, weights=filtered_stat['area'])
+    counts, bin_edges = np.histogram(
+        filtered_stat['diameter'], bins=plot_bins, weights=filtered_stat['area'])
 
     counts = counts / total_area * 100  # Convert counts to percentages of total area
 
     # Populate cumulative passing
     cumulative_area = []
- 
+
     counts_reversed = counts[::-1]
     for i, count in enumerate(counts_reversed):
         if i == 0:
@@ -728,14 +772,15 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()
 
-
     # Calculate the histogram of areas
-    counts, bin_edges = np.histogram(filtered_stat['diameter'], bins=bins, weights=filtered_stat['area'])
+    counts, bin_edges = np.histogram(
+        filtered_stat['diameter'], bins=bins, weights=filtered_stat['area'])
     counts = counts / total_area * 100  # Convert counts to percentages of total area
 
     # populate cumulative passing
@@ -764,7 +809,8 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 
     # Plot the histogram on the primary axis
     f, ax = plt.subplots()
-    ax.bar(bin_edges[:-1], counts, width=np.diff(bin_edges), align='edge', edgecolor='black', color='skyblue')
+    ax.bar(bin_edges[:-1], counts, width=np.diff(bin_edges),
+           align='edge', edgecolor='black', color='skyblue')
 
     # Set the x-axis limits and ticks to match the bin edges
     ax.set_xlim(min(bins), max(bins))
@@ -773,17 +819,20 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 
     # Manually set the positions of the tick labels to be at the midpoints
     for i, (midpoint, label) in enumerate(zip(midpoints, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
-        ax.text(midpoint, -0.04, label, ha='center', va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+        ax.text(midpoint, -0.04, label, ha='center', va='bottom',
+                fontsize=8, transform=ax.get_xaxis_transform())
 
     # Create the secondary axis for the cumulative area plot
     ax1 = ax.twinx()
     ax1.plot(sorted_diameters[::-1], cumulative_area, color='red', linewidth=2)
 
     # Convert the y-axis of the cumulative area plot to percentage
-    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
 
     # Set the labels for both axes
-    ax.set_xlabel('Particle size', labelpad=20)  # Adjust the labelpad value to move the title lower
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size', labelpad=20)
     ax.set_ylabel('Percentage of total particle area')
     ax1.set_ylabel('Cumulative percentage of total particle area')
 
@@ -791,7 +840,6 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 
     # Show the plot
     plt.show()
-
 
 
 # def save_psd(diameter_threshold, circularity_threshold, bins, segments, filename):
@@ -805,7 +853,7 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 
 
 def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
-    
+
     # prepare for export arrangement
     # reverse order for bins
     bins_export = bins[:]
@@ -818,29 +866,31 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
 
     # write to csv file id, bins, cumulative, differential
     with open(csvpath, 'w', newline='') as csvfile:
-        data = [id] + bins_export + ['% Passing'] + cumulative + ['% Retained'] + differential
+        data = [id] + bins_export + ['% Passing'] + \
+            cumulative + ['% Retained'] + differential
         writer = csv.writer(csvfile)
         writer.writerow(data)
     return
-    
+
 
 def plot_cir(diameter_threshold, circularity_threshold, num_bins, csv_directory):
     stat = pd.read_csv(csv_directory)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (stat['circularity'] > circularity_threshold)]
+    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
+        stat['circularity'] > circularity_threshold)]
 
     f, ax = plt.subplots()
     ax1 = sns.histplot(data=filtered_stat["circularity"], bins=num_bins, kde=True,
                        line_kws={"linewidth": 2, 'color': '#b44a46'})
-    
 
     ax.set(xlabel='Circularity', ylabel='Number of particles')
     plt.xticks(fontsize=12)
     plt.title("Circularity distribution")
     plt.show()
 
-# Characterisation section 
+# Characterisation section
+
 
 def line_scan(image, image_bse, masks, circularity_threshold, min_area, csv_file, pixel_to_micron, line_distance_man, plot=False):
     # Resize the BSE image to match the input image
@@ -872,12 +922,14 @@ def line_scan(image, image_bse, masks, circularity_threshold, min_area, csv_file
 
             # Crop the segmented image using the bounding box
             x, y, w, h = bbox
-            segmented_image = cv2.bitwise_and(image_bse, image_bse, mask=segmentation_array.astype(np.uint8))
+            segmented_image = cv2.bitwise_and(
+                image_bse, image_bse, mask=segmentation_array.astype(np.uint8))
             cropped_segmented_image = segmented_image[y:y+h, x:x+w]
 
             # Function to calculate circularity of a mask
             def calculate_circularity(segmentation_array):
-                contours, _ = cv2.findContours(segmentation_array.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                contours, _ = cv2.findContours(segmentation_array.astype(
+                    np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 perimeter = cv2.arcLength(contours[0], True)
                 area = cv2.contourArea(contours[0])
                 if perimeter == 0:
@@ -895,30 +947,38 @@ def line_scan(image, image_bse, masks, circularity_threshold, min_area, csv_file
             # Check circularity and area thresholds
             if circularity > circularity_threshold and area > min_area:
                 height = cropped_segmented_image.shape[0]
-                start_line = int(0.1 * height)  # Start line at 10% of the height
+                # Start line at 10% of the height
+                start_line = int(0.1 * height)
                 end_line = int(0.9 * height)  # End line at 90% of the height
                 line_distance = end_line - start_line
 
-                num_line_scans = int(line_distance / (line_distance_man / pixel_to_micron))
-                line_scan_indices = np.linspace(start_line, end_line, num_line_scans, dtype=int)
+                num_line_scans = int(
+                    line_distance / (line_distance_man / pixel_to_micron))
+                line_scan_indices = np.linspace(
+                    start_line, end_line, num_line_scans, dtype=int)
                 line_scans = []  # Store line scan data for each mask
 
                 # Perform line scanning
                 for line_index in line_scan_indices:
-                    line_pixel_values = cropped_segmented_image[line_index, :].flatten()
+                    line_pixel_values = cropped_segmented_image[line_index, :].flatten(
+                    )
                     x = np.arange(len(line_pixel_values))
 
                     # Fit a polynomial curve to the line scan data
-                    popt_line, pcov_line = curve_fit(polynomial_func, x, line_pixel_values)
+                    popt_line, pcov_line = curve_fit(
+                        polynomial_func, x, line_pixel_values)
                     fitted_curve_line = polynomial_func(x, *popt_line)
 
                     # Find the maxima or minima points of the fitted curve
-                    line_extremum_index = np.argmax(fitted_curve_line) if popt_line[0] < 0 else np.argmin(fitted_curve_line)
+                    line_extremum_index = np.argmax(
+                        fitted_curve_line) if popt_line[0] < 0 else np.argmin(fitted_curve_line)
                     line_extremum_x = x[line_extremum_index]
                     line_extremum_y = fitted_curve_line[line_extremum_index]
 
-                    line_maxima_indices = argrelextrema(fitted_curve_line, np.greater)[0]
-                    line_minima_indices = argrelextrema(fitted_curve_line, np.less)[0]
+                    line_maxima_indices = argrelextrema(
+                        fitted_curve_line, np.greater)[0]
+                    line_minima_indices = argrelextrema(
+                        fitted_curve_line, np.less)[0]
 
                     # Store line scan data
                     line_scans.append({
@@ -931,13 +991,15 @@ def line_scan(image, image_bse, masks, circularity_threshold, min_area, csv_file
                     })
 
                 # Count the total number of line_minima_indices
-                total_line_minima_indices = sum(len(scan['line_minima_indices']) for scan in line_scans)
+                total_line_minima_indices = sum(
+                    len(scan['line_minima_indices']) for scan in line_scans)
 
                 # Classify the segment
                 segment_type = 'cenosphere' if total_line_minima_indices > 0 else 'solid sphere'
 
                 # Save additional region properties
-                labeled_mask = np.zeros_like(segmentation_array, dtype=np.uint8)
+                labeled_mask = np.zeros_like(
+                    segmentation_array, dtype=np.uint8)
                 labeled_mask[segmentation_array] = 1
                 labeled_mask = measure.label(labeled_mask)
                 cleared_mask = clear_border(labeled_mask)
@@ -976,6 +1038,7 @@ def line_scan(image, image_bse, masks, circularity_threshold, min_area, csv_file
                         'Diameter': diameter, 'Type': segment_type
                     })
 
+
 def plot_segment_bounding_boxes(csv_file, segment_types, image):
     # Read the CSV file and extract the relevant data
     mask_details = []
@@ -985,7 +1048,8 @@ def plot_segment_bounding_boxes(csv_file, segment_types, image):
             mask_details.append(row)
 
     # Filter the mask details based on the segment types
-    filtered_mask_details = [mask for mask in mask_details if mask['Type'] in segment_types]
+    filtered_mask_details = [
+        mask for mask in mask_details if mask['Type'] in segment_types]
 
     # Create a single plot
     fig, ax = plt.subplots()
@@ -994,7 +1058,8 @@ def plot_segment_bounding_boxes(csv_file, segment_types, image):
     colors = ['r', 'b']  # Colors for each segment type
 
     for idx, segment_type in enumerate(segment_types):
-        segments = [mask for mask in filtered_mask_details if mask['Type'] == segment_type]
+        segments = [
+            mask for mask in filtered_mask_details if mask['Type'] == segment_type]
 
         for mask in segments:
             bbox = eval(mask['BBox'])
@@ -1004,25 +1069,29 @@ def plot_segment_bounding_boxes(csv_file, segment_types, image):
 
             # Create a rectangle patch for the bounding box
             x, y, w, h = bbox
-            rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor=colors[idx], facecolor='none')
+            rect = patches.Rectangle(
+                (x, y), w, h, linewidth=1, edgecolor=colors[idx], facecolor='none')
 
             # Add the rectangle patch to the plot
             ax.add_patch(rect)
 
     # Set the title
-    #plt.title(f"Segment Types: {', '.join(segment_types)}")
+    # plt.title(f"Segment Types: {', '.join(segment_types)}")
 
     # Create custom legend patches
-    legend_patches = [patches.Patch(facecolor='none', edgecolor=colors[i], label=segment_types[i]) for i in range(len(segment_types))]
+    legend_patches = [patches.Patch(
+        facecolor='none', edgecolor=colors[i], label=segment_types[i]) for i in range(len(segment_types))]
 
     # Add the legend with the custom patches
-    plt.legend(handles=legend_patches,bbox_to_anchor=(0.5, -0.02), loc='upper center', ncol=len(segment_types))
+    plt.legend(handles=legend_patches, bbox_to_anchor=(0.5, -0.02),
+               loc='upper center', ncol=len(segment_types))
 
     plt.axis('off')
     plt.tight_layout()
 
     # Show the plot
     plt.show()
+
 
 def psd_spheres(csv_file):
     cenosphere_sizes = []
@@ -1040,12 +1109,15 @@ def psd_spheres(csv_file):
                 solid_sizes.append(diameter)
 
     fig, ax = plt.subplots()
-    sns.histplot(cenosphere_sizes, bins=10, kde=True, color='#FFBE86', label='Cenospheres', ax=ax)
-    sns.histplot(solid_sizes, bins=10, kde=True, color='#8EBAD9', label='Solid Spheres', ax=ax)
+    sns.histplot(cenosphere_sizes, bins=10, kde=True,
+                 color='#FFBE86', label='Cenospheres', ax=ax)
+    sns.histplot(solid_sizes, bins=10, kde=True,
+                 color='#8EBAD9', label='Solid Spheres', ax=ax)
     ax.set_xlabel('Diameter (µm)')
     ax.set_ylabel('Count')
     ax.legend()
     plt.show()
+
 
 def box_plots_spheres(csv_file):
     cenosphere_sizes = []
@@ -1069,28 +1141,30 @@ def box_plots_spheres(csv_file):
     ax.set_title('Box Plot - Cenospheres vs Solid Spheres')
     plt.show()
 
+
 def save_segments_as_csv(txt_filename, csv_filename, diameter_threshold):
     try:
         filtered_segments = []
-        
+
         # Load the JSON data from the text file
         with open(txt_filename, 'r') as file:
             content = file.read()
 
         data = json.loads(content)
-        
+
         # Validate that the data is a list of dictionaries
         if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
             print("Error: The data format is incorrect.")
             return
 
         # Filter segments based on the diameter threshold
-        filtered_segments = [segment for segment in data if segment.get("diameter", float('inf')) < diameter_threshold]
+        filtered_segments = [segment for segment in data if segment.get(
+            "diameter", float('inf')) < diameter_threshold]
 
         # Get fieldnames for CSV from the first segment
         if filtered_segments:
             fieldnames = filtered_segments[0].keys()
-        
+
             # Write the filtered segments to the CSV file
             with open(csv_filename, mode='w', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -1098,7 +1172,8 @@ def save_segments_as_csv(txt_filename, csv_filename, diameter_threshold):
                 for row in filtered_segments:
                     writer.writerow(row)
 
-            print(f"Saved {len(filtered_segments)} segments to {csv_filename} with diameter < {diameter_threshold}")
+            print(
+                f"Saved {len(filtered_segments)} segments to {csv_filename} with diameter < {diameter_threshold}")
         else:
             print("No segments found with diameter below the threshold.")
 

@@ -203,8 +203,8 @@ class ImageAnalysisModel:
         print("Scaling Stamp:", self.Scaler.scalingStamp)
         print("Analysis Time:", self.analysisTime)
         print("Number of Particles:", self.numberofBins)
-        print("Diameter Threshold:", self.p.diameter_threshold)
-        print("Circularity Threshold:", self.p.circularity_threshold)
+        print(f"Diameter Threshold: {self.p.diameter_threshold} um")
+        print(f"Circularity Threshold: {self.p.circularity_threshold} um")
         print("-----------------------------------------------")
         print(f"CSV file: {self.csv_filename}")
 

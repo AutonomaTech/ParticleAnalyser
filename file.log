@@ -110,3 +110,19 @@
 2024-11-15T15:14:49.876666+0800 ERROR Segments csv file can  not be parsed
 2024-11-15T15:14:49.877665+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
 2024-11-15T16:19:12.694646+0800 INFO Generating masks - image: C:\Users\marco\Desktop\particle_analyser\Samples/0001\final_0001.png, scaling factor: 106.63507109004739 um/px, sam_checkpoint: C:\Users\marco\Desktop\particle_analyser\checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.5, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-18T10:34:49.614262+0800 INFO UnderS (0.15) [%]: 0.00000000
+2024-11-18T10:34:49.614262+0800 INFO OverS (8) [%]: 100.00000000
+2024-11-18T10:34:49.614262+0800 INFO Mean Size : 2.86565656
+2024-11-18T10:34:49.614262+0800 INFO D90mm : 5.84177791
+2024-11-18T10:34:49.614262+0800 INFO D10mm : 0.21327014
+2024-11-18T10:34:49.614262+0800 INFO D50mm : 2.06300239
+2024-11-18T10:34:49.614262+0800 INFO Minimu Area : 11.37103839
+2024-11-18T10:34:49.629889+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-18T10:36:31.594054+0800 INFO UnderS (0.15) [%]: 0.00000000
+2024-11-18T10:36:31.594054+0800 INFO OverS (8) [%]: 100.00000000
+2024-11-18T10:36:31.594054+0800 INFO Mean Size : 2.86565656
+2024-11-18T10:36:31.594054+0800 INFO D90mm : 5.84177791
+2024-11-18T10:36:31.594054+0800 INFO D10mm : 0.21327014
+2024-11-18T10:36:31.594054+0800 INFO D50mm : 2.06300239
+2024-11-18T10:36:31.594054+0800 INFO Minimu Area : 11.37103839
+2024-11-18T10:36:31.594054+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
