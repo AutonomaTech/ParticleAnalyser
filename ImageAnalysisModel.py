@@ -189,14 +189,14 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self):
+    def formatResults(self, withOverlappingArea):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
         Input: None
         Output: Prints formatted results and saves them to an XML file.
         """
-        self.totArea = self.p.get_totalArea()
+        self.totArea = self.p.get_totalArea(withOverlappingArea)
         print("-----------------------------------------------")
         print("Sample ID:", self.sampleID)
         print(f"Total Area: {self.totArea} um2")

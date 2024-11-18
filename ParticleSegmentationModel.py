@@ -242,14 +242,17 @@ class ParticleSegmentationModel:
             psd_data[1]))), 'cumulative': list(zip(tuple(self.bins), tuple(psd_data[2][::-1])))}
         return self.psd_data
 
-    def get_totalArea(self):
+    def get_totalArea(self, withOverlappingArea):
         if self.segments is None:
             self.segments = dp.get_segments(
                 self.masks, self.scaling_factor, self.diameter_threshold)
-        print()
-        print()
-        dp.calculate_overlapping_area(self.masks, self.scaling_factor)
-        return dp.calculate_totalArea(self.diameter_threshold, self.circularity_threshold, self.segments)
+        overlapping = 0
+        if not withOverlappingArea:
+            overlapping = dp.calculate_overlapping_area(
+                self.masks, self.scaling_factor)
+        area = dp.calculate_totalArea(
+            self.diameter_threshold, self.circularity_threshold, self.segments)
+        return area-overlapping
 
     def save_psd(self, filename):
         """

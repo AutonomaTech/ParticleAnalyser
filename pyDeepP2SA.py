@@ -381,23 +381,34 @@ def calculate_overlapping_area(masks, pixel_to_micron):
     Calculate the total overlapping area between masks.
 
     Parameters:
-    - masks (list): A list of binary masks (2D NumPy arrays) where each mask represents a single object.
+    - masks (list): A list of dictionaries from the SAM model. Each dictionary contains:
+        - 'segmentation': A binary mask (2D NumPy array) representing a single object.
+    - pixel_to_micron (float): Conversion factor from pixels to microns.
 
     Returns:
-    - overlapping_area (float): The total overlapping area in pixels.
+    - overlapping_area_micron (float): The total overlapping area in square microns.
     """
     if not masks:
         return 0
 
-    # Combine all masks into a single array
-    combined_mask = np.zeros_like(masks[0], dtype=np.uint8)
-    for mask in masks:
-        combined_mask += mask.astype(np.uint8)
+    # Initialize a combined mask
+    combined_mask = np.zeros_like(masks[0]['segmentation'], dtype=np.uint8)
 
-    # Count the number of overlapping pixels (pixels with value > 1)
+    # Combine all masks
+    for mask in masks:
+        if isinstance(mask, dict) and 'segmentation' in mask:
+            # Ensure binary mask
+            mask_data = (mask['segmentation'] > 0).astype(np.uint8)
+            combined_mask += mask_data
+
+    # Count overlapping pixels (values > 1)
     overlapping_area_pixels = np.sum(combined_mask > 1)
 
-    print(overlapping_area_pixels*pixel_to_micron)
+    # Convert to microns (area in square microns)
+    overlapping_area_micron = overlapping_area_pixels * (pixel_to_micron ** 2)
+
+    print(f"Overlapping area: {overlapping_area_micron:.2f} square microns")
+    return overlapping_area_micron
 
 
 def plot_diameters(image, masks, diameter_threshold, circularity_threshold, pixel_to_micron, display=False):
