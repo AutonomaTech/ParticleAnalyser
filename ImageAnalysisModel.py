@@ -66,6 +66,7 @@ class ImageAnalysisModel:
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
         self.analysisTime = 0
+        self.numberofBins = 0
         self.p = None
 
     def analysewithCV2(self):
