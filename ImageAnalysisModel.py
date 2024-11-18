@@ -189,14 +189,14 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self, withOverlappingArea):
+    def formatResults(self):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
         Input: None
         Output: Prints formatted results and saves them to an XML file.
         """
-        self.totArea = self.p.get_totalArea(withOverlappingArea)
+        self.totArea = self.p.get_totalArea()
         print("-----------------------------------------------")
         print("Sample ID:", self.sampleID)
         print(f"Total Area: {self.totArea} um2")
@@ -229,7 +229,7 @@ class ImageAnalysisModel:
         self.p.setdiameter_threshold(self.diameter_threshold)
         self.json_filename = os.path.join(
             self.folder_path, f"{self.sampleID}_segments.txt")
-        self.p.save_masks(self.json_filename)
+        self.p.save_segments(self.json_filename)
         print(f"Saving segments in {self.json_filename}")
 
     def loadSegments(self, checkpoint_folder, bins):
