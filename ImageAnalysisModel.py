@@ -229,7 +229,7 @@ class ImageAnalysisModel:
         self.p.setdiameter_threshold(self.diameter_threshold)
         self.json_filename = os.path.join(
             self.folder_path, f"{self.sampleID}_segments.txt")
-        self.p.save_segments(self.json_filename)
+        self.p.save_masks(self.json_filename)
         print(f"Saving segments in {self.json_filename}")
 
     def loadSegments(self, checkpoint_folder, bins):
