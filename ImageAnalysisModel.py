@@ -201,7 +201,7 @@ class ImageAnalysisModel:
         print(f"Total Area: {self.totArea} um2")
         print(f"Total Area: {self.totArea / 100_000_000} cm2")
         print(f"Scaling Factor: {self.Scaler.scalingFactor} um/pixels")
-        print("Scaling Number:", self.Scaler.scalingNumber)
+        print(f"Scaling Number: {self.Scaler.scalingNumber} pixels")
         self.intensity = self.imageProcessor.getIntensity()
         print("Intensity:", self.intensity)
         print("Scaling Stamp:", self.Scaler.scalingStamp)
