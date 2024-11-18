@@ -9,11 +9,11 @@
   <TotArea>50712591.108690284</TotArea>
   <ScalingFact>124.30939226519337</ScalingFact>
   <ScalingNum>1448</ScalingNum>
-  <ScalingStamp>2024-11-18T14:00:00.646</ScalingStamp>
+  <ScalingStamp>2024-11-18T16:56:44.276</ScalingStamp>
   <Intensity>115.87717627285492</Intensity>
-  <DateTime>2024-11-18T14:00:03.007</DateTime>
+  <DateTime>2024-11-18T16:56:46.840</DateTime>
   <AnalysisTime/>
-  <minmumArea>11.37103839</minmumArea>
+  <minmumArea>0.01137104</minmumArea>
   <NumResultTables>1</NumResultTables>
   <NumSummaryData>8</NumSummaryData>
   <ResultTable>
@@ -102,13 +102,13 @@
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>18.82650087</Value>
+    <Value>4.68233923</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>UnderS (0.15) [%]</Name>
-    <Value>16.55333204</Value>
+    <Value>6.45035943</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
