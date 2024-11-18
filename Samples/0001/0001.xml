@@ -6,11 +6,12 @@
   <CustomField4/>
   <CustomField5/>
   <NumParticles>5147</NumParticles>
-  <TotArea>50712591108.690285</TotArea>
-  <ScalingNum>1688</ScalingNum>
-  <ScalingStamp>2024-11-18T10:36:28.779</ScalingStamp>
-  <Intensity>115.09888425137098</Intensity>
-  <DateTime>2024-11-18T10:36:31.594</DateTime>
+  <TotArea>50712591.108690284</TotArea>
+  <ScalingFact>124.30939226519337</ScalingFact>
+  <ScalingNum>1448</ScalingNum>
+  <ScalingStamp>2024-11-18T14:00:00.646</ScalingStamp>
+  <Intensity>115.87717627285492</Intensity>
+  <DateTime>2024-11-18T14:00:03.007</DateTime>
   <AnalysisTime/>
   <minmumArea>11.37103839</minmumArea>
   <NumResultTables>1</NumResultTables>
@@ -101,13 +102,13 @@
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>100.00000000</Value>
+    <Value>18.82650087</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>UnderS (0.15) [%]</Name>
-    <Value>0.00000000</Value>
+    <Value>16.55333204</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
