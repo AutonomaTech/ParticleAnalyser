@@ -12,7 +12,6 @@ class sizeAnalysisModel:
                  analysis_time=None,diameter_threshold=None,circularity_threshold=None):
 
         self.tot_area = tot_area
-
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
         self.minmum_area=0
@@ -40,6 +39,11 @@ class sizeAnalysisModel:
 
 
 
+    def __getToArea(self):
+        if self.tot_area is not None:
+            self.tot_area=self.tot_area/1000
+
+
 
     def __countNumParticles(self):
         """
@@ -64,19 +68,21 @@ class sizeAnalysisModel:
                             "circularity": circularity
                         }
                         self.particles.append(item)
-                print(len(self.particles))
-                self.__countUnderSValue()
-                self.__countOverSValue()
-                self.__countMeanSize()
-                self.__countD90()
-                self.__countD10()
-                self.__countD50()
-                self.__countMinimumArea()
-
+                if len(self.particles)>0:
+                    self.__countUnderSValue()
+                    self.__countOverSValue()
+                    self.__countMeanSize()
+                    self.__countD90()
+                    self.__countD10()
+                    self.__countD50()
+                    self.__countMinimumArea()
+                else:
+                    logger.error("SampleId : {} does not have any item to be processed" , self.sampleId)
+            self.__getToArea()
 
         except :
                 logger.error("Segments csv file can  not be parsed")
-
+    # Todo
     def __countOverSValue(self):
         """
         This function counts OverS (8) [%] value based on particles that exceed
@@ -88,22 +94,26 @@ class sizeAnalysisModel:
             logger.error("There are no particles for OverS (8) [%] value to be processed")
             return
 
-        # Filter particles by diameter and circularity thresholds
-        filtered_particles = [particle for particle in self.particles if
-                              particle['diameter'] / 1000 > self.diameterThreshold and particle[
-                                  'circularity'] / 1000 > self.circularity_threshold]
+        # Filter particles by diameter and circularity thresholds---to be reviewd
+        # filtered_particles = [particle for particle in self.particles if
+        #                       particle['diameter'] / 1000000 > self.diameterThreshold and particle[
+        #                           'circularity'] / 1000000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in self.particles]
+        # areas = [particle['area'] for particle in self.particles]
+        diameters = [particle['diameter'] for particle in self.particles]
 
         # Count the particles with area >= 8
-        for area in areas:
-            if area / 1000 >= 8:
+        # for area in areas:
+        #     if area / 1000000 >= 8:
+        #         overSValue += 1
+        for diameter in diameters:
+            if diameter / 1000 >= 8:
                 overSValue += 1
 
         # Calculate the percentage of particles with area >= 8
         if overSValue > 0:
-            overSValuePercentage = overSValue / len(filtered_particles) * 100
+            overSValuePercentage = overSValue / len(self.particles) * 100
 
         # Format the percentage value
         overSValuePercentage = format(max(float(overSValuePercentage), 0), '.8f')
@@ -111,7 +121,7 @@ class sizeAnalysisModel:
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
         self.over_s_value = overSValuePercentage
-
+    # Todo
     def __countUnderSValue(self):
         """
         This function counts UnderS (0.15) [%] value based on particles that are
@@ -126,22 +136,25 @@ class sizeAnalysisModel:
         underSValuePercentage = 0
 
         # Filter particles by diameter and circularity thresholds
-        filtered_particles = [particle for particle in self.particles if
-                              particle['diameter'] / 1000 > self.diameterThreshold and particle[
-                                  'circularity'] / 1000 > self.circularity_threshold]
+        # filtered_particles = [particle for particle in self.particles if
+        #                       particle['diameter'] / 1000 > self.diameterThreshold and particle[
+        #                           'circularity'] / 1000 > self.circularity_threshold]
 
         # Extract areas from the filtered particles
-        areas = [particle['area'] for particle in self.particles]
+        # areas = [particle['area'] for particle in self.particles]
+        diameters = [particle['diameter'] for particle in self.particles]
 
         # Count the particles with area < 0.15
-        for area in areas:
-            if area / 1000 < 0.15:
+        # for area in areas:
+        #     if area / 1000000 < 0.15:
+        #         underSValue += 1
+        for diameter in diameters:
+            if diameter / 1000 < 0.15:
                 underSValue += 1
-
         # Calculate the percentage of particles with area < 0.15
         if underSValue > 0:
-            underSValuePercentage = underSValue / len(filtered_particles) * 100
-            if len(filtered_particles) == 0:  # Prevent division by zero
+            underSValuePercentage = underSValue / len(self.particles) * 100
+            if len(self.particles) == 0:  # Prevent division by zero
                 underSValuePercentage = 0
 
         # Format the percentage value
@@ -150,7 +163,7 @@ class sizeAnalysisModel:
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
 
         self.under_s_value = underSValuePercentage
-
+    # Todo
     def __countMeanSize(self):
         """
         This function counts the mean size of all the particles,based on diameter first
@@ -233,7 +246,7 @@ class sizeAnalysisModel:
 
         areas = [particle['area'] for particle in self.particles]
         sorted_areas = sorted(areas)
-        self.minmum_area = format(max(float( sorted_areas[0]/1000), 0), '.8f')
+        self.minmum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
         logger.info("Minimu Area : {}", self.minmum_area)
 
@@ -287,8 +300,7 @@ class sizeAnalysisModel:
 
             self.passing = passing
             self.retaining = retaining
-            for item in self.passing:
-                print(item)
+
 
         except Exception as e:
             logger.error("Distribution file can not be parsed:{} ",e)
@@ -317,6 +329,9 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'CustomField5')
         ET.SubElement(root, 'NumParticles').text = str(len(self.particles))
         ET.SubElement(root, 'TotArea').text = str(self.tot_area)
+        # Todo
+        ET.SubElement(root, 'ScalingFact').text = str(self.scaling_fact)
+        # Todo
         ET.SubElement(root, 'ScalingNum').text = str(self.scaling_num)
         ET.SubElement(root, 'ScalingStamp').text = self.scaling_stamp
         ET.SubElement(root, 'Intensity').text = str(self.intensity)

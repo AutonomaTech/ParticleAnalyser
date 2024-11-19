@@ -6,13 +6,14 @@
   <CustomField4/>
   <CustomField5/>
   <NumParticles>5147</NumParticles>
-  <TotArea>50712591108.690285</TotArea>
-  <ScalingNum>1688</ScalingNum>
-  <ScalingStamp>2024-11-15T15:14:47.546</ScalingStamp>
-  <Intensity>115.09888425137098</Intensity>
-  <DateTime>2024-11-15T15:14:49.877</DateTime>
+  <TotArea>50712591.108690284</TotArea>
+  <ScalingFact>124.30939226519337</ScalingFact>
+  <ScalingNum>1448</ScalingNum>
+  <ScalingStamp>2024-11-18T16:56:44.276</ScalingStamp>
+  <Intensity>115.87717627285492</Intensity>
+  <DateTime>2024-11-18T16:56:46.840</DateTime>
   <AnalysisTime/>
-  <minmumArea>0</minmumArea>
+  <minmumArea>0.01137104</minmumArea>
   <NumResultTables>1</NumResultTables>
   <NumSummaryData>8</NumSummaryData>
   <ResultTable>
@@ -83,31 +84,31 @@
     <Id>3</Id>
     <ColumnId>3</ColumnId>
     <Name>D10 [mm]</Name>
-    <Value>0</Value>
+    <Value>0.21327014</Value>
   </SummaryData>
   <SummaryData>
     <Id>1</Id>
     <ColumnId>1</ColumnId>
     <Name>D50 [mm]</Name>
-    <Value>0</Value>
+    <Value>2.06300239</Value>
   </SummaryData>
   <SummaryData>
     <Id>2</Id>
     <ColumnId>2</ColumnId>
     <Name>D90 [mm]</Name>
-    <Value>0</Value>
+    <Value>5.84177791</Value>
   </SummaryData>
   <SummaryData>
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>0</Value>
+    <Value>4.68233923</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>UnderS (0.15) [%]</Name>
-    <Value>0.00000000</Value>
+    <Value>6.45035943</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
@@ -119,6 +120,6 @@
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Mean Size</Name>
-    <Value>0</Value>
+    <Value>2.86565656</Value>
   </SummaryData>
 </IAResult>

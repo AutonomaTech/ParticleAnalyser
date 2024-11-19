@@ -1,3 +1,5 @@
+# Downloads the SAM2 checkpoints from the provided URL and saves them locally.
+
 import os
 import requests
 
@@ -5,7 +7,8 @@ import requests
 url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt"
 
 # Path to save the file
-folder_path = "C:/Users/marco/Desktop/particle_analyser/checkpoints"  # Update this path if necessary
+# Update this path if necessary
+folder_path = "C:/Users/marco/Desktop/particle_analyser/checkpoints"
 file_path = os.path.join(folder_path, "sam2.1_hiera_large.pt")
 
 # Create the folder if it doesn't exist
