@@ -333,7 +333,7 @@ def save_masks_to_csv(masks, csv_directory, pixel_to_micron, diameter_threshold)
                 # Calculate circularity as 4π(area/perimeter^2)
                 circularity = (4 * np.pi * area) / (perimeter ** 2)
 
-                if diameter == 0.0:
+                if diameter == 0.0 and area >0.0:
                     diameter = np.sqrt(area / np.pi) / 2
 
                 if diameter < diameter_threshold:
@@ -371,7 +371,7 @@ def get_segments(masks, pixel_to_micron, diameter_threshold=0):
             # Calculate circularity as 4π(area/perimeter^2)
             circularity = (4 * np.pi * area) / (perimeter ** 2)
 
-            if diameter == 0.0:
+            if diameter == 0.0 and  area >0.0:
                 diameter = np.sqrt(area / np.pi) / 2
 
             if diameter_threshold != 0 and diameter < diameter_threshold:
