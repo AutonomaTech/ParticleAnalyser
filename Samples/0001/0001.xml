@@ -5,13 +5,13 @@
   <CustomField3/>
   <CustomField4/>
   <CustomField5/>
-  <NumParticles>5095</NumParticles>
-  <TotArea>56508990.03571347</TotArea>
+  <NumParticles>7881</NumParticles>
+  <TotArea>67176562.17806369</TotArea>
   <ScalingFact>124.30939226519337</ScalingFact>
   <ScalingNum>1448</ScalingNum>
-  <ScalingStamp>2024-11-19T14:05:06.794</ScalingStamp>
+  <ScalingStamp>2024-11-19T14:40:19.205</ScalingStamp>
   <Intensity>115.87717627285492</Intensity>
-  <DateTime>2024-11-19T14:05:09.775</DateTime>
+  <DateTime>2024-11-19T14:40:21.839</DateTime>
   <AnalysisTime/>
   <minmumArea>0.01158971</minmumArea>
   <NumResultTables>1</NumResultTables>
@@ -42,10 +42,10 @@
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>63.70601201</Value>
-        <Value>63.55038598</Value>
-        <Value>63.55038598</Value>
-        <Value>63.55038598</Value>
+        <Value>59.86973248</Value>
+        <Value>59.58563382</Value>
+        <Value>59.58563382</Value>
+        <Value>59.57598962</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>
@@ -72,10 +72,10 @@
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>36.29398799</Value>
-        <Value>0.15562603</Value>
+        <Value>40.13026752</Value>
+        <Value>0.28409865</Value>
         <Value>0.00000000</Value>
-        <Value>0.00000000</Value>
+        <Value>0.00964421</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>
@@ -84,42 +84,42 @@
     <Id>3</Id>
     <ColumnId>3</ColumnId>
     <Name>D10 [mm]</Name>
-    <Value>0.33355837</Value>
+    <Value>0.21531100</Value>
   </SummaryData>
   <SummaryData>
     <Id>1</Id>
     <ColumnId>1</ColumnId>
     <Name>D50 [mm]</Name>
-    <Value>2.12701805</Value>
+    <Value>1.87750024</Value>
   </SummaryData>
   <SummaryData>
     <Id>2</Id>
     <ColumnId>2</ColumnId>
     <Name>D90 [mm]</Name>
-    <Value>6.21338361</Value>
+    <Value>5.33180368</Value>
   </SummaryData>
   <SummaryData>
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>5.75073602</Value>
+    <Value>4.26341835</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>UnderS (0.15) [%]</Name>
-    <Value>5.39744848</Value>
+    <Value>7.09300850</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Total Part.</Name>
-    <Value>5095</Value>
+    <Value>7881</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Mean Size</Name>
-    <Value>3.09476122</Value>
+    <Value>2.67216272</Value>
   </SummaryData>
 </IAResult>
