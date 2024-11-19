@@ -7,12 +7,21 @@
   <CustomField5/>
   <NumParticles>5095</NumParticles>
   <TotArea>56508990.03571347</TotArea>
+<<<<<<< HEAD
   <ScalingFact>124.30939226519337</ScalingFact>
   <ScalingNum>1448</ScalingNum>
   <ScalingStamp>2024-11-19T13:06:38.852</ScalingStamp>
   <Intensity>115.87717627285492</Intensity>
   <DateTime>2024-11-19T13:06:46.617</DateTime>
   <AnalysisTime/>
+=======
+  <ScalingFact>107.6555023923445</ScalingFact>
+  <ScalingNum>1672</ScalingNum>
+  <ScalingStamp>2024-11-18T04:43:22.719</ScalingStamp>
+  <Intensity>115.19118652846775</Intensity>
+  <DateTime>2024-11-19T12:45:51.161</DateTime>
+  <AnalysisTime>PT4M20.2S</AnalysisTime>
+>>>>>>> a134d0a0dda4047b14d1404f3c7b8008742cc2fa
   <minmumArea>0.01158971</minmumArea>
   <NumResultTables>1</NumResultTables>
   <NumSummaryData>8</NumSummaryData>
