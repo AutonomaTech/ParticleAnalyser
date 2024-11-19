@@ -60,7 +60,7 @@ class ParticleSegmentationModel:
         self.stability_score_offset = 0.8
         self.crop_n_layers = 2
         self.crop_n_points_downscale_factor = 2
-        self.min_mask_region_area = 0.5
+        self.min_mask_region_area = 0.0
         self.box_nms_tresh = 0.9
         self.use_m2m = True,
 
