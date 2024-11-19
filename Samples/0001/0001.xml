@@ -9,9 +9,9 @@
   <TotArea>56508990.03571347</TotArea>
   <ScalingFact>124.30939226519337</ScalingFact>
   <ScalingNum>1448</ScalingNum>
-  <ScalingStamp>2024-11-19T12:39:17.749</ScalingStamp>
+  <ScalingStamp>2024-11-19T13:06:38.852</ScalingStamp>
   <Intensity>115.87717627285492</Intensity>
-  <DateTime>2024-11-19T12:39:20.214</DateTime>
+  <DateTime>2024-11-19T13:06:46.617</DateTime>
   <AnalysisTime/>
   <minmumArea>0.01158971</minmumArea>
   <NumResultTables>1</NumResultTables>
@@ -26,34 +26,25 @@
       <Dist>Passing</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>8</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
         <Value>8.0</Value>
-        <Value>7.0</Value>
-        <Value>5.0</Value>
-        <Value>4.0</Value>
-        <Value>3.0</Value>
-        <Value>2.0</Value>
         <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
         <Value>8.00000000</Value>
-        <Value>7.00000000</Value>
-        <Value>5.00000000</Value>
-        <Value>4.00000000</Value>
-        <Value>3.00000000</Value>
-        <Value>2.00000000</Value>
         <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>95.78123837</Value>
-        <Value>84.92935813</Value>
-        <Value>79.55457894</Value>
-        <Value>73.50897526</Value>
-        <Value>67.20150638</Value>
         <Value>63.70601201</Value>
+        <Value>63.55038598</Value>
+        <Value>63.55038598</Value>
         <Value>63.55038598</Value>
         <Value>0.00000000</Value>
       </Distribution>
@@ -65,35 +56,26 @@
       <Dist>Retained</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>8</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
         <Value>8.0</Value>
-        <Value>7.0</Value>
-        <Value>5.0</Value>
-        <Value>4.0</Value>
-        <Value>3.0</Value>
-        <Value>2.0</Value>
         <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
         <Value>8.00000000</Value>
-        <Value>7.00000000</Value>
-        <Value>5.00000000</Value>
-        <Value>4.00000000</Value>
-        <Value>3.00000000</Value>
-        <Value>2.00000000</Value>
         <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>4.21876163</Value>
-        <Value>10.85188024</Value>
-        <Value>5.37477919</Value>
-        <Value>6.04560368</Value>
-        <Value>6.30746888</Value>
-        <Value>3.49549437</Value>
+        <Value>36.29398799</Value>
         <Value>0.15562603</Value>
+        <Value>0.00000000</Value>
+        <Value>0.00000000</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>

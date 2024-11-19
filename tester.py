@@ -4,11 +4,11 @@ import os
 current_path = os.getcwd()
 
 # Construct the absolute paths by joining the current working directory with relative paths
-image_folder_path = os.path.join(current_path, "Samples/0001")
+image_folder_path = os.path.join(current_path, "Samples/0002")
 checkpoint_folder = os.path.join(current_path, "checkpoints")
 
 # in um
-containerWidth = 180000
+containerWidth = 1
 # initialise analyser
 analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth)
 
@@ -20,8 +20,9 @@ analyser.evenLighting()
 # industry standard
 # bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
 # bins = [38, 106, 1000, 8000]
-bins = [1000, 2000, 3000, 4000, 5000, 7000, 8000]
-# bins = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+
+# bins = [1000, 2000, 3000, 4000, 5000, 7000, 8000]
+bins = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]  # sample 0002
 
 
 """
@@ -33,6 +34,6 @@ analyser.saveResults()
 """
 analyser.loadSegments(checkpoint_folder, bins)
 # analyser.analysewithCV2()
-# analyser.setScalingFactor(1)
+analyser.setScalingFactor(1)
 analyser.formatResults()
 analyser.plotBins()
