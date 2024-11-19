@@ -312,3 +312,7 @@ class ParticleSegmentationModel:
         min_area_found = dp.find_smallest_area_with_SAM(csv_filename)
         print(min_area_found)
         dp.detect_rocks_withCV2(self.image, float(min_area_found))
+
+    def plotBins(self):
+        dp.plot_psd_bins3(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments)

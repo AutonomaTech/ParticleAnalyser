@@ -299,3 +299,6 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+
+    def plotBins(self):
+        self.p.plotBins()

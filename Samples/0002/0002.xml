@@ -1,19 +1,19 @@
 <IAResult>
-  <SampleID>0001</SampleID>
+  <SampleID>0002</SampleID>
   <CustomField1/>
   <CustomField2/>
   <CustomField3/>
   <CustomField4/>
   <CustomField5/>
-  <NumParticles>5095</NumParticles>
-  <TotArea>56508990.03571347</TotArea>
-  <ScalingFact>124.30939226519337</ScalingFact>
-  <ScalingNum>1448</ScalingNum>
-  <ScalingStamp>2024-11-19T12:39:17.749</ScalingStamp>
-  <Intensity>115.87717627285492</Intensity>
-  <DateTime>2024-11-19T12:39:20.214</DateTime>
+  <NumParticles>22</NumParticles>
+  <TotArea>0.0010725536743408281</TotArea>
+  <ScalingFact>491.8032786885246</ScalingFact>
+  <ScalingNum>366</ScalingNum>
+  <ScalingStamp>2024-11-19T12:33:47.511</ScalingStamp>
+  <Intensity>146.05859386664278</Intensity>
+  <DateTime>2024-11-19T12:33:47.697</DateTime>
   <AnalysisTime/>
-  <minmumArea>0.01158971</minmumArea>
+  <minmumArea>0.00000000</minmumArea>
   <NumResultTables>1</NumResultTables>
   <NumSummaryData>8</NumSummaryData>
   <ResultTable>
@@ -26,35 +26,26 @@
       <Dist>Passing</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>8</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
         <Value>8.0</Value>
-        <Value>7.0</Value>
-        <Value>5.0</Value>
-        <Value>4.0</Value>
-        <Value>3.0</Value>
-        <Value>2.0</Value>
         <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
         <Value>8.00000000</Value>
-        <Value>7.00000000</Value>
-        <Value>5.00000000</Value>
-        <Value>4.00000000</Value>
-        <Value>3.00000000</Value>
-        <Value>2.00000000</Value>
         <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>95.78123837</Value>
-        <Value>84.92935813</Value>
-        <Value>79.55457894</Value>
-        <Value>73.50897526</Value>
-        <Value>67.20150638</Value>
-        <Value>63.70601201</Value>
-        <Value>63.55038598</Value>
+        <Value>100.00000000</Value>
+        <Value>100.00000000</Value>
+        <Value>100.00000000</Value>
+        <Value>0.00000000</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>
@@ -65,35 +56,26 @@
       <Dist>Retained</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>8</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
         <Value>8.0</Value>
-        <Value>7.0</Value>
-        <Value>5.0</Value>
-        <Value>4.0</Value>
-        <Value>3.0</Value>
-        <Value>2.0</Value>
         <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
         <Value>8.00000000</Value>
-        <Value>7.00000000</Value>
-        <Value>5.00000000</Value>
-        <Value>4.00000000</Value>
-        <Value>3.00000000</Value>
-        <Value>2.00000000</Value>
         <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
-        <Value>4.21876163</Value>
-        <Value>10.85188024</Value>
-        <Value>5.37477919</Value>
-        <Value>6.04560368</Value>
-        <Value>6.30746888</Value>
-        <Value>3.49549437</Value>
-        <Value>0.15562603</Value>
+        <Value>0.00000000</Value>
+        <Value>0.00000000</Value>
+        <Value>0.00000000</Value>
+        <Value>100.00000000</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>
@@ -102,42 +84,42 @@
     <Id>3</Id>
     <ColumnId>3</ColumnId>
     <Name>D10 [mm]</Name>
-    <Value>0.33355837</Value>
+    <Value>0.00000077</Value>
   </SummaryData>
   <SummaryData>
     <Id>1</Id>
     <ColumnId>1</ColumnId>
     <Name>D50 [mm]</Name>
-    <Value>2.12701805</Value>
+    <Value>0.00013667</Value>
   </SummaryData>
   <SummaryData>
     <Id>2</Id>
     <ColumnId>2</ColumnId>
     <Name>D90 [mm]</Name>
-    <Value>6.21338361</Value>
+    <Value>0.00030338</Value>
   </SummaryData>
   <SummaryData>
     <Id>6</Id>
     <ColumnId>6</ColumnId>
     <Name>OverS (8) [%]</Name>
-    <Value>5.75073602</Value>
+    <Value>0.00000000</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>UnderS (0.15) [%]</Name>
-    <Value>5.39744848</Value>
+    <Value>100.00000000</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Total Part.</Name>
-    <Value>5095</Value>
+    <Value>22</Value>
   </SummaryData>
   <SummaryData>
     <Id>7</Id>
     <ColumnId>7</ColumnId>
     <Name>Mean Size</Name>
-    <Value>3.09476122</Value>
+    <Value>0.00018087</Value>
   </SummaryData>
 </IAResult>

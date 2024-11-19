@@ -822,10 +822,18 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
 
 def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
 
     # Apply diameter and circularity thresholds
-    filtered_stat = stat[(stat['diameter'] > diameter_threshold) & (
-        stat['circularity'] > circularity_threshold)]
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+            stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        filtered_stat = stat
 
     # Calculate the total area
     total_area = filtered_stat['area'].sum()
@@ -835,26 +843,11 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
         filtered_stat['diameter'], bins=bins, weights=filtered_stat['area'])
     counts = counts / total_area * 100  # Convert counts to percentages of total area
 
-    # populate cumulative passing
-    cumulative_area = []
-    counts_reversed = counts[::-1]
-    for i, count in enumerate(counts_reversed):
-        print("counts item: {}".format(count))
-        if i == 0:
-            cumulative_area.append(100-count)
-        else:
-            cumulative_area.append(cumulative_area[i-1] - count)
-        print("Cum_area: {}".format(cumulative_area[i]))
-
-    print("Length of cum_area : {}".format(len(cumulative_area)))
-
-    # Calculate the cumulative sum of the areas
-    sorted_indices = np.argsort(filtered_stat['diameter'])
-    sorted_diameters = filtered_stat['diameter'].iloc[sorted_indices]
-
-    print("Length diameters: {}".format(len(sorted_diameters[::-1])))
-    # sorted_areas = filtered_stat['area'].iloc[sorted_indices]
-    # cumulative_area = np.cumsum(sorted_areas) / total_area * 100  # Convert to cumulative percentage
+    # Calculate the cumulative area (reversed)
+    # Cumulative sum in reverse order
+    cumulative_area = np.cumsum(counts[::-1])[::-1]
+    # Subtract from 100 to get cumulative percentage
+    cumulative_area = 100 - cumulative_area
 
     # Calculate the midpoints of the bins
     midpoints = bin_edges[:-1] + np.diff(bin_edges) / 2
@@ -876,14 +869,13 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 
     # Create the secondary axis for the cumulative area plot
     ax1 = ax.twinx()
-    ax1.plot(sorted_diameters[::-1], cumulative_area, color='red', linewidth=2)
+    ax1.plot(midpoints[::-1], cumulative_area, color='red', linewidth=2)
 
     # Convert the y-axis of the cumulative area plot to percentage
     ax1.yaxis.set_major_formatter(
         plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
 
     # Set the labels for both axes
-    # Adjust the labelpad value to move the title lower
     ax.set_xlabel('Particle size', labelpad=20)
     ax.set_ylabel('Percentage of total particle area')
     ax1.set_ylabel('Cumulative percentage of total particle area')
