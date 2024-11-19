@@ -333,6 +333,9 @@ def save_masks_to_csv(masks, csv_directory, pixel_to_micron, diameter_threshold)
                 # Calculate circularity as 4π(area/perimeter^2)
                 circularity = (4 * np.pi * area) / (perimeter ** 2)
 
+                if diameter == 0.0:
+                    diameter = np.sqrt(area / np.pi) / 2
+
                 if diameter < diameter_threshold:
                     writer.writerow({'area': area, 'perimeter': perimeter,
                                     'diameter': diameter, 'circularity': circularity})
@@ -367,6 +370,9 @@ def get_segments(masks, pixel_to_micron, diameter_threshold=0):
 
             # Calculate circularity as 4π(area/perimeter^2)
             circularity = (4 * np.pi * area) / (perimeter ** 2)
+
+            if diameter == 0.0:
+                diameter = np.sqrt(area / np.pi) / 2
 
             if diameter_threshold != 0 and diameter < diameter_threshold:
                 # Write region props to CSV file
@@ -758,6 +764,16 @@ def calculate_totalArea(diameter_threshold, circularity_threshold, segments):
     return total_area
 
 
+def adjustSegments(stat):
+    # Identify rows where diameter is 0.0 and area is non-zero
+    mask = (stat['diameter'] == 0.0) & (stat['area'] != 0.0)
+
+    # Adjust the diameter for these segments
+    stat.loc[mask, 'diameter'] = np.sqrt(stat.loc[mask, 'area'] / np.pi) / 2
+
+    return stat
+
+
 def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True):
 
     # sort the bins first
@@ -765,6 +781,7 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
     plot_bins = [0] + bins[:]
 
     stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
 
     # Apply diameter and circularity thresholds
     if diameter_threshold > 0 and circularity_threshold > 0:
@@ -891,7 +908,7 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
 
     # prepare for export arrangement
     # reverse order for bins
-    bins_export = bins[:]
+    bins_export = [0] + bins[:]
     bins_export[0] = "Bottom"
     bins_export.reverse()
     differential.reverse()
@@ -1191,6 +1208,15 @@ def save_segments_as_csv(txt_filename, csv_filename, diameter_threshold):
         if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
             print("Error: The data format is incorrect.")
             return
+        zero_diameter_segments = [
+            segment for segment in data if segment.get("diameter", 0) == 0
+        ]
+
+        for segment in zero_diameter_segments:
+            if segment.get("diameter", 0) == 0 and segment.get("area", 0) != 0:
+                # Calculate the diameter from the area using the formula
+                calculated_diameter = np.sqrt(segment['area'] / np.pi) * 2
+                segment['diameter'] = calculated_diameter
 
         # Filter segments based on the diameter threshold
         filtered_segments = [segment for segment in data if segment.get(

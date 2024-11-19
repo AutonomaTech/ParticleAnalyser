@@ -18,7 +18,7 @@ analyser.evenLighting()
 # analyser.crop_image()
 # industry standard
 # bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
-bins = [0, 38, 106, 1000, 8000]
+bins = [38, 106, 1000, 8000]
 
 
 """
@@ -31,4 +31,4 @@ analyser.saveResults()
 analyser.loadSegments(checkpoint_folder, bins)
 # analyser.analysewithCV2()
 
-analyser.formatResults(True)
+analyser.formatResults()

@@ -104,7 +104,7 @@ class ImageAnalysisModel:
         """
         if self.p is not None:
             self.numberofBins = len(bins)
-            self.p.bins = bins
+            self.p.bins = bins[:]
 
     def loadModel(self, checkpoint_folder):
         """
@@ -189,14 +189,14 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self, withOverlappingArea):
+    def formatResults(self):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
         Input: None
         Output: Prints formatted results and saves them to an XML file.
         """
-        self.totArea = self.p.get_totalArea(withOverlappingArea)
+        self.totArea = self.p.get_totalArea()
         print("-----------------------------------------------")
         print("Sample ID:", self.sampleID)
         print(f"Total Area: {self.totArea} um2")
