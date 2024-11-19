@@ -7,11 +7,11 @@
   <CustomField5/>
   <NumParticles>22</NumParticles>
   <TotArea>0.0010725536743408281</TotArea>
-  <ScalingFact>1</ScalingFact>
+  <ScalingFact>491.8032786885246</ScalingFact>
   <ScalingNum>366</ScalingNum>
-  <ScalingStamp>2024-11-19T13:34:41.708</ScalingStamp>
+  <ScalingStamp>2024-11-19T14:04:42.259</ScalingStamp>
   <Intensity>146.05859386664278</Intensity>
-  <DateTime>2024-11-19T13:34:41.977</DateTime>
+  <DateTime>2024-11-19T14:04:42.550</DateTime>
   <AnalysisTime/>
   <minmumArea>0.00000000</minmumArea>
   <NumResultTables>1</NumResultTables>
@@ -26,38 +26,26 @@
       <Dist>Passing</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>9</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
-        <Value>0.0004</Value>
-        <Value>0.00035</Value>
-        <Value>0.0003</Value>
-        <Value>0.00025</Value>
-        <Value>0.0002</Value>
-        <Value>0.00015</Value>
-        <Value>0.0001</Value>
-        <Value>5e-05</Value>
+        <Value>8.0</Value>
+        <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
-        <Value>0.00040000</Value>
-        <Value>0.00035000</Value>
-        <Value>0.00030000</Value>
-        <Value>0.00025000</Value>
-        <Value>0.00020000</Value>
-        <Value>0.00015000</Value>
-        <Value>0.00010000</Value>
-        <Value>0.00005000</Value>
+        <Value>8.00000000</Value>
+        <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
         <Value>100.00000000</Value>
-        <Value>85.03636680</Value>
-        <Value>74.40890900</Value>
-        <Value>67.39307465</Value>
-        <Value>62.01009222</Value>
-        <Value>59.90951801</Value>
-        <Value>59.13694101</Value>
-        <Value>59.03671481</Value>
+        <Value>100.00000000</Value>
+        <Value>100.00000000</Value>
+        <Value>0.00000000</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>
@@ -68,38 +56,26 @@
       <Dist>Retained</Dist>
       <Unit>mm</Unit>
       <MeshType>Mesh_MM</MeshType>
-      <NumRows>9</NumRows>
+      <NumRows>5</NumRows>
       <SieveDesc>
-        <Value>0.0004</Value>
-        <Value>0.00035</Value>
-        <Value>0.0003</Value>
-        <Value>0.00025</Value>
-        <Value>0.0002</Value>
-        <Value>0.00015</Value>
-        <Value>0.0001</Value>
-        <Value>5e-05</Value>
+        <Value>8.0</Value>
+        <Value>1.0</Value>
+        <Value>0.106</Value>
+        <Value>0.038</Value>
         <Value>Bottom</Value>
       </SieveDesc>
       <SieveSize>
-        <Value>0.00040000</Value>
-        <Value>0.00035000</Value>
-        <Value>0.00030000</Value>
-        <Value>0.00025000</Value>
-        <Value>0.00020000</Value>
-        <Value>0.00015000</Value>
-        <Value>0.00010000</Value>
-        <Value>0.00005000</Value>
+        <Value>8.00000000</Value>
+        <Value>1.00000000</Value>
+        <Value>0.10600000</Value>
+        <Value>0.03800000</Value>
         <Value>0.00000000</Value>
       </SieveSize>
       <Distribution>
         <Value>0.00000000</Value>
-        <Value>14.96363320</Value>
-        <Value>10.62745780</Value>
-        <Value>7.01583435</Value>
-        <Value>5.38298243</Value>
-        <Value>2.10057421</Value>
-        <Value>0.77257700</Value>
-        <Value>0.10022620</Value>
+        <Value>0.00000000</Value>
+        <Value>0.00000000</Value>
+        <Value>100.00000000</Value>
         <Value>0.00000000</Value>
       </Distribution>
     </ResultColumns>

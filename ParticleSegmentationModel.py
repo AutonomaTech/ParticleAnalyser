@@ -53,7 +53,7 @@ class ParticleSegmentationModel:
         self.scaling_factor = pixel_to_micron
         self.segments = None
         # best SAM2 model parameters
-        self.points_per_side = 200
+        self.points_per_side = 256
         self.points_per_batch = 128
         self.pred_iou_thresh = 0.8
         self.stability_score_thresh = 0.92

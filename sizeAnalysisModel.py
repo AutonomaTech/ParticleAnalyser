@@ -258,7 +258,7 @@ class sizeAnalysisModel:
         self.minmum_area = format(
             max(float(sorted_areas[0]/1000000), 0), '.8f')
 
-        logger.info("Minimum Area : {} mm 2", self.minmum_area)
+        logger.info("Minimum Area : {} mm2", self.minmum_area)
 
     # Todo--fileFormat confirming
     def __filterDistribution(self):
