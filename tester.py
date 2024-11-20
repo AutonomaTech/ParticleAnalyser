@@ -19,10 +19,9 @@ analyser.evenLighting()
 # analyser.crop_image()
 # industry standard
 # bins: 0.038, 0.106, 1, 8 (mm)--INDUSTRY STANDARD
-bins = [38, 106, 1000, 8000]
-
-# bins = [1000, 2000, 3000, 4000, 5000, 7000, 8000]
-# bins = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]  # sample 0002
+# bins = [38, 106, 1000, 8000]
+bins = [1000, 2000, 3000, 4000, 5000, 7000, 8000]
+# bins = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
 
 
 """
@@ -33,7 +32,7 @@ analyser.showMasks()
 analyser.saveResults()
 """
 analyser.loadSegments(checkpoint_folder, bins)
-analyser.analysewithCV2()
+# analyser.analysewithCV2()
 # analyser.setScalingFactor(1)
-analyser.formatResults(True)
+analyser.formatResults()
 analyser.plotBins()
