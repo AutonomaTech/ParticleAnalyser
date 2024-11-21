@@ -77,6 +77,7 @@ class ImageAnalysisModel:
         self.totalSecondes=0
         self.mimumArea=0
         self.meshingSegmentAreas={}
+        self.miniParticles=[]
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -438,9 +439,10 @@ class ImageAnalysisModel:
         except Exception as e :
                 logger.error("The give csv  file can  not be parsed due to {} error ",e)
 
-    def getMeshingSegmentAreas(self):
+    def getMeshingSegmentByCompareAreas(self):
         """
         Processes all CSV files in `self.meshingSegmentsFolder` and extracts particle areas.
+        Compares each area with self.minimumArea and stores particles with areas smaller than self.minimumArea.
 
         Args:
         None
@@ -448,6 +450,14 @@ class ImageAnalysisModel:
         Returns:
         None
         """
+        # Ensure self.minimumArea is initialized
+        if not hasattr(self, 'minimumArea'):
+            self.minimumArea = float('inf')  # Set a large initial value if not set
+
+        # Ensure self.miniParticles is initialized
+        if not hasattr(self, 'miniParticles'):
+            self.miniParticles = []
+
         # Check if the folder exists
         if not os.path.exists(self.meshingSegmentsFolder):
             logger.error(f"Meshing segments folder {self.meshingSegmentsFolder} does not exist.")
@@ -474,32 +484,32 @@ class ImageAnalysisModel:
                         if line.strip():  # Remove white space
                             # Parse the row
                             area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                            formatted_area = format(max(float(area / 1000000), 0), '.8f')
                             item = {
-                                "area": area,
+                                "area": area,  # Store the original area
                                 "perimeter": perimeter,
                                 "diameter": diameter,
                                 "circularity": circularity
                             }
+                            # Compare formatted_area and not the original area
+                            if float(formatted_area) < float(self.minimumArea):
+                                self.miniParticles.append(item)
                             particles.append(item)
 
                 if not particles:
                     logger.warning(f"No particles found in file {segment_file}")
                     continue
 
-                # Extract areas and sort them
-                areas = [particle['area'] for particle in particles]
-                sorted_areas = sorted(areas)
-
-                # Add the sorted areas for this file
-                self.meshingSegmentAreas[segment_file] = sorted_areas
-                print(f"Processed file {segment_file}: {len(sorted_areas)} particles")
-                logger.info(f"Processed file {segment_file}: {len(sorted_areas)} particles")
+                print(f"Processed file {segment_file}: {len(particles)} particles")
+                logger.info(f"Processed file {segment_file}: {len(particles)} particles")
 
             except Exception as e:
                 logger.error(f"Failed to process file {segment_file} due to error: {e}")
 
-        if not self.meshingSegmentAreas:
-            logger.warning("No valid particle areas were found in any file.")
+        if not self.miniParticles:
+            logger.warning("No particles smaller than minimumArea were found.")
+        else:
+            logger.info(f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
 
 
 
