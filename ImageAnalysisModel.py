@@ -249,13 +249,13 @@ class ImageAnalysisModel:
             return
 
         print(f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
-        self.p.setdiameter_threshold(self.diameter_threshold)
+
         # Step 5: Loop through each image and process using the model
         for index, image_path in enumerate(image_files, start=1):
             print(f"Processing image: {image_path}")
 
             # Update the model's image path directly
-            self.p.image_path = image_path
+            self.p.update_image_path(image_path)
 
             # Generate masks
             if testing:
@@ -264,6 +264,7 @@ class ImageAnalysisModel:
                 self.p.generate_mask()
 
             # Step 6: Save masks to a corresponding CSV file
+            self.p.setdiameter_threshold(self.diameter_threshold)
             csv_filename = os.path.join(self.meshingSegmentsFolder, f"meshing_{index}.csv")
             self.p.save_masks_to_csv(csv_filename)
             print(f"Segment file saved as: {csv_filename}")

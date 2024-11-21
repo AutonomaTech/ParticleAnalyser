@@ -83,6 +83,18 @@ class ParticleSegmentationModel:
         if not os.path.exists(self.sam_checkpoint_path):
             raise Exception('Sam checkpoint path does not exist')
 
+    def load_image(self, image_path):
+        """Load image from the specified path and update the image attribute."""
+        if not os.path.exists(image_path):
+            raise Exception('Image path does not exist')
+
+        openedImage = Image.open(image_path)
+        self.image = np.array(openedImage.convert("RGB"))
+        self.image_path = image_path
+
+    def update_image_path(self, new_image_path):
+        """Update image path and reload the image."""
+        self.load_image(new_image_path)
     @property
     def bins(self):
         return self._bins
