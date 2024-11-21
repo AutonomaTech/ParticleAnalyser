@@ -64,8 +64,8 @@ class ParticleSegmentationModel:
         self.box_nms_tresh = 0.9
         self.use_m2m = True,
 
-        openedImage = Image.open(self.image_path)
-        self.image = np.array(openedImage.convert("RGB"))
+        self.openedImage =Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
 
         self.psd_bins_data = None  # this is data for plotting
         self.psd_data = None
@@ -88,9 +88,9 @@ class ParticleSegmentationModel:
         if not os.path.exists(image_path):
             raise Exception('Image path does not exist')
 
-        openedImage = Image.open(image_path)
-        self.image = np.array(openedImage.convert("RGB"))
-        self.image_path = image_path
+        self.openedImage = Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
+
 
     def update_image_path(self, new_image_path):
         """Update image path and reload the image."""
@@ -135,7 +135,7 @@ class ParticleSegmentationModel:
         return masks
 
     def testing_generate_mask(self):
-        # function to to test opn Colab to speed up process of ttesting. The results are not accurate
+        # function TO Do test opn Colab to speed up process of testing. The results are not accurate
         start_time = datetime.now()
         masks = dp.generate_masks(self.image,
                                   self.sam_checkpoint_path,
