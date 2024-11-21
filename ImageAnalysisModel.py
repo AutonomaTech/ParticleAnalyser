@@ -3,6 +3,7 @@ import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
 import ParticleSegmentationModel as psa
 import os
+import re
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -66,6 +67,7 @@ class ImageAnalysisModel:
         self.meshingSegments=[]
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
+        self.meshingTotalSeconds=0
         self.totalSeconds=0
         self.analysisTime = 0
         self.numberofBins = 0
@@ -143,9 +145,9 @@ class ImageAnalysisModel:
             total_seconds = duration.total_seconds()
             # Total seconds for the first calculation (Entire image)
             self.totalSeconds=total_seconds
-            minutes = int(total_seconds // 60)
-            seconds = total_seconds % 60
-            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+            # minutes = int(total_seconds // 60)
+            # seconds = total_seconds % 60
+            # self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
 
         self.loadModel(checkpoint_folder)
         if testing:
@@ -204,7 +206,7 @@ class ImageAnalysisModel:
 
         def calculateTotalSeconds(duration):
             total_seconds = duration.total_seconds()
-            self.totalSeconds += total_seconds
+            self.meshingTotalSeconds += total_seconds
 
         # Step 1: Assign `self.meshingImageFolderPath`
         meshing_folder_name = "meshingImage"
@@ -225,10 +227,14 @@ class ImageAnalysisModel:
         os.makedirs(self.meshingSegmentsFolder, exist_ok=True)
         print(f"Meshing segments folder path: {self.meshingSegmentsFolder}")
 
-        # Step 4: List all image files in `meshingImageFolderPath`
+        # Step 4: List all image files in `meshingImageFolderPath` with natural sorting
+        def natural_key(file_name):
+            match = re.search(r'\d+', file_name)
+            return int(match.group()) if match else float('inf')
+
         image_files = [
             os.path.join(self.meshingImageFolderPath, file)
-            for file in sorted(os.listdir(self.meshingImageFolderPath))
+            for file in sorted(os.listdir(self.meshingImageFolderPath),key=natural_key)
             if file.endswith(".png")  # Filter for PNG images
         ]
 
@@ -380,3 +386,11 @@ class ImageAnalysisModel:
 
     def plotBins(self):
         self.p.plotBins()
+
+    def getAnalysisTime(self):
+        total_seconds = self.totalSeconds+self.meshingTotalSeconds
+        # Total seconds for the first calculation (Entire image)
+        minutes = int(total_seconds // 60)
+        seconds = total_seconds % 60
+        self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+        print(f"""The final analysing time is {self.analysisTime}""")
