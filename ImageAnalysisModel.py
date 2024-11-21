@@ -66,6 +66,7 @@ class ImageAnalysisModel:
         self.meshingSegments=[]
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
+        self.totalSeconds=0
         self.analysisTime = 0
         self.numberofBins = 0
         self.p = None
@@ -141,7 +142,7 @@ class ImageAnalysisModel:
         def calculateAnalysisTime(duration):
             total_seconds = duration.total_seconds()
             # Total seconds for the first calculation (Entire image)
-            self.totalSecondes=total_seconds
+            self.totalSeconds=total_seconds
             minutes = int(total_seconds // 60)
             seconds = total_seconds % 60
             self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
