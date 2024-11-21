@@ -1,7 +1,9 @@
 import ContainerScalerModel as cs
 import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
+import logger_config
 import ParticleSegmentationModel as psa
+logger = logger_config.get_logger(__name__)
 import os
 import re
 # if using Apple MPS, fall back to CPU for unsupported ops
@@ -64,7 +66,6 @@ class ImageAnalysisModel:
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
             self.imageProcessor.getWidth(), containerWidth)
-        self.meshingSegments=[]
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
         self.meshingTotalSeconds=0
@@ -74,6 +75,8 @@ class ImageAnalysisModel:
         self.p = None
         self.csv_filename = ""
         self.totalSecondes=0
+        self.mimumArea=0
+        self.meshingSegmentAreas={}
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -110,7 +113,7 @@ class ImageAnalysisModel:
         if self.p is not None:
             self.numberofBins = len(bins)
             self.p.bins = bins[:]
-    #Todo
+
     def loadModel(self, checkpoint_folder):
         """
         Loads the ParticleSegmentationModel with a specified checkpoint.
@@ -154,6 +157,10 @@ class ImageAnalysisModel:
             self.p.testing_generate_mask()
         else:
             self.p.generate_mask()
+
+        self.csv_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}.csv")
+        self.p.save_masks_to_csv(self.csv_filename)
 
         calculateAnalysisTime(self.p.getExecutionTime())
         self.p.setdiameter_threshold(self.diameter_threshold)
@@ -243,7 +250,7 @@ class ImageAnalysisModel:
             return
 
         print(f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
-
+        self.p.setdiameter_threshold(self.diameter_threshold)
         # Step 5: Loop through each image and process using the model
         for index, image_path in enumerate(image_files, start=1):
             print(f"Processing image: {image_path}")
@@ -394,3 +401,106 @@ class ImageAnalysisModel:
         seconds = total_seconds % 60
         self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
         print(f"""The final analysing time is {self.analysisTime}""")
+    def getSmallestAreaForFinalImage(self,finalSegmentPath):
+        """
+        This function counts the number of data rows in a given file, ignoring the header row.
+
+        Args:
+        file_path (str): The path to the file.
+
+        Returns:
+        int: The number of data rows in the file.
+        """
+        particles=[]
+        try:
+            with open(finalSegmentPath, 'r') as file:
+                next(file)
+                for line in file:
+                    if line.strip():  # remove white space
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        item = {
+                            "area": area,
+                            "perimeter": perimeter,
+                            "diameter": diameter,
+                            "circularity": circularity
+                        }
+                        particles.append(item)
+            if len(particles) == 0:
+                logger.error("There is no particles for minimumArea(ImageAnalysisModel) to be processed")
+                return
+
+            areas = [particle['area'] for particle in particles]
+            sorted_areas = sorted(areas)
+            self.mimumArea = format(max(float(sorted_areas[0] / 1000000), 0), '.8f')
+            print(f'Minimu Area(ImageAnalysisModel) of the entire image analysis is :{self.mimumArea}')
+            logger.info("Minimu Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
+
+        except Exception as e :
+                logger.error("The give csv  file can  not be parsed due to {} error ",e)
+
+    def getMeshingSegmentAreas(self):
+        """
+        Processes all CSV files in `self.meshingSegmentsFolder` and extracts particle areas.
+
+        Args:
+        None
+
+        Returns:
+        None
+        """
+        # Check if the folder exists
+        if not os.path.exists(self.meshingSegmentsFolder):
+            logger.error(f"Meshing segments folder {self.meshingSegmentsFolder} does not exist.")
+            return
+
+        # Get all CSV files in the folder
+        segment_files = [
+            os.path.join(self.meshingSegmentsFolder, file)
+            for file in os.listdir(self.meshingSegmentsFolder)
+            if file.endswith('.csv')
+        ]
+
+        if not segment_files:
+            logger.error(f"No CSV files found in {self.meshingSegmentsFolder}")
+            return
+
+        # Process each CSV file
+        for segment_file in sorted(segment_files):
+            particles = []
+            try:
+                with open(segment_file, 'r') as file:
+                    next(file)  # Skip the header row
+                    for line in file:
+                        if line.strip():  # Remove white space
+                            # Parse the row
+                            area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                            item = {
+                                "area": area,
+                                "perimeter": perimeter,
+                                "diameter": diameter,
+                                "circularity": circularity
+                            }
+                            particles.append(item)
+
+                if not particles:
+                    logger.warning(f"No particles found in file {segment_file}")
+                    continue
+
+                # Extract areas and sort them
+                areas = [particle['area'] for particle in particles]
+                sorted_areas = sorted(areas)
+
+                # Add the sorted areas for this file
+                self.meshingSegmentAreas[segment_file] = sorted_areas
+                print(f"Processed file {segment_file}: {len(sorted_areas)} particles")
+                logger.info(f"Processed file {segment_file}: {len(sorted_areas)} particles")
+
+            except Exception as e:
+                logger.error(f"Failed to process file {segment_file} due to error: {e}")
+
+        if not self.meshingSegmentAreas:
+            logger.warning("No valid particle areas were found in any file.")
+
+
+
+

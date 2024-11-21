@@ -80,9 +80,9 @@ class sizeAnalysisModel:
                     logger.error("SampleId : {} does not have any item to be processed" , self.sampleId)
             self.__getToArea()
 
-        except :
-                logger.error("Segments csv file can  not be parsed")
-    # Todo
+        except Exception as e:
+                logger.error("Segments csv file can  not be parsed due to {} error",e)
+
     def __countOverSValue(self):
         """
         This function counts OverS (8) [%] value based on particles that exceed
@@ -121,7 +121,7 @@ class sizeAnalysisModel:
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
         self.over_s_value = overSValuePercentage
-    # Todo
+
     def __countUnderSValue(self):
         """
         This function counts UnderS (0.15) [%] value based on particles that are
@@ -163,7 +163,7 @@ class sizeAnalysisModel:
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
 
         self.under_s_value = underSValuePercentage
-    # Todo
+
     def __countMeanSize(self):
         """
         This function counts the mean size of all the particles,based on diameter first
@@ -239,7 +239,7 @@ class sizeAnalysisModel:
         This function counts minimumArea of the particles
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for minimumArae to be processed")
+            logger.error("There is no particles for minimumArea to be processed")
             return
 
 
@@ -250,7 +250,7 @@ class sizeAnalysisModel:
 
         logger.info("Minimu Area : {}", self.minmum_area)
 
-    # Todo--fileFormat confirming
+
     def __filterDistribution(self):
         """
             This function counts the distributions for passing and retaining
@@ -333,9 +333,7 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'CustomField5')
         ET.SubElement(root, 'NumParticles').text = str(len(self.particles))
         ET.SubElement(root, 'TotArea').text = str(self.tot_area)
-        # Todo
         ET.SubElement(root, 'ScalingFact').text = str(self.scaling_fact)
-        # Todo
         ET.SubElement(root, 'ScalingNum').text = str(self.scaling_num)
         ET.SubElement(root, 'ScalingStamp').text = self.scaling_stamp
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
