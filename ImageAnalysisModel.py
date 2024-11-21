@@ -401,7 +401,7 @@ class ImageAnalysisModel:
         seconds = total_seconds % 60
         self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
         print(f"""The final analysing time is {self.analysisTime}""")
-    def getSmallestAreaForFinalImage(self,finalSegmentPath):
+    def getSmallestAreaForFinalImage(self):
         """
         This function counts the number of data rows in a given file, ignoring the header row.
 
@@ -413,7 +413,7 @@ class ImageAnalysisModel:
         """
         particles=[]
         try:
-            with open(finalSegmentPath, 'r') as file:
+            with open(self.csv_filename, 'r') as file:
                 next(file)
                 for line in file:
                     if line.strip():  # remove white space
