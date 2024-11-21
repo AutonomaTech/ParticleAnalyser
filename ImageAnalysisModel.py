@@ -158,12 +158,11 @@ class ImageAnalysisModel:
         else:
             self.p.generate_mask()
 
+        calculateAnalysisTime(self.p.getExecutionTime())
+        self.p.setdiameter_threshold(self.diameter_threshold)
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
-
-        calculateAnalysisTime(self.p.getExecutionTime())
-        self.p.setdiameter_threshold(self.diameter_threshold)
 
     def savePsdData(self):
         """
@@ -256,7 +255,7 @@ class ImageAnalysisModel:
             print(f"Processing image: {image_path}")
 
             # Update the model's image path directly
-            self.p.imagePath = image_path
+            self.p.image_path = image_path
 
             # Generate masks
             if testing:
