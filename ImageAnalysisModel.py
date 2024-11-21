@@ -59,16 +59,18 @@ class ImageAnalysisModel:
         self.imageProcessor = ip.ImageProcessingModel(
             image_folder_path, self.sampleID)
         self.imagePath = self.imageProcessor.getImagePath()
+        self.meshingImageFolderPath=None
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
             self.imageProcessor.getWidth(), containerWidth)
-
+        self.meshingSegments=[]
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
         self.analysisTime = 0
         self.numberofBins = 0
         self.p = None
         self.csv_filename = ""
+        self.totalSecondes=0
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -105,7 +107,7 @@ class ImageAnalysisModel:
         if self.p is not None:
             self.numberofBins = len(bins)
             self.p.bins = bins[:]
-
+    #Todo
     def loadModel(self, checkpoint_folder):
         """
         Loads the ParticleSegmentationModel with a specified checkpoint.
@@ -138,6 +140,8 @@ class ImageAnalysisModel:
         """
         def calculateAnalysisTime(duration):
             total_seconds = duration.total_seconds()
+            # Total seconds for the first calculation (Entire image)
+            self.totalSecondes=total_seconds
             minutes = int(total_seconds // 60)
             seconds = total_seconds % 60
             self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
@@ -185,6 +189,76 @@ class ImageAnalysisModel:
         print(f"--> Masks saved to CSV file: {self.csv_filename}")
 
         self.savePsdData()
+
+    def generateMasksForMeshing(self, testing):
+        """
+        Analyzes particles in the image by generating masks using the model for each segmented image
+        and saves the resulting segment files to a corresponding folder.
+
+        Inputs:
+        - testing: Boolean flag to enable test mode.
+
+        Output: None
+        """
+
+        def calculateTotalSeconds(duration):
+            total_seconds = duration.total_seconds()
+            self.totalSeconds += total_seconds
+
+        # Step 1: Assign `self.meshingImageFolderPath`
+        meshing_folder_name = "meshingImage"
+        self.meshingImageFolderPath = os.path.join(self.folder_path, meshing_folder_name)
+
+        # Step 2: Check if `meshingImage` folder exists
+        if not os.path.exists(self.meshingImageFolderPath):
+            print(f"Error: Folder '{meshing_folder_name}' not found at {self.folder_path}")
+            return
+
+        print(f"Meshing image folder path: {self.meshingImageFolderPath}")
+
+        # Step 3: Assign `self.meshingSegmentsFolder`
+        meshing_segment_folder_name = "meshingSegments"
+        self.meshingSegmentsFolder = os.path.join(self.folder_path, meshing_segment_folder_name)
+
+        # Create `meshingSegments` folder if it doesn't exist
+        os.makedirs(self.meshingSegmentsFolder, exist_ok=True)
+        print(f"Meshing segments folder path: {self.meshingSegmentsFolder}")
+
+        # Step 4: List all image files in `meshingImageFolderPath`
+        image_files = [
+            os.path.join(self.meshingImageFolderPath, file)
+            for file in sorted(os.listdir(self.meshingImageFolderPath))
+            if file.endswith(".png")  # Filter for PNG images
+        ]
+
+        if not image_files:
+            print(f"No images found in {self.meshingImageFolderPath}")
+            return
+
+        print(f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
+
+        # Step 5: Loop through each image and process using the model
+        for index, image_path in enumerate(image_files, start=1):
+            print(f"Processing image: {image_path}")
+
+            # Update the model's image path directly
+            self.p.imagePath = image_path
+
+            # Generate masks
+            if testing:
+                self.p.testing_generate_mask()
+            else:
+                self.p.generate_mask()
+
+            # Step 6: Save masks to a corresponding CSV file
+            csv_filename = os.path.join(self.meshingSegmentsFolder, f"meshing_{index}.csv")
+            self.p.save_masks_to_csv(csv_filename)
+            print(f"Segment file saved as: {csv_filename}")
+
+            # Calculate execution time
+            calculateTotalSeconds(self.p.getExecutionTime())
+
+        print("Finished processing all images.")
 
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
@@ -299,6 +373,9 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+    def  meshingImage(self):
+        self.imageProcessor.processImageWithMeshing()
+
 
     def plotBins(self):
         self.p.plotBins()
