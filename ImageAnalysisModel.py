@@ -164,6 +164,7 @@ class ImageAnalysisModel:
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
+        self.showMasks()
 
     def savePsdData(self):
         """
@@ -269,6 +270,7 @@ class ImageAnalysisModel:
             csv_filename = os.path.join(self.meshingSegmentsFolder, f"meshing_{index}.csv")
             self.p.save_masks_to_csv(csv_filename)
             print(f"Segment file saved as: {csv_filename}")
+            self.showMasks()
 
             # Calculate execution time
             calculateTotalSeconds(self.p.getExecutionTime())
