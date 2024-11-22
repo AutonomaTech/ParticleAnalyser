@@ -512,7 +512,7 @@ class ImageAnalysisModel:
         else:
             logger.info(f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
 
-    def processingMiniParticles(self,bins):
+    def processingMiniParticles(self):
         """
         Check the `self.miniParticles` list and write its contents to a new CSV file along with the contents of another existing CSV file.
 
@@ -522,8 +522,7 @@ class ImageAnalysisModel:
         Returns:
         None
         """
-        self.setBins(bins)
-        self.p.setdiameter_threshold(self.diameter_threshold)
+
         final_csv_path = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
         original_csv_path = os.path.join(self.folder_path, f"{self.sampleID}.csv")
 
@@ -551,7 +550,9 @@ class ImageAnalysisModel:
         else:
             print("No mini particles to process.")
 
-    def save_final_results(self):
+    def save_final_results(self,bins):
+        self.setBins(bins)
+        self.p.setdiameter_threshold(self.diameter_threshold)
         final_csv = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
         regular_csv = os.path.join(self.folder_path, f"{self.sampleID}.csv")
 
