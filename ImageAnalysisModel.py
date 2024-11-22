@@ -592,12 +592,13 @@ class ImageAnalysisModel:
             with open(csv_file_path, mode='r', newline='') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    data_list.append(row)
-
-            json_output = json.dumps(data_list, indent=4)
+                    # build String
+                    line = "{\n" + ",\n".join(f"    {k}: {v}" for k, v in row.items()) + "\n},"
+                    data_list.append(line)
 
             with open(json_txt_output_path, 'w') as output_file:
-                output_file.write(json_output)
+                # write to the csv file
+                output_file.write("[\n" + ",\n".join(data_list)[:-1] + "\n]")
             print(f"Data successfully written to {json_txt_output_path}")
 
         except Exception as e:
