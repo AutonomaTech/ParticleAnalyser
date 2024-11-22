@@ -6,6 +6,8 @@ import ParticleSegmentationModel as psa
 logger = logger_config.get_logger(__name__)
 import os
 import re
+import csv
+import json
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -75,7 +77,7 @@ class ImageAnalysisModel:
         self.p = None
         self.csv_filename = ""
         self.totalSecondes=0
-        self.mimumArea=0
+        self.minimumArea=0
         self.meshingSegmentAreas={}
         self.miniParticles=[]
 
@@ -456,9 +458,6 @@ class ImageAnalysisModel:
         if not hasattr(self, 'minimumArea'):
             self.minimumArea = float('inf')  # Set a large initial value if not set
 
-        # Ensure self.miniParticles is initialized
-        if not hasattr(self, 'miniParticles'):
-            self.miniParticles = []
 
         # Check if the folder exists
         if not os.path.exists(self.meshingSegmentsFolder):
@@ -513,6 +512,92 @@ class ImageAnalysisModel:
         else:
             logger.info(f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
 
+    def processingMiniParticles(self,bins):
+        """
+        Check the `self.miniParticles` list and write its contents to a new CSV file along with the contents of another existing CSV file.
 
+        Args:
+        None
 
+        Returns:
+        None
+        """
+        self.setBins(bins)
+        self.p.setdiameter_threshold(self.diameter_threshold)
+        final_csv_path = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
+        original_csv_path = os.path.join(self.folder_path, f"{self.sampleID}.csv")
 
+        # Check if miniParticles is not empty
+        if self.miniParticles:
+            with open(final_csv_path, 'w', newline='') as csvfile:
+                fieldnames = ['area', 'perimeter', 'diameter', 'circularity']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                # Write the header
+                writer.writeheader()
+
+                # Write miniParticles to the new CSV
+                for particle in self.miniParticles:
+                    writer.writerow(particle)
+
+                # Check if the original CSV exists and append its contents
+                if os.path.exists(original_csv_path):
+                    with open(original_csv_path, 'r') as original_csvfile:
+                        reader = csv.DictReader(original_csvfile)
+                        for row in reader:
+                            writer.writerow(row)
+                else:
+                    print(f"Original CSV file {original_csv_path} does not exist.")
+        else:
+            print("No mini particles to process.")
+
+    def save_final_results(self):
+        final_csv = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
+        regular_csv = os.path.join(self.folder_path, f"{self.sampleID}.csv")
+
+        # Determine which file exists and set the appropriate output txt filename
+        if os.path.exists(final_csv):
+            input_file = final_csv
+            output_txt = os.path.join(self.folder_path, "final_mesh_segments.txt")
+        elif os.path.exists(regular_csv):
+            input_file = regular_csv
+            output_txt = os.path.join(self.folder_path, "final_segment.txt")
+        else:
+            print("No appropriate CSV file found.")
+            return
+
+        # Convert the CSV to TXT in JSON format
+        self.convert_csv_to_json_txt(input_file, output_txt)
+
+        # Assuming self.p has an open_segments method
+        self.p.open_segments(output_txt)
+
+        # Assuming a method to save PSD data
+        self.savePsdData()
+
+    def convert_csv_to_json_txt(self, csv_file_path, json_txt_output_path):
+        """
+        Converts a CSV file to a JSON-like format in plain text.
+
+        Args:
+        csv_file_path (str): Path to the input CSV file.
+        json_txt_output_path (str): Path to the output text file with JSON format.
+
+        Returns:
+        None
+        """
+        try:
+            data_list = []
+            with open(csv_file_path, mode='r', newline='') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    data_list.append(row)
+
+            json_output = json.dumps(data_list, indent=4)
+
+            with open(json_txt_output_path, 'w') as output_file:
+                output_file.write(json_output)
+            print(f"Data successfully written to {json_txt_output_path}")
+
+        except Exception as e:
+            print(f"An error occurred while converting CSV to TXT: {e}")
