@@ -680,6 +680,53 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
     plt.show()
 
 
+def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,folder_path,sampleId):
+    bin_edges, counts, cumulative_area = get_psd_data(
+        diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
+
+    # append 0 for bottom
+    plot_bins = [0] + bins[:]
+
+    # Create equal spacing for plotting
+    equal_spacing = np.arange(len(plot_bins))
+
+    # Plot the histogram on the primary axis
+    f, ax = plt.subplots()
+    ax.bar(equal_spacing[:-1], counts, align='center',
+           edgecolor='black', color='skyblue')
+
+    # Set the x-axis limits and ticks to match the equal spacing
+    ax.set_xlim(min(equal_spacing), max(equal_spacing))
+    ax.set_xticks(equal_spacing)
+    ax.set_xticklabels([''] * len(equal_spacing))  # Hide the edge tick labels
+
+    # Manually set the positions of the tick labels to be at the midpoints
+    for i, (midpoint, label) in enumerate(zip(equal_spacing, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
+        ax.text(midpoint, -0.04, str(float(label) / 1000), ha='center',
+                va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+
+    # Create the secondary axis for the cumulative area plot
+    ax1 = ax.twinx()
+    ax1.plot(equal_spacing[::-1][:-1],
+             cumulative_area, color='red', linewidth=2)
+
+    # Convert the y-axis of the cumulative area plot to percentage
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+
+    # Set the labels for both axes
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
+    ax.set_ylabel('% Retained (Area %)')
+    ax1.set_ylabel('Cumulative % passing (Area %)')
+
+    plt.title("Particle size distribution")
+    # Save the plot as an image file
+    filename = f"{folder_path}/{sampleId}.png"
+    plt.savefig(filename)  # Save the plot to the path constructed
+    # Show the plot
+    plt.show()
+
 def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
 

@@ -325,5 +325,6 @@ class ParticleSegmentationModel:
         print(min_area_found)
         dp.detect_rocks_withCV2(self.image, float(min_area_found))
 
-    def plotBins(self):
-        dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+    def plotBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,folder_path,sampleId)

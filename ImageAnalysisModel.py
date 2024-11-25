@@ -180,7 +180,16 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.folder_path)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+    def saveDistributionPlot(self):
+        """
+        Saves particle size distribution (PSD) data to a text file.
 
+        Input: None
+        Output: Saves PSD data to a TXT file.
+        """
+        self.p.plotBins(self.folder_path,self.sampleID)
+
+        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveResults(self, bins):
         """
         Saves particle segmentation results to CSV and distribution files after setting bins.
@@ -202,6 +211,7 @@ class ImageAnalysisModel:
         print(f"--> Masks saved to CSV file: {self.csv_filename}")
 
         self.savePsdData()
+        self.saveDistributionPlot()
 
     def generateMasksForMeshing(self, testing):
         """
