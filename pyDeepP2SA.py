@@ -722,7 +722,7 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fol
 
     plt.title("Particle size distribution")
     # Save the plot as an image file
-    filename = f"{folder_path}/{sampleId}.png"
+    filename = f"{folder_path}/{sampleId}_plot.png"
     plt.savefig(filename)  # Save the plot to the path constructed
     # Show the plot
     plt.show()
