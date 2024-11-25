@@ -150,10 +150,10 @@ class ImageAnalysisModel:
         def calculateAnalysisTime(duration):
             total_seconds = duration.total_seconds()
             # Total seconds for the first calculation (Entire image)
-            self.totalSeconds=total_seconds
-            # minutes = int(total_seconds // 60)
-            # seconds = total_seconds % 60
-            # self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+            # self.totalSeconds=total_seconds
+            minutes = int(total_seconds // 60)
+            seconds = total_seconds % 60
+            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
 
         self.loadModel(checkpoint_folder)
         if testing:
