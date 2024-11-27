@@ -442,7 +442,7 @@ class sizeAnalysisModel:
         if self.segments_file_path is not None:
             directory_path = os.path.dirname(self.segments_file_path)
         return directory_path
-    def save_xml(self):
+    def save_xml(self,normalFlag=False):
         self.__build_xml()
 
         if self.xmlstring=="":
@@ -453,7 +453,10 @@ class sizeAnalysisModel:
         reparsed = minidom.parseString(self.xmlstring)
         pretty_string = reparsed.toprettyxml(indent="  ")
         pretty_string_without_declaration = '\n'.join(pretty_string.split('\n')[1:])
-        filename = f"{self.sampleId}.xml"
+        if normalFlag:
+            filename = f"{self.sampleId}_normalBin.xml"
+        else:
+            filename = f"{self.sampleId}.xml"
         folderPath = self.__get_directory_path()
 
         filePath = folderPath + "/" + filename

@@ -55,7 +55,7 @@ def main(image_folder_path, containerWidth):
     analyser.saveResults(industry_standard_bins)
     analyser.formatResults()
     analyser.saveResultsForNormalBinsOnly(normal_bins)
-    analyser.formatResultsForNormalDistribution()
+    analyser.formatResultsForNormalDistribution(True)
 
 if __name__ == '__main__':
     # Parse command-line arguments

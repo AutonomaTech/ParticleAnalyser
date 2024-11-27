@@ -357,7 +357,7 @@ class ImageAnalysisModel:
                                          self.p.circularity_threshold)
         formatter.save_xml()
 
-    def formatResultsForNormalDistribution(self):
+    def formatResultsForNormalDistribution(self,normalFlag):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
@@ -386,7 +386,7 @@ class ImageAnalysisModel:
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
                                          self.p.circularity_threshold)
-        formatter.save_xml()
+        formatter.save_xml(normalFlag)
 
     def saveSegments(self):
         """
