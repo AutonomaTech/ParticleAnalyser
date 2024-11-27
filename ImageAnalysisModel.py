@@ -199,7 +199,8 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves PSD data to a TXT file.
         """
-        self.p.plotNormalBins(self.folder_path,self.sampleID)
+
+        self.p.plotBins(self.folder_path,self.sampleID)
 
         # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlotForNormalBins(self):
@@ -209,8 +210,8 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves PSD data to a TXT file.
         """
+        self.p.plotNormalBins(self.folder_path, self.sampleID)
 
-        self.p.plotBins(self.folder_path,self.sampleID)
 
 
     def saveResults(self, bins):
@@ -246,7 +247,7 @@ class ImageAnalysisModel:
         """
         self.setBins(bins)
         self.savePsdDataForNormalBins()
-        self.saveDistributionPlot()
+        self.saveDistributionPlotForNormalBins()
     def generateMasksForMeshing(self, testing):
         """
         Analyzes particles in the image by generating masks using the model for each segmented image

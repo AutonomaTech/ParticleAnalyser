@@ -972,7 +972,7 @@ def save_psd_as_txt_normal(id, bins, cumulative, differential, csv_directory):
     differential.reverse()
     cumulative.reverse()
 
-    csvpath = os.path.join(csv_directory, f"{id}__normalBin_distribution.txt")
+    csvpath = os.path.join(csv_directory, f"{id}_normalBin_distribution.txt")
 
     # write to csv file id, bins, cumulative, differential
     with open(csvpath, 'w', newline='') as csvfile:
