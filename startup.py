@@ -49,6 +49,7 @@ def main(image_folder_path, containerWidth):
     analyser.overlayImage()
     Testing = False
     analyser.analyseParticles(checkpoint_folder, Testing)
+    analyser.saveSegments()
     industry_standard_bins = [38, 106, 1000, 8000]  # bins
     normal_bins = [ 1000, 2000,3000,4000,5000,6000,7000,8000,9000,10000]
     analyser.saveResults(industry_standard_bins)
