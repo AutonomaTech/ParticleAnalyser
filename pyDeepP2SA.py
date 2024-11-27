@@ -132,16 +132,17 @@ def visualise_masks(image, masks,file_name):
                                  (0, 0, 1, 0.4), thickness=1)
 
         ax.imshow(img)
-        # Save the generated image
-        plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
-        print(f"Mask saved to {file_name}")
+
 
     # Plot the original image with masks overlaid
     plt.figure(figsize=(20, 20))
-    # plt.imshow(image)
+    plt.imshow(image)
     show_anns(masks)
-    # plt.axis('off')  # Hide axis
-    # plt.show()
+    plt.axis('off')  # Hide axis
+    plt.show()
+    # Save the generated image
+    plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
+    print(f"Mask saved to {file_name}")
 
 
 def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
