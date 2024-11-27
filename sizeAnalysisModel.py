@@ -195,9 +195,9 @@ class sizeAnalysisModel:
             logger.error("There is no particles for minimumArea to be processed")
             return
 
-        diameters = [particle['diameters'] for particle in self.particles]
+        diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
-        self.minimum_diameter = format(max(float(diameters[0] / 1000), 0), '.8f')
+        self.minimum_diameter = max(float(sorted_diameters[0] / 1000), 0)
 
         logger.info("Minimum Diameter : {}", self.minimum_diameter)
     def __countD10(self):
@@ -263,7 +263,7 @@ class sizeAnalysisModel:
         sorted_areas = sorted(areas)
         self.minimum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
-        logger.info("Minimu Area : {}", self.minimum_area)
+        logger.info("Minimum Area : {}", self.minimum_area)
 
 
     def __filterDistribution(self):

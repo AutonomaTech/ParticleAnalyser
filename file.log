@@ -760,3 +760,64 @@
 2024-11-27T15:54:46.345480+0800 INFO Generating masks - image: /Users/licui/Desktop/Samples/RCB1489190/RCB1489190_S3/final_RCB1489190_S3.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints/sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
 2024-11-27T15:54:51.770206+0800 INFO Generating masks - image: /Users/licui/Desktop/Samples/RCB1489190/RCB1489190_S4/final_RCB1489190_S4.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints/sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
 2024-11-27T15:54:57.336161+0800 INFO Generating masks - image: /Users/licui/Desktop/Samples/RCB1489190/RCB1489190_S1/final_RCB1489190_S1.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints/sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T16:26:55.785516+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:26:55.786017+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:26:55.786162+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:26:55.786463+0800 INFO D90mm : 7.20643545
+2024-11-27T16:26:55.786753+0800 INFO D10mm : 0.43264878
+2024-11-27T16:26:55.787028+0800 INFO D50mm : 2.93332758
+2024-11-27T16:26:55.787305+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:26:55.787352+0800 ERROR Segments csv file can  not be parsed due to 'diameters' error
+2024-11-27T16:26:55.787408+0800 ERROR Distribution file can not be parsed:[Errno 2] No such file or directory: 'Samples/RCB1489190_DFK_S1/RCB1489190_DFK_S1__normalBin_distribution.txt' 
+2024-11-27T16:27:56.186411+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:27:56.186931+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:27:56.187081+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:27:56.187383+0800 INFO D90mm : 7.20643545
+2024-11-27T16:27:56.187673+0800 INFO D10mm : 0.43264878
+2024-11-27T16:27:56.187954+0800 INFO D50mm : 2.93332758
+2024-11-27T16:27:56.188260+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:27:56.188313+0800 ERROR Segments csv file can  not be parsed due to 'diameters' error
+2024-11-27T16:27:56.188375+0800 ERROR Distribution file can not be parsed:[Errno 2] No such file or directory: 'Samples/RCB1489190_DFK_S1/RCB1489190_DFK_S1__normalBin_distribution.txt' 
+2024-11-27T16:29:28.480129+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:29:28.480638+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:29:28.480816+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:29:28.481131+0800 INFO D90mm : 7.20643545
+2024-11-27T16:29:28.481426+0800 INFO D10mm : 0.43264878
+2024-11-27T16:29:28.481726+0800 INFO D50mm : 2.93332758
+2024-11-27T16:29:28.482024+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:29:28.482074+0800 ERROR Segments csv file can  not be parsed due to 'diameters' error
+2024-11-27T16:29:28.482307+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T16:29:57.866519+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:29:57.867024+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:29:57.867170+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:29:57.867464+0800 INFO D90mm : 7.20643545
+2024-11-27T16:29:57.867767+0800 INFO D10mm : 0.43264878
+2024-11-27T16:29:57.868079+0800 INFO D50mm : 2.93332758
+2024-11-27T16:29:57.868379+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:29:57.868424+0800 ERROR Segments csv file can  not be parsed due to 'diameters' error
+2024-11-27T16:29:57.868636+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T16:30:19.009238+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:30:19.009782+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:30:19.009930+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:30:19.010235+0800 INFO D90mm : 7.20643545
+2024-11-27T16:30:19.010527+0800 INFO D10mm : 0.43264878
+2024-11-27T16:30:19.010799+0800 INFO D50mm : 2.93332758
+2024-11-27T16:30:19.011074+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:30:19.011118+0800 ERROR Segments csv file can  not be parsed due to 'diameters' error
+2024-11-27T16:30:19.011328+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T16:30:53.472571+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:30:53.473084+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:30:53.473232+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:30:53.473533+0800 INFO D90mm : 7.20643545
+2024-11-27T16:30:53.473825+0800 INFO D10mm : 0.43264878
+2024-11-27T16:30:53.474101+0800 INFO D50mm : 2.93332758
+2024-11-27T16:30:53.474379+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:31:16.233599+0800 INFO UnderS (0.15) [%]: 4.11907234
+2024-11-27T16:31:16.234176+0800 INFO OverS (8) [%]: 7.30356525
+2024-11-27T16:31:16.234428+0800 INFO Mean Size : 3.64229252
+2024-11-27T16:31:16.234802+0800 INFO D90mm : 7.20643545
+2024-11-27T16:31:16.235137+0800 INFO D10mm : 0.43264878
+2024-11-27T16:31:16.235461+0800 INFO D50mm : 2.93332758
+2024-11-27T16:31:16.235814+0800 INFO Minimu Area : 0.01117161
+2024-11-27T16:31:16.236159+0800 INFO Minimum Diameter : 0.029816243405342377
+2024-11-27T16:31:16.236498+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
