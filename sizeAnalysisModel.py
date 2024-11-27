@@ -15,6 +15,7 @@ class sizeAnalysisModel:
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
         self.minimum_area=0
+        self.minimum_diameter=0
         self.diameterThreshold=diameter_threshold
         self.circularity_threshold=circularity_threshold
         self.sieveDesc=[]
@@ -76,6 +77,7 @@ class sizeAnalysisModel:
                     self.__countD10()
                     self.__countD50()
                     self.__countMinimumArea()
+                    self.__countMinimumDiameter()
                 else:
                     logger.error("SampleId : {} does not have any item to be processed" , self.sampleId)
             self.__getToArea()
@@ -185,6 +187,19 @@ class sizeAnalysisModel:
 
         self.mean_size = meanSize
 
+    def __countMinimumDiameter(self):
+        """
+                This function counts minimumDiameter of the particles
+                """
+        if len(self.particles) == 0:
+            logger.error("There is no particles for minimumArea to be processed")
+            return
+
+        diameters = [particle['diameters'] for particle in self.particles]
+        sorted_diameters = sorted(diameters)
+        self.minimum_diameter = format(max(float(diameters[0] / 1000), 0), '.8f')
+
+        logger.info("Minimum Diameter : {}", self.minimum_diameter)
     def __countD10(self):
         """
         This function counts D10 indicates that 10% of all particles have a diameter that is less than or equal to this value
@@ -339,7 +354,8 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
         ET.SubElement(root, 'DateTime').text = self.date_time
         ET.SubElement(root, 'AnalysisTime').text = self.analysis_time
-        ET.SubElement(root, 'minimumArea').text = str(self.minimum_area)
+        ET.SubElement(root, 'MinimumArea').text = str(self.minimum_area)
+        ET.SubElement(root, 'MinimumDiameter').text = str(self.minimum_diameter)
         ET.SubElement(root, 'NumResultTables').text=str(1)
         ET.SubElement(root, 'NumSummaryData').text=str(8)
         result_table = ET.SubElement(root, 'ResultTable')

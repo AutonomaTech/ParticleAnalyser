@@ -102,7 +102,8 @@ class ImageAnalysisModel:
         Input: None
         Output: Shows mask visualization.
         """
-        self.p.visualise_masks()
+        file_name = f"{self.folder_path}/{self.sampleID}_mask.png"
+        self.p.visualise_masks(file_name)
 
     def setBins(self, bins):
         """

@@ -156,10 +156,11 @@ class ParticleSegmentationModel:
         logger.info("Generating masks took: {}", self.execution_time)
         return masks
 
-    def visualise_masks(self):
+    def visualise_masks(self,mask_file_name):
         if self.masks is None:
             self.generate_mask()
-        dp.visualise_masks(self.image, self.masks)
+
+        dp.visualise_masks(self.image, self.masks,mask_file_name)
 
     def opposite_masks(self):
         if self.masks is None:
