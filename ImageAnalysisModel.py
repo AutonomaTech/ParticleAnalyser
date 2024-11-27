@@ -356,6 +356,37 @@ class ImageAnalysisModel:
                                          self.p.circularity_threshold)
         formatter.save_xml()
 
+    def formatResultsForNormalDistribution(self):
+        """
+        Formats and displays analysis results, and saves formatted results as XML.
+
+        Input: None
+        Output: Prints formatted results and saves them to an XML file.
+        """
+        self.totArea = self.p.get_totalArea()
+        print("-----------------------------------------------")
+        print("Sample ID:", self.sampleID)
+        print(f"Total Area: {self.totArea} um2")
+        print(f"Total Area: {self.totArea / 100_000_000} cm2")
+        print(f"Scaling Factor: {self.Scaler.scalingFactor} um/pixels")
+        print(f"Scaling Number: {self.Scaler.scalingNumber} pixels")
+        self.intensity = self.imageProcessor.getIntensity()
+        print("Intensity:", self.intensity)
+        print("Scaling Stamp:", self.Scaler.scalingStamp)
+        print("Analysis Time:", self.analysisTime)
+        print(f"Diameter Threshold: {self.p.diameter_threshold} um")
+        print(f"Circularity Threshold: {self.p.circularity_threshold} um")
+        print("-----------------------------------------------")
+        print(f"CSV file: {self.csv_filename}")
+        normalBins_distributions_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
+        formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, normalBins_distributions_filename,
+                                         self.totArea, self.Scaler.scalingNumber,
+                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
+                                         self.intensity, self.analysisTime, self.p.diameter_threshold,
+                                         self.p.circularity_threshold)
+        formatter.save_xml()
+
     def saveSegments(self):
         """
         Saves segment data as JSON for later use.
