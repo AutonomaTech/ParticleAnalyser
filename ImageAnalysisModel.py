@@ -188,10 +188,10 @@ class ImageAnalysisModel:
         Output: Saves PSD data to a TXT file.
         """
         self.p.get_psd_data()
-        self.distributions_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
-        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
-        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+        # self.distributions_filename = os.path.join(
+        #     self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
+        self.p.save_psd_as_txt_normal(self.sampleID, self.folder_path)
+        # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlot(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -199,9 +199,9 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves PSD data to a TXT file.
         """
-        self.p.plotBins(self.folder_path,self.sampleID)
+        self.p.plotNormalBins(self.folder_path,self.sampleID)
 
-        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+        # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlotForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.

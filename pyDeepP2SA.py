@@ -962,7 +962,25 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
         writer = csv.writer(csvfile)
         writer.writerow(data)
     return
+def save_psd_as_txt_normal(id, bins, cumulative, differential, csv_directory):
 
+    # prepare for export arrangement
+    # reverse order for bins
+    bins_export = [0] + bins[:]
+    bins_export[0] = "Bottom"
+    bins_export.reverse()
+    differential.reverse()
+    cumulative.reverse()
+
+    csvpath = os.path.join(csv_directory, f"{id}__normalBin_distribution.txt")
+
+    # write to csv file id, bins, cumulative, differential
+    with open(csvpath, 'w', newline='') as csvfile:
+        data = [id] + bins_export + ['% Passing'] + \
+            cumulative + ['% Retained'] + differential
+        writer = csv.writer(csvfile)
+        writer.writerow(data)
+    return
 
 def plot_cir(diameter_threshold, circularity_threshold, num_bins, csv_directory):
     stat = pd.read_csv(csv_directory)

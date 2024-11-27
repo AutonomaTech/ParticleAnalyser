@@ -313,6 +313,15 @@ class ParticleSegmentationModel:
 
         dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
 
+    def save_psd_as_txt_normal(self, id, directory):
+        if self.psd_data is None:
+            logger.error("No PSD data to export!")
+            return
+        # get values of the distrubutions
+        cumulative = [i[1] for i in self.psd_data['cumulative']]
+        differential = [i[1] for i in self.psd_data['differential']]
+
+        dp.save_psd_as_txt_normal(id, self.bins, cumulative, differential, directory)
     def save_segments_as_csv(self, txt_filename, csv_filename):
         self.segments = dp.save_segments_as_csv(
             txt_filename, csv_filename, self.diameter_threshold)
