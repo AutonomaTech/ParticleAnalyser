@@ -14,7 +14,7 @@ class sizeAnalysisModel:
         self.tot_area = tot_area
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
-        self.minmum_area=0
+        self.minimum_area=0
         self.diameterThreshold=diameter_threshold
         self.circularity_threshold=circularity_threshold
         self.sieveDesc=[]
@@ -246,9 +246,9 @@ class sizeAnalysisModel:
 
         areas = [particle['area'] for particle in self.particles]
         sorted_areas = sorted(areas)
-        self.minmum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
+        self.minimum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
-        logger.info("Minimu Area : {}", self.minmum_area)
+        logger.info("Minimu Area : {}", self.minimum_area)
 
 
     def __filterDistribution(self):
@@ -339,7 +339,7 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
         ET.SubElement(root, 'DateTime').text = self.date_time
         ET.SubElement(root, 'AnalysisTime').text = self.analysis_time
-        ET.SubElement(root, 'minmumArea').text = str(self.minmum_area)
+        ET.SubElement(root, 'minimumArea').text = str(self.minimum_area)
         ET.SubElement(root, 'NumResultTables').text=str(1)
         ET.SubElement(root, 'NumSummaryData').text=str(8)
         result_table = ET.SubElement(root, 'ResultTable')
