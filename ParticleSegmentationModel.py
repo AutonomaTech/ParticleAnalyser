@@ -327,4 +327,10 @@ class ParticleSegmentationModel:
 
     def plotBins(self,folder_path,sampleId):
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
-        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,folder_path,sampleId)
+        fileName= f"{folder_path}/{sampleId}_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)
+
+    def plotNormalBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)

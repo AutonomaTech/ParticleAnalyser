@@ -180,6 +180,18 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.folder_path)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+    def savePsdDataForNormalBins(self):
+        """
+        Saves particle size distribution (PSD) data to a text file.
+
+        Input: None
+        Output: Saves PSD data to a TXT file.
+        """
+        self.p.get_psd_data()
+        self.distributions_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
+        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
+        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlot(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -190,6 +202,17 @@ class ImageAnalysisModel:
         self.p.plotBins(self.folder_path,self.sampleID)
 
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+    def saveDistributionPlotForNormalBins(self):
+        """
+        Saves particle size distribution (PSD) data to a text file.
+
+        Input: None
+        Output: Saves PSD data to a TXT file.
+        """
+
+        self.p.plotBins(self.folder_path,self.sampleID)
+
+
     def saveResults(self, bins):
         """
         Saves particle segmentation results to CSV and distribution files after setting bins.
@@ -212,7 +235,18 @@ class ImageAnalysisModel:
 
         self.savePsdData()
         self.saveDistributionPlot()
+    def saveResultsForNormalBinsOnly(self, bins):
+        """
+        Saves particle segmentation results to CSV and distribution files after setting bins.
 
+        Input:
+        - bins: List of bin boundaries for the segmentation model.
+
+        Output: Saves results to CSV and distribution files.
+        """
+        self.setBins(bins)
+        self.savePsdDataForNormalBins()
+        self.saveDistributionPlot()
     def generateMasksForMeshing(self, testing):
         """
         Analyzes particles in the image by generating masks using the model for each segmented image

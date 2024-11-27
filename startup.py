@@ -47,11 +47,12 @@ def main(image_folder_path, containerWidth):
     analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth)
     analyser.evenLighting()
     analyser.overlayImage()
-    # analyser.showImage()
     Testing = False
     analyser.analyseParticles(checkpoint_folder, Testing)
-    bins = [38, 106, 1000, 8000]  # bins
-    analyser.saveResults(bins)
+    industry_standard_bins = [38, 106, 1000, 8000]  # bins
+    normal_bins = [ 1000, 2000,3000,4000,5000,6000,7000,8000,9000,10000]
+    analyser.saveResults(industry_standard_bins)
+    analyser.saveResultsForNormalBinsOnly(normal_bins)
     analyser.formatResults()
 
 if __name__ == '__main__':
