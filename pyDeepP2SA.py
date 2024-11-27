@@ -139,9 +139,10 @@ def visualise_masks(image, masks,file_name):
     plt.imshow(image)
     show_anns(masks)
     plt.axis('off')  # Hide axis
-    plt.show()
-    # Save the generated image
     plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
+    # plt.show()
+    # Save the generated image
+
     print(f"Mask saved to {file_name}")
 
 
@@ -729,7 +730,7 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     # filename = f"{folder_path}/{sampleId}_plot.png"
     plt.savefig(fileName)  # Save the plot to the path constructed
     # Show the plot
-    plt.show()
+    # plt.show()
 
 def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
