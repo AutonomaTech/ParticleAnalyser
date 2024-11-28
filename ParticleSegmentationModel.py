@@ -1,3 +1,4 @@
+
 import os.path
 
 import pyDeepP2SA as dp
@@ -15,11 +16,11 @@ class ParticleSegmentationModel:
 
     """
 
-    ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library. 
+    ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library.
     It provides a simple way to generate masks, visualise masks, save masks to csv, save mask image, save masks as images, save masked regions, identify spheres, plot psd, get psd bins, plot psd bins, save psd, save segments, open segments, save psd as csv.
 
     To use this class:
-        1. Create an instance of the class with the image path, sam checkpoint path and pixel to micron scaling factor. 
+        1. Create an instance of the class with the image path, sam checkpoints path and pixel to micron scaling factor.
         2. Generate masks which will segment the image into masks.
         3. Segements are scaled to a micron value
 
@@ -36,11 +37,11 @@ class ParticleSegmentationModel:
         mask_threshold (float, optional, defaults to 0) — The threshold for the predicted masks.
         stability_score_offset (float, optional, defaults to 1) — The offset for the stability score used in the _compute_stability_score method.
 
-        What checkpoint to use?
-        The models are the same except for neural network size, 
-        B stands for "base" and is the smallest, L is "large" and H is "huge". 
-        The paper reports that the performance difference between L and H isn't much 
-        and I would recommend L if your machine supports it. 
+        What checkpoints to use?
+        The models are the same except for neural network size,
+        B stands for "base" and is the smallest, L is "large" and H is "huge".
+        The paper reports that the performance difference between L and H isn't much
+        and I would recommend L if your machine supports it.
         However, B is lighter and not far behind in performance.
         https://github.com/facebookresearch/segment-anything/issues/273
 
@@ -64,8 +65,8 @@ class ParticleSegmentationModel:
         self.box_nms_tresh = 0.9
         self.use_m2m = True,
 
-        openedImage = Image.open(self.image_path)
-        self.image = np.array(openedImage.convert("RGB"))
+        self.openedImage =Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
 
         self.psd_bins_data = None  # this is data for plotting
         self.psd_data = None
@@ -81,8 +82,20 @@ class ParticleSegmentationModel:
         if not os.path.exists(self.image_path):
             raise Exception('Image path does not exist')
         if not os.path.exists(self.sam_checkpoint_path):
-            raise Exception('Sam checkpoint path does not exist')
+            raise Exception('Sam checkpoints path does not exist')
 
+    def load_image(self, image_path):
+        """Load image from the specified path and update the image attribute."""
+        if not os.path.exists(image_path):
+            raise Exception('Image path does not exist')
+
+        self.openedImage = Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
+
+
+    def update_image_path(self, new_image_path):
+        """Update image path and reload the image."""
+        self.load_image(new_image_path)
     @property
     def bins(self):
         return self._bins
@@ -123,7 +136,7 @@ class ParticleSegmentationModel:
         return masks
 
     def testing_generate_mask(self):
-        # function to to test opn Colab to speed up process of ttesting. The results are not accurate
+        # function TO Do test opn Colab to speed up process of testing. The results are not accurate
         start_time = datetime.now()
         masks = dp.generate_masks(self.image,
                                   self.sam_checkpoint_path,
@@ -144,10 +157,11 @@ class ParticleSegmentationModel:
         logger.info("Generating masks took: {}", self.execution_time)
         return masks
 
-    def visualise_masks(self):
+    def visualise_masks(self,mask_file_name):
         if self.masks is None:
             self.generate_mask()
-        dp.visualise_masks(self.image, self.masks)
+
+        dp.visualise_masks(self.image, self.masks,mask_file_name)
 
     def opposite_masks(self):
         if self.masks is None:
@@ -301,6 +315,15 @@ class ParticleSegmentationModel:
 
         dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
 
+    def save_psd_as_txt_normal(self, id, directory):
+        if self.psd_data is None:
+            logger.error("No PSD data to export!")
+            return
+        # get values of the distrubutions
+        cumulative = [i[1] for i in self.psd_data['cumulative']]
+        differential = [i[1] for i in self.psd_data['differential']]
+
+        dp.save_psd_as_txt_normal(id, self.bins, cumulative, differential, directory)
     def save_segments_as_csv(self, txt_filename, csv_filename):
         self.segments = dp.save_segments_as_csv(
             txt_filename, csv_filename, self.diameter_threshold)
@@ -313,6 +336,12 @@ class ParticleSegmentationModel:
         print(min_area_found)
         dp.detect_rocks_withCV2(self.image, float(min_area_found))
 
-    def plotBins(self):
-        dp.plot_psd_bins3(self.diameter_threshold,
-                          self.circularity_threshold, self.bins, self.segments)
+    def plotBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName= f"{folder_path}/{sampleId}_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)
+
+    def plotNormalBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)

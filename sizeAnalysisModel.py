@@ -6,20 +6,19 @@ from datetime import datetime
 
 logger = logger_config.get_logger(__name__)
 
-# Every value will be in milimeter
-
-
+##Every value will be in milimeter
 class sizeAnalysisModel:
-    def __init__(self, sampleId, sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
-                 analysis_time=None, diameter_threshold=None, circularity_threshold=None):
+    def __init__(self, sampleId,sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
+                 analysis_time=None,diameter_threshold=None,circularity_threshold=None):
 
         self.tot_area = tot_area
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
-        self.minmum_area = 0
-        self.diameterThreshold = diameter_threshold
-        self.circularity_threshold = circularity_threshold
-        self.sieveDesc = []
+        self.minimum_area=0
+        self.minimum_diameter=0
+        self.diameterThreshold=diameter_threshold
+        self.circularity_threshold=circularity_threshold
+        self.sieveDesc=[]
         self.scaling_num = scaling_num
         self.scaling_fact = scaling_fact
         self.scaling_stamp = scaling_stamp
@@ -36,11 +35,16 @@ class sizeAnalysisModel:
         self.mean_size = 0
         self.passing = []
         self.retaining = []
-        self.xmlstring = ""
+        self.xmlstring=""
+
+
+
 
     def __getToArea(self):
         if self.tot_area is not None:
-            self.tot_area = self.tot_area/1000
+            self.tot_area=self.tot_area/1000
+
+
 
     def __countNumParticles(self):
         """
@@ -57,8 +61,7 @@ class sizeAnalysisModel:
                 next(file)
                 for line in file:
                     if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(
-                            float, line.strip().split(','))
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
                         item = {
                             "area": area,
                             "perimeter": perimeter,
@@ -66,7 +69,7 @@ class sizeAnalysisModel:
                             "circularity": circularity
                         }
                         self.particles.append(item)
-                if len(self.particles) > 0:
+                if len(self.particles)>0:
                     self.__countUnderSValue()
                     self.__countOverSValue()
                     self.__countMeanSize()
@@ -74,14 +77,13 @@ class sizeAnalysisModel:
                     self.__countD10()
                     self.__countD50()
                     self.__countMinimumArea()
+                    self.__countMinimumDiameter()
                 else:
-                    logger.error(
-                        "SampleId : {} does not have any item to be processed", self.sampleId)
+                    logger.error("SampleId : {} does not have any item to be processed" , self.sampleId)
             self.__getToArea()
 
-        except:
-            logger.error("Segments csv file can  not be parsed")
-    # Todo
+        except Exception as e:
+                logger.error("Segments csv file can  not be parsed due to {} error",e)
 
     def __countOverSValue(self):
         """
@@ -91,8 +93,7 @@ class sizeAnalysisModel:
         overSValue = 0
         overSValuePercentage = 0
         if len(self.particles) == 0:
-            logger.error(
-                "There are no particles for OverS (8) [%] value to be processed")
+            logger.error("There are no particles for OverS (8) [%] value to be processed")
             return
 
         # Filter particles by diameter and circularity thresholds---to be reviewd
@@ -117,13 +118,11 @@ class sizeAnalysisModel:
             overSValuePercentage = overSValue / len(self.particles) * 100
 
         # Format the percentage value
-        overSValuePercentage = format(
-            max(float(overSValuePercentage), 0), '.8f')
+        overSValuePercentage = format(max(float(overSValuePercentage), 0), '.8f')
 
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
         self.over_s_value = overSValuePercentage
-    # Todo
 
     def __countUnderSValue(self):
         """
@@ -132,8 +131,7 @@ class sizeAnalysisModel:
         area < 0.15.
         """
         if len(self.particles) == 0:
-            logger.error(
-                "There are no particles for UnderS (0.15) [%] value to be processed")
+            logger.error("There are no particles for UnderS (0.15) [%] value to be processed")
             return
 
         underSValue = 0
@@ -162,13 +160,11 @@ class sizeAnalysisModel:
                 underSValuePercentage = 0
 
         # Format the percentage value
-        underSValuePercentage = format(
-            max(float(underSValuePercentage), 0), '.8f')
+        underSValuePercentage = format(max(float(underSValuePercentage), 0), '.8f')
 
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
 
         self.under_s_value = underSValuePercentage
-    # Todo
 
     def __countMeanSize(self):
         """
@@ -185,13 +181,25 @@ class sizeAnalysisModel:
         for diameter in diameters:
             totalSize += diameter
 
-        meanSize = format(
-            max(float(totalSize / len(self.particles)/1000), 0), '.8f')
+        meanSize = format(max(float( totalSize / len(self.particles)/1000), 0), '.8f' )
 
         logger.info("Mean Size : {}", meanSize)
 
         self.mean_size = meanSize
 
+    def __countMinimumDiameter(self):
+        """
+                This function counts minimumDiameter of the particles
+                """
+        if len(self.particles) == 0:
+            logger.error("There is no particles for minimumArea to be processed")
+            return
+
+        diameters = [particle['diameter'] for particle in self.particles]
+        sorted_diameters = sorted(diameters)
+        self.minimum_diameter = format(max(float(sorted_diameters[0] / 1000), 0),'.8f')
+
+        logger.info("Minimum Diameter : {}", self.minimum_diameter)
     def __countD10(self):
         """
         This function counts D10 indicates that 10% of all particles have a diameter that is less than or equal to this value
@@ -204,8 +212,7 @@ class sizeAnalysisModel:
 
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
-        self.d_10 = format(
-            max(float(sorted_diameters[count_10_per]/1000), 0), '.8f')
+        self.d_10 =format(max(float(sorted_diameters[count_10_per]/1000), 0), '.8f' )
 
         logger.info("D10mm : {}", self.d_10)
 
@@ -222,8 +229,7 @@ class sizeAnalysisModel:
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
 
-        self.d_50 = format(
-            max(float(sorted_diameters[count_50_per]/1000), 0), '.8f')
+        self.d_50 =format(max(float(sorted_diameters[count_50_per]/1000), 0), '.8f' )
 
         logger.info("D50mm : {}", self.d_50)
 
@@ -239,8 +245,7 @@ class sizeAnalysisModel:
 
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
-        self.d_90 = format(
-            max(float(sorted_diameters[count_90_per]/1000), 0), '.8f')
+        self.d_90 =format(max(float(sorted_diameters[count_90_per]/1000), 0), '.8f' )
 
         logger.info("D90mm : {}", self.d_90)
 
@@ -249,25 +254,25 @@ class sizeAnalysisModel:
         This function counts minimumArea of the particles
         """
         if len(self.particles) == 0:
-            logger.error(
-                "There is no particles for minimumArea to be processed")
+            logger.error("There is no particles for minimumArea to be processed")
             return
+
+
 
         areas = [particle['area'] for particle in self.particles]
         sorted_areas = sorted(areas)
-        self.minmum_area = format(
-            max(float(sorted_areas[0]/1000000), 0), '.8f')
+        self.minimum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
-        logger.info("Minimum Area : {} mm2", self.minmum_area)
+        logger.info("Minimum Area : {}", self.minimum_area)
 
-    # Todo--fileFormat confirming
+
     def __filterDistribution(self):
         """
             This function counts the distributions for passing and retaining
         """
         input_string = ''
         try:
-            # Take string in the psd file
+        # Take string in the psd file
             with open(self.psd_file_path, 'r') as file:
 
                 for line in file:
@@ -278,21 +283,22 @@ class sizeAnalysisModel:
 
             # Filter the bins from the input; these are assumed to be the values before "% Passing"
             bin_array = elements[1:elements.index('Bottom') + 1]
-            self.rows = len(bin_array)
+            self.rows=len(bin_array)
             for item in bin_array:
-                try:
-                    num_item = float(item)
-                    mum_item_1000 = num_item/1000
-                    self.sieveDesc.append(str(mum_item_1000))
-                except:
-                    self.sieveDesc.append(item)
+                 try:
+                     num_item=float(item)
+                     mum_item_1000=num_item/1000
+                     self.sieveDesc.append(str(mum_item_1000))
+                 except:
+                     self.sieveDesc.append(item)
 
             logger.info("bins:{} ", self.sieveDesc)
             self.__format_sieveValues()
             # Find the indices for passing and retaining percentages
             passing_start = elements.index('% Passing') + 1
-            passing_end = elements.index('% Retained')
+            passing_end=elements.index('% Retained')
             retaining_start = elements.index('% Retained') + 1
+
 
             # Extract the passing and retaining percentages--only 4 values will be produced
             passing_raw = elements[passing_start:passing_end]
@@ -303,29 +309,26 @@ class sizeAnalysisModel:
             if len(passing_raw) < len(bin_array):
                 passing_raw += ['0.0'] * (len(bin_array) - len(passing_raw))
             if len(retaining_raw) < len(bin_array):
-                retaining_raw += ['0.0'] * \
-                    (len(bin_array) - len(retaining_raw))
+                retaining_raw += ['0.0'] * (len(bin_array) - len(retaining_raw))
 
             # Convert lists to integer arrays, formatting floats to 8 decimal places
             # and replacing negative numbers with zero
             print(passing_raw)
-            passing = [format(max(float(num), 0), '.8f')
-                       for num in passing_raw]
-            retaining = [format(max(float(num), 0), '.8f')
-                         for num in retaining_raw]
+            passing = [format(max(float(num), 0), '.8f') for num in passing_raw]
+            retaining = [format(max(float(num), 0), '.8f') for num in retaining_raw]
 
             self.passing = passing
             self.retaining = retaining
 
+
         except Exception as e:
-            logger.error("Distribution file can not be parsed:{} ", e)
+            logger.error("Distribution file can not be parsed:{} ",e)
 
     def __generate_iso_datetime(self):
 
         now = datetime.now()
 
-        self.date_time = now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-
+        self.date_time= now.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
     def __build_xml(self):
 
         self.__countNumParticles()
@@ -345,26 +348,23 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'CustomField5')
         ET.SubElement(root, 'NumParticles').text = str(len(self.particles))
         ET.SubElement(root, 'TotArea').text = str(self.tot_area)
-        # Todo
         ET.SubElement(root, 'ScalingFact').text = str(self.scaling_fact)
-        # Todo
         ET.SubElement(root, 'ScalingNum').text = str(self.scaling_num)
         ET.SubElement(root, 'ScalingStamp').text = self.scaling_stamp
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
         ET.SubElement(root, 'DateTime').text = self.date_time
         ET.SubElement(root, 'AnalysisTime').text = self.analysis_time
-        ET.SubElement(root, 'minmumArea').text = str(self.minmum_area)
-        ET.SubElement(root, 'NumResultTables').text = str(1)
-        ET.SubElement(root, 'NumSummaryData').text = str(8)
+        ET.SubElement(root, 'MinimumArea').text = str(self.minimum_area)
+        ET.SubElement(root, 'MinimumDiameter').text = str(self.minimum_diameter)
+        ET.SubElement(root, 'NumResultTables').text=str(1)
+        ET.SubElement(root, 'NumSummaryData').text=str(8)
         result_table = ET.SubElement(root, 'ResultTable')
         ET.SubElement(result_table, 'TableId').text = "1"
         ET.SubElement(result_table, 'NumColumns').text = "2"
         result_columns_passing = ET.SubElement(result_table, 'ResultColumns')
-        self.add_result_columns(result_columns_passing,
-                                '1', '% Passing', 'Passing', self.passing)
+        self.add_result_columns(result_columns_passing, '1', '% Passing', 'Passing', self.passing)
         result_columns_retained = ET.SubElement(result_table, 'ResultColumns')
-        self.add_result_columns(result_columns_retained,
-                                '2', '% Retained', 'Retained', self.retaining)
+        self.add_result_columns(result_columns_retained, '2', '% Retained', 'Retained', self.retaining)
         # Adding summary D_10 data node
         D10_summary_data = ET.SubElement(root, 'SummaryData')
         ET.SubElement(D10_summary_data, 'Id').text = str(3)
@@ -388,15 +388,13 @@ class sizeAnalysisModel:
         ET.SubElement(Overs_summary_data, 'Id').text = str(6)
         ET.SubElement(Overs_summary_data, 'ColumnId').text = str(6)
         ET.SubElement(Overs_summary_data, 'Name').text = "OverS (8) [%]"
-        ET.SubElement(Overs_summary_data, 'Value').text = str(
-            self.over_s_value)
+        ET.SubElement(Overs_summary_data, 'Value').text = str(self.over_s_value)
         # Adding summary under s  data node
         Unders_summary_data = ET.SubElement(root, 'SummaryData')
         ET.SubElement(Unders_summary_data, 'Id').text = str(7)
         ET.SubElement(Unders_summary_data, 'ColumnId').text = str(7)
         ET.SubElement(Unders_summary_data, 'Name').text = "UnderS (0.15) [%]"
-        ET.SubElement(Unders_summary_data, 'Value').text = str(
-            self.under_s_value)
+        ET.SubElement(Unders_summary_data, 'Value').text = str(self.under_s_value)
 
         # Adding summary total  data node
         Total_Part = ET.SubElement(root, 'SummaryData')
@@ -411,12 +409,12 @@ class sizeAnalysisModel:
         ET.SubElement(Mean_Size, 'ColumnId').text = str(7)
         ET.SubElement(Mean_Size, 'Name').text = "Mean Size"
         ET.SubElement(Mean_Size, 'Value').text = str(self.mean_size)
-        self.xmlstring = ET.tostring(root, encoding='unicode', method='xml')
+        self.xmlstring= ET.tostring(root, encoding='unicode', method='xml')
 
     def __format_sieveValues(self):
 
         self.sieveValues = []
-        if len(self.sieveDesc) > 0:
+        if len(self.sieveDesc)>0:
 
             for value in self.sieveDesc:
                 try:
@@ -427,6 +425,9 @@ class sizeAnalysisModel:
                     formatted_value = "0.00000000"
                 self.sieveValues.append(formatted_value)
 
+
+
+
     def add_result_columns(self, parent, column_id, class_desc, dist, distribution):
         ET.SubElement(parent, 'ColumnId').text = column_id
         ET.SubElement(parent, 'ClassDesc').text = class_desc
@@ -435,6 +436,7 @@ class sizeAnalysisModel:
         ET.SubElement(parent, 'Unit').text = 'mm'
         ET.SubElement(parent, 'MeshType').text = 'Mesh_MM'
         ET.SubElement(parent, 'NumRows').text = str(self.rows)
+
 
         sieve_desc = ET.SubElement(parent, 'SieveDesc')
         sieve_size = ET.SubElement(parent, 'SieveSize')
@@ -448,28 +450,29 @@ class sizeAnalysisModel:
         for value in distribution:
             ET.SubElement(distribution_node, 'Value').text = str(value)
 
-    # get sample folder path
 
+    ## get sample folder path
     def __get_directory_path(self):
         # use os.path.dirname
-        directory_path = ""
+        directory_path=""
         if self.segments_file_path is not None:
             directory_path = os.path.dirname(self.segments_file_path)
         return directory_path
-
-    def save_xml(self):
+    def save_xml(self,normalFlag=False):
         self.__build_xml()
 
-        if self.xmlstring == "":
-            logger.error(
-                "No xml file is generated given that no xmlString is build,please re-check")
+        if self.xmlstring=="":
+            logger.error("No xml file is generated given that no xmlString is build,please re-check")
             return
+
 
         reparsed = minidom.parseString(self.xmlstring)
         pretty_string = reparsed.toprettyxml(indent="  ")
-        pretty_string_without_declaration = '\n'.join(
-            pretty_string.split('\n')[1:])
-        filename = f"{self.sampleId}.xml"
+        pretty_string_without_declaration = '\n'.join(pretty_string.split('\n')[1:])
+        if normalFlag:
+            filename = f"{self.sampleId}_normalBin.xml"
+        else:
+            filename = f"{self.sampleId}.xml"
         folderPath = self.__get_directory_path()
 
         filePath = folderPath + "/" + filename

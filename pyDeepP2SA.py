@@ -76,7 +76,7 @@ def generate_masks(image, sam2_checkpoint,
             "See e.g. https://github.com/pytorch/pytorch/issues/84936 for a discussion."
         )
 
-    # sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    # sam = sam_model_registry[model_type](checkpoints=sam_checkpoint)
     # sam.to(device=device)
 
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
@@ -103,7 +103,7 @@ def generate_masks(image, sam2_checkpoint,
     return masks
 
 
-def visualise_masks(image, masks):
+def visualise_masks(image, masks,file_name):
     def show_anns(anns, borders=True):
         if len(anns) == 0:
             return
@@ -133,12 +133,17 @@ def visualise_masks(image, masks):
 
         ax.imshow(img)
 
+
     # Plot the original image with masks overlaid
     plt.figure(figsize=(20, 20))
     plt.imshow(image)
     show_anns(masks)
     plt.axis('off')  # Hide axis
-    plt.show()
+    plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
+    # plt.show()
+    # Save the generated image
+
+    print(f"Mask saved to {file_name}")
 
 
 def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
@@ -680,6 +685,53 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
     plt.show()
 
 
+def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName,sampleId):
+    bin_edges, counts, cumulative_area = get_psd_data(
+        diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
+
+    # append 0 for bottom
+    plot_bins = [0] + bins[:]
+
+    # Create equal spacing for plotting
+    equal_spacing = np.arange(len(plot_bins))
+
+    # Plot the histogram on the primary axis
+    f, ax = plt.subplots()
+    ax.bar(equal_spacing[:-1], counts, align='center',
+           edgecolor='black', color='skyblue')
+
+    # Set the x-axis limits and ticks to match the equal spacing
+    ax.set_xlim(min(equal_spacing), max(equal_spacing))
+    ax.set_xticks(equal_spacing)
+    ax.set_xticklabels([''] * len(equal_spacing))  # Hide the edge tick labels
+
+    # Manually set the positions of the tick labels to be at the midpoints
+    for i, (midpoint, label) in enumerate(zip(equal_spacing, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
+        ax.text(midpoint, -0.04, str(float(label) / 1000), ha='center',
+                va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+
+    # Create the secondary axis for the cumulative area plot
+    ax1 = ax.twinx()
+    ax1.plot(equal_spacing[::-1][:-1],
+             cumulative_area, color='red', linewidth=2)
+
+    # Convert the y-axis of the cumulative area plot to percentage
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+
+    # Set the labels for both axes
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
+    ax.set_ylabel('% Retained (Area %)')
+    ax1.set_ylabel('Cumulative % passing (Area %)')
+
+    plt.title("Particle size distribution")
+    # Save the plot as an image file
+    # filename = f"{folder_path}/{sampleId}_plot.png"
+    plt.savefig(fileName)  # Save the plot to the path constructed
+    # Show the plot
+    # plt.show()
+
 def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
 
@@ -915,7 +967,25 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
         writer = csv.writer(csvfile)
         writer.writerow(data)
     return
+def save_psd_as_txt_normal(id, bins, cumulative, differential, csv_directory):
 
+    # prepare for export arrangement
+    # reverse order for bins
+    bins_export = [0] + bins[:]
+    bins_export[0] = "Bottom"
+    bins_export.reverse()
+    differential.reverse()
+    cumulative.reverse()
+
+    csvpath = os.path.join(csv_directory, f"{id}_normalBin_distribution.txt")
+
+    # write to csv file id, bins, cumulative, differential
+    with open(csvpath, 'w', newline='') as csvfile:
+        data = [id] + bins_export + ['% Passing'] + \
+            cumulative + ['% Retained'] + differential
+        writer = csv.writer(csvfile)
+        writer.writerow(data)
+    return
 
 def plot_cir(diameter_threshold, circularity_threshold, num_bins, csv_directory):
     stat = pd.read_csv(csv_directory)

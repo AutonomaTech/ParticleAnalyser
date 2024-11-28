@@ -3,7 +3,7 @@
 import os
 import requests
 
-# URL of the checkpoint file
+# URL of the checkpoints file
 url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt"
 
 # Path to save the file
