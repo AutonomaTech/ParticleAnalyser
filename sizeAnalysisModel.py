@@ -197,7 +197,7 @@ class sizeAnalysisModel:
 
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
-        self.minimum_diameter = max(float(sorted_diameters[0] / 1000), 0)
+        self.minimum_diameter = format(max(float(sorted_diameters[0] / 1000), 0),'.8f')
 
         logger.info("Minimum Diameter : {}", self.minimum_diameter)
     def __countD10(self):

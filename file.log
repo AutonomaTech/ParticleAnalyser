@@ -753,6 +753,284 @@
 2024-11-19T14:40:21.823431+0800 INFO Minimum Area : 0.01158971 mm2
 2024-11-19T14:40:21.839063+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
 2024-11-22T16:18:46.209456+0800 INFO Generating masks - image: Samples/0001/final_0001.png, scaling factor: 107.6555023923445 um/px, sam_checkpoint: checkpoints/sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T11:08:38.038770+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S1\final_RCB1489190_S1.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T11:24:14.478618+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S1\final_RCB1489190_S1.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T11:34:39.755603+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S1\final_RCB1489190_S1.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T11:51:21.427392+0800 INFO Generating masks took: 0:16:41.671789
+2024-11-26T11:59:04.845521+0800 INFO UnderS (0.15) [%]: 3.56145251
+2024-11-26T11:59:04.846521+0800 INFO OverS (8) [%]: 7.40223464
+2024-11-26T11:59:04.846521+0800 INFO Mean Size : 3.66760177
+2024-11-26T11:59:04.846521+0800 INFO D90mm : 7.21453336
+2024-11-26T11:59:04.847522+0800 INFO D10mm : 0.47268613
+2024-11-26T11:59:04.848522+0800 INFO D50mm : 2.95208201
+2024-11-26T11:59:04.848522+0800 INFO Minimu Area : 0.01117161
+2024-11-26T11:59:04.853528+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T12:26:31.651542+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S2\final_RCB1489190_S2.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T12:43:33.558297+0800 INFO Generating masks took: 0:17:01.905648
+2024-11-26T12:51:51.274882+0800 INFO UnderS (0.15) [%]: 3.56145251
+2024-11-26T12:51:51.275656+0800 INFO OverS (8) [%]: 7.40223464
+2024-11-26T12:51:51.276489+0800 INFO Mean Size : 3.66760177
+2024-11-26T12:51:51.277495+0800 INFO D90mm : 7.21453336
+2024-11-26T12:51:51.278494+0800 INFO D10mm : 0.47268613
+2024-11-26T12:51:51.278494+0800 INFO D50mm : 2.95208201
+2024-11-26T12:51:51.279495+0800 INFO Minimu Area : 0.01117161
+2024-11-26T12:51:51.284494+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T12:53:19.902080+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S3\final_RCB1489190_S3.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T13:09:34.062297+0800 INFO Generating masks took: 0:16:14.160217
+2024-11-26T13:15:58.863560+0800 INFO UnderS (0.15) [%]: 3.56145251
+2024-11-26T13:15:58.863560+0800 INFO OverS (8) [%]: 7.40223464
+2024-11-26T13:15:58.863560+0800 INFO Mean Size : 3.66760177
+2024-11-26T13:15:58.863560+0800 INFO D90mm : 7.21453336
+2024-11-26T13:15:58.863560+0800 INFO D10mm : 0.47268613
+2024-11-26T13:15:58.863560+0800 INFO D50mm : 2.95208201
+2024-11-26T13:15:58.866389+0800 INFO Minimu Area : 0.01117161
+2024-11-26T13:15:58.871264+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T13:16:35.786223+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S4\final_RCB1489190_S4.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T13:32:42.190781+0800 INFO Generating masks took: 0:16:06.388852
+2024-11-26T13:39:44.096498+0800 INFO UnderS (0.15) [%]: 3.56145251
+2024-11-26T13:39:44.096498+0800 INFO OverS (8) [%]: 7.40223464
+2024-11-26T13:39:44.096498+0800 INFO Mean Size : 3.66760177
+2024-11-26T13:39:44.096498+0800 INFO D90mm : 7.21453336
+2024-11-26T13:39:44.096498+0800 INFO D10mm : 0.47268613
+2024-11-26T13:39:44.096498+0800 INFO D50mm : 2.95208201
+2024-11-26T13:39:44.096498+0800 INFO Minimu Area : 0.01117161
+2024-11-26T13:39:44.096498+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T13:40:17.461076+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_S5\final_RCB1489190_S5.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T13:56:32.802834+0800 INFO Generating masks took: 0:16:15.341758
+2024-11-26T14:03:42.401940+0800 INFO UnderS (0.15) [%]: 3.56145251
+2024-11-26T14:03:42.401940+0800 INFO OverS (8) [%]: 7.40223464
+2024-11-26T14:03:42.401940+0800 INFO Mean Size : 3.66760177
+2024-11-26T14:03:42.401940+0800 INFO D90mm : 7.21453336
+2024-11-26T14:03:42.401940+0800 INFO D10mm : 0.47268613
+2024-11-26T14:03:42.401940+0800 INFO D50mm : 2.95208201
+2024-11-26T14:03:42.401940+0800 INFO Minimu Area : 0.01117161
+2024-11-26T14:03:42.410124+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T14:10:20.435750+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V1\final_RCB1489190_V1.png, scaling factor: 107.39856801909308 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T14:27:44.529655+0800 INFO Generating masks took: 0:17:24.093905
+2024-11-26T14:39:41.403349+0800 INFO UnderS (0.15) [%]: 6.66025487
+2024-11-26T14:39:41.403349+0800 INFO OverS (8) [%]: 10.21880260
+2024-11-26T14:39:41.403349+0800 INFO Mean Size : 3.98922470
+2024-11-26T14:39:41.405354+0800 INFO D90mm : 8.08005978
+2024-11-26T14:39:41.405354+0800 INFO D10mm : 0.21479714
+2024-11-26T14:39:41.405354+0800 INFO D50mm : 3.44185741
+2024-11-26T14:39:41.407354+0800 INFO Minimu Area : 0.01153445
+2024-11-26T14:39:41.409357+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T14:43:37.614246+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V2\final_RCB1489190_V2.png, scaling factor: 106.88836104513064 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T15:00:02.816292+0800 INFO Generating masks took: 0:16:25.186002
+2024-11-26T15:09:13.444996+0800 INFO UnderS (0.15) [%]: 6.49260628
+2024-11-26T15:09:13.444996+0800 INFO OverS (8) [%]: 10.67467652
+2024-11-26T15:09:13.444996+0800 INFO Mean Size : 4.02329940
+2024-11-26T15:09:13.445996+0800 INFO D90mm : 8.21186335
+2024-11-26T15:09:13.445996+0800 INFO D10mm : 0.21377672
+2024-11-26T15:09:13.446996+0800 INFO D50mm : 3.35555617
+2024-11-26T15:09:13.446996+0800 INFO Minimu Area : 0.01142512
+2024-11-26T15:09:13.450997+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-26T15:37:44.469047+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V3\final_RCB1489190_V3.png, scaling factor: 107.6555023923445 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-26T16:01:21.005091+0800 INFO Generating masks took: 0:23:36.520191
+2024-11-26T16:15:26.278650+0800 INFO UnderS (0.15) [%]: 7.16240876
+2024-11-26T16:15:26.285571+0800 INFO OverS (8) [%]: 10.10492701
+2024-11-26T16:15:26.286313+0800 INFO Mean Size : 3.89100064
+2024-11-26T16:15:26.286313+0800 INFO D90mm : 8.01921291
+2024-11-26T16:15:26.286313+0800 INFO D10mm : 0.21531100
+2024-11-26T16:15:26.286313+0800 INFO D50mm : 3.20294209
+2024-11-26T16:15:26.286313+0800 INFO Minimu Area : 0.01158971
+2024-11-26T16:15:26.286313+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T08:03:52.297444+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V4\final_RCB1489190_V4.png, scaling factor: 107.52688172043011 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T08:23:15.895759+0800 INFO Generating masks took: 0:19:23.592883
+2024-11-27T08:33:06.791157+0800 INFO UnderS (0.15) [%]: 7.08835836
+2024-11-27T08:33:06.792153+0800 INFO OverS (8) [%]: 10.80482402
+2024-11-27T08:33:06.792153+0800 INFO Mean Size : 4.01720039
+2024-11-27T08:33:06.793150+0800 INFO D90mm : 8.30062626
+2024-11-27T08:33:06.793150+0800 INFO D10mm : 0.21505376
+2024-11-27T08:33:06.794158+0800 INFO D50mm : 3.42319893
+2024-11-27T08:33:06.794158+0800 INFO Minimu Area : 0.01156203
+2024-11-27T08:33:06.801158+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T08:34:52.591623+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V5\final_RCB1489190_V5.png, scaling factor: 107.27056019070322 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T08:52:59.998394+0800 INFO Generating masks took: 0:18:07.405779
+2024-11-27T09:02:20.308642+0800 INFO UnderS (0.15) [%]: 6.71967171
+2024-11-27T09:02:20.309635+0800 INFO OverS (8) [%]: 10.33598359
+2024-11-27T09:02:20.310635+0800 INFO Mean Size : 4.03660441
+2024-11-27T09:02:20.311636+0800 INFO D90mm : 8.17738217
+2024-11-27T09:02:20.312636+0800 INFO D10mm : 0.21454112
+2024-11-27T09:02:20.314636+0800 INFO D50mm : 3.42032526
+2024-11-27T09:02:20.315636+0800 INFO Minimu Area : 0.01150697
+2024-11-27T09:02:20.319635+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T09:04:07.495790+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V6\final_RCB1489190_V6.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T09:08:31.852275+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V7\final_RCB1489190_V7.png, scaling factor: 106.57193605683837 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T09:28:38.180490+0800 INFO Generating masks took: 0:20:06.326216
+2024-11-27T09:41:28.593832+0800 INFO UnderS (0.15) [%]: 7.09660011
+2024-11-27T09:41:28.594832+0800 INFO OverS (8) [%]: 12.54722072
+2024-11-27T09:41:28.594832+0800 INFO Mean Size : 4.15291837
+2024-11-27T09:41:28.595832+0800 INFO D90mm : 8.78852872
+2024-11-27T09:41:28.595832+0800 INFO D10mm : 0.21314387
+2024-11-27T09:41:28.596832+0800 INFO D50mm : 3.31560728
+2024-11-27T09:41:28.596832+0800 INFO Minimu Area : 0.01135758
+2024-11-27T09:41:28.601832+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T11:42:03.479348+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V8\final_RCB1489190_V8.png, scaling factor: 106.25737898465171 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T11:45:39.380030+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V8\final_RCB1489190_V8.png, scaling factor: 106.25737898465171 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T12:06:17.667369+0800 INFO Generating masks took: 0:20:38.287339
+2024-11-27T12:13:45.270395+0800 INFO UnderS (0.15) [%]: 6.60805445
+2024-11-27T12:13:45.270395+0800 INFO OverS (8) [%]: 10.57855927
+2024-11-27T12:13:45.270395+0800 INFO Mean Size : 3.98455017
+2024-11-27T12:13:45.272139+0800 INFO D90mm : 8.20968154
+2024-11-27T12:13:45.272139+0800 INFO D10mm : 0.21251476
+2024-11-27T12:13:45.272139+0800 INFO D50mm : 3.24378516
+2024-11-27T12:13:45.272139+0800 INFO Minimu Area : 0.01129063
+2024-11-27T12:13:45.276065+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T12:13:47.651366+0800 INFO UnderS (0.15) [%]: 6.60805445
+2024-11-27T12:13:47.651366+0800 INFO OverS (8) [%]: 10.57855927
+2024-11-27T12:13:47.651366+0800 INFO Mean Size : 3.98455017
+2024-11-27T12:13:47.651366+0800 INFO D90mm : 8.20968154
+2024-11-27T12:13:47.651366+0800 INFO D10mm : 0.21251476
+2024-11-27T12:13:47.651366+0800 INFO D50mm : 3.24378516
+2024-11-27T12:13:47.651366+0800 INFO Minimu Area : 0.01129063
+2024-11-27T12:13:47.669321+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T12:15:11.647816+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V9\final_RCB1489190_V9.png, scaling factor: 107.3345259391771 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T12:31:34.567002+0800 INFO Generating masks took: 0:16:22.918186
+2024-11-27T12:41:02.913312+0800 INFO UnderS (0.15) [%]: 6.11036339
+2024-11-27T12:41:02.913312+0800 INFO OverS (8) [%]: 11.68236878
+2024-11-27T12:41:02.913312+0800 INFO Mean Size : 4.16411984
+2024-11-27T12:41:02.913312+0800 INFO D90mm : 8.56504521
+2024-11-27T12:41:02.919550+0800 INFO D10mm : 0.21466905
+2024-11-27T12:41:02.919550+0800 INFO D50mm : 3.44268817
+2024-11-27T12:41:02.919550+0800 INFO Minimu Area : 0.01152070
+2024-11-27T12:41:02.923978+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T12:41:06.429675+0800 INFO UnderS (0.15) [%]: 6.11036339
+2024-11-27T12:41:06.429675+0800 INFO OverS (8) [%]: 11.68236878
+2024-11-27T12:41:06.429675+0800 INFO Mean Size : 4.16411984
+2024-11-27T12:41:06.429675+0800 INFO D90mm : 8.56504521
+2024-11-27T12:41:06.429675+0800 INFO D10mm : 0.21466905
+2024-11-27T12:41:06.429675+0800 INFO D50mm : 3.44268817
+2024-11-27T12:41:06.429675+0800 INFO Minimu Area : 0.01152070
+2024-11-27T12:41:06.429675+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T12:42:13.687050+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V10\final_RCB1489190_V10.png, scaling factor: 106.57193605683837 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T13:00:51.480467+0800 INFO Generating masks took: 0:18:37.793417
+2024-11-27T13:07:47.455226+0800 INFO UnderS (0.15) [%]: 7.30812641
+2024-11-27T13:07:47.455226+0800 INFO OverS (8) [%]: 14.05191874
+2024-11-27T13:07:47.455226+0800 INFO Mean Size : 4.44518287
+2024-11-27T13:07:47.455226+0800 INFO D90mm : 9.16731886
+2024-11-27T13:07:47.455226+0800 INFO D10mm : 0.21314387
+2024-11-27T13:07:47.455226+0800 INFO D50mm : 3.83580988
+2024-11-27T13:07:47.455226+0800 INFO Minimu Area : 0.01135758
+2024-11-27T13:07:47.463430+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T13:07:49.158884+0800 INFO UnderS (0.15) [%]: 7.30812641
+2024-11-27T13:07:49.158884+0800 INFO OverS (8) [%]: 14.05191874
+2024-11-27T13:07:49.158884+0800 INFO Mean Size : 4.44518287
+2024-11-27T13:07:49.158884+0800 INFO D90mm : 9.16731886
+2024-11-27T13:07:49.168722+0800 INFO D10mm : 0.21314387
+2024-11-27T13:07:49.168722+0800 INFO D50mm : 3.83580988
+2024-11-27T13:07:49.168722+0800 INFO Minimu Area : 0.01135758
+2024-11-27T13:07:49.173907+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T13:08:37.571941+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V11\final_RCB1489190_V11.png, scaling factor: 106.63507109004739 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T13:25:49.928879+0800 INFO Generating masks took: 0:17:12.354939
+2024-11-27T13:32:49.512597+0800 INFO UnderS (0.15) [%]: 5.62443302
+2024-11-27T13:32:49.512597+0800 INFO OverS (8) [%]: 12.91200484
+2024-11-27T13:32:49.512597+0800 INFO Mean Size : 4.15603003
+2024-11-27T13:32:49.512597+0800 INFO D90mm : 8.61691863
+2024-11-27T13:32:49.512597+0800 INFO D10mm : 0.24626315
+2024-11-27T13:32:49.512597+0800 INFO D50mm : 3.23673136
+2024-11-27T13:32:49.512597+0800 INFO Minimu Area : 0.01137104
+2024-11-27T13:32:49.520421+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T13:32:52.023014+0800 INFO UnderS (0.15) [%]: 5.62443302
+2024-11-27T13:32:52.023014+0800 INFO OverS (8) [%]: 12.91200484
+2024-11-27T13:32:52.023014+0800 INFO Mean Size : 4.15603003
+2024-11-27T13:32:52.023014+0800 INFO D90mm : 8.61691863
+2024-11-27T13:32:52.023014+0800 INFO D10mm : 0.24626315
+2024-11-27T13:32:52.023014+0800 INFO D50mm : 3.23673136
+2024-11-27T13:32:52.023014+0800 INFO Minimu Area : 0.01137104
+2024-11-27T13:32:52.034565+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T13:34:36.778091+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V12\final_RCB1489190_V12.png, scaling factor: 107.59115361625823 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T13:53:07.533159+0800 INFO Generating masks took: 0:18:30.753062
+2024-11-27T14:01:11.634021+0800 INFO UnderS (0.15) [%]: 4.84012907
+2024-11-27T14:01:11.634021+0800 INFO OverS (8) [%]: 9.76826049
+2024-11-27T14:01:11.634021+0800 INFO Mean Size : 3.91743707
+2024-11-27T14:01:11.634021+0800 INFO D90mm : 7.95672279
+2024-11-27T14:01:11.636024+0800 INFO D10mm : 0.33335900
+2024-11-27T14:01:11.636024+0800 INFO D50mm : 3.22952934
+2024-11-27T14:01:11.636024+0800 INFO Minimu Area : 0.01157586
+2024-11-27T14:01:11.639340+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T14:01:24.833553+0800 INFO UnderS (0.15) [%]: 4.84012907
+2024-11-27T14:01:24.833553+0800 INFO OverS (8) [%]: 9.76826049
+2024-11-27T14:01:24.833553+0800 INFO Mean Size : 3.91743707
+2024-11-27T14:01:24.833553+0800 INFO D90mm : 7.95672279
+2024-11-27T14:01:24.833553+0800 INFO D10mm : 0.33335900
+2024-11-27T14:01:24.833553+0800 INFO D50mm : 3.22952934
+2024-11-27T14:01:24.833553+0800 INFO Minimu Area : 0.01157586
+2024-11-27T14:01:24.840921+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T14:02:14.829979+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V13\final_RCB1489190_V13.png, scaling factor: 106.63507109004739 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T14:21:10.630474+0800 INFO Generating masks took: 0:18:55.800495
+2024-11-27T14:29:22.544188+0800 INFO UnderS (0.15) [%]: 6.15040537
+2024-11-27T14:29:22.544188+0800 INFO OverS (8) [%]: 11.85350853
+2024-11-27T14:29:22.544188+0800 INFO Mean Size : 4.16172750
+2024-11-27T14:29:22.544188+0800 INFO D90mm : 8.49538450
+2024-11-27T14:29:22.544188+0800 INFO D10mm : 0.24626315
+2024-11-27T14:29:22.544188+0800 INFO D50mm : 3.43746130
+2024-11-27T14:29:22.544188+0800 INFO Minimu Area : 0.01137104
+2024-11-27T14:29:22.544188+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T14:29:23.928485+0800 INFO UnderS (0.15) [%]: 6.15040537
+2024-11-27T14:29:23.928485+0800 INFO OverS (8) [%]: 11.85350853
+2024-11-27T14:29:23.928485+0800 INFO Mean Size : 4.16172750
+2024-11-27T14:29:23.928485+0800 INFO D90mm : 8.49538450
+2024-11-27T14:29:23.928485+0800 INFO D10mm : 0.24626315
+2024-11-27T14:29:23.928485+0800 INFO D50mm : 3.43746130
+2024-11-27T14:29:23.928485+0800 INFO Minimu Area : 0.01137104
+2024-11-27T14:29:23.941192+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T14:30:48.769582+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V14\final_RCB1489190_V14.png, scaling factor: 107.78443113772455 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T14:47:46.710956+0800 INFO Generating masks took: 0:16:57.941374
+2024-11-27T14:56:20.398666+0800 INFO UnderS (0.15) [%]: 7.28768733
+2024-11-27T14:56:20.398666+0800 INFO OverS (8) [%]: 14.25213047
+2024-11-27T14:56:20.398666+0800 INFO Mean Size : 4.39943290
+2024-11-27T14:56:20.398666+0800 INFO D90mm : 8.98470935
+2024-11-27T14:56:20.398666+0800 INFO D10mm : 0.21556886
+2024-11-27T14:56:20.398666+0800 INFO D50mm : 3.69258060
+2024-11-27T14:56:20.398666+0800 INFO Minimu Area : 0.01161748
+2024-11-27T14:56:20.398666+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T14:56:21.952780+0800 INFO UnderS (0.15) [%]: 7.28768733
+2024-11-27T14:56:21.952780+0800 INFO OverS (8) [%]: 14.25213047
+2024-11-27T14:56:21.952780+0800 INFO Mean Size : 4.39943290
+2024-11-27T14:56:21.952780+0800 INFO D90mm : 8.98470935
+2024-11-27T14:56:21.952780+0800 INFO D10mm : 0.21556886
+2024-11-27T14:56:21.952780+0800 INFO D50mm : 3.69258060
+2024-11-27T14:56:21.952780+0800 INFO Minimu Area : 0.01161748
+2024-11-27T14:56:21.966282+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T14:58:37.229480+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190\RCB1489190_V15\final_RCB1489190_V15.png, scaling factor: 107.39856801909308 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T15:21:47.955204+0800 INFO Generating masks took: 0:23:10.725724
+2024-11-27T15:36:44.824411+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V15\final_RCB1489190_V15.png, scaling factor: 107.39856801909308 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T16:00:13.759138+0800 INFO Generating masks took: 0:23:28.932983
+2024-11-27T16:08:09.902604+0800 INFO UnderS (0.15) [%]: 6.20012277
+2024-11-27T16:08:09.902604+0800 INFO OverS (8) [%]: 14.88643339
+2024-11-27T16:08:09.902604+0800 INFO Mean Size : 4.43679274
+2024-11-27T16:08:09.918588+0800 INFO D90mm : 9.41227870
+2024-11-27T16:08:09.918588+0800 INFO D10mm : 0.21479714
+2024-11-27T16:08:09.918588+0800 INFO D50mm : 3.65934624
+2024-11-27T16:08:09.918588+0800 INFO Minimu Area : 0.01153445
+2024-11-27T16:08:09.918588+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T16:08:11.462551+0800 INFO UnderS (0.15) [%]: 6.20012277
+2024-11-27T16:08:11.462551+0800 INFO OverS (8) [%]: 14.88643339
+2024-11-27T16:08:11.462551+0800 INFO Mean Size : 4.43679274
+2024-11-27T16:08:11.462551+0800 INFO D90mm : 9.41227870
+2024-11-27T16:08:11.462551+0800 INFO D10mm : 0.21479714
+2024-11-27T16:08:11.462551+0800 INFO D50mm : 3.65934624
+2024-11-27T16:08:11.462551+0800 INFO Minimu Area : 0.01153445
+2024-11-27T16:08:11.478642+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T16:08:40.498285+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V16\final_RCB1489190_V16.png, scaling factor: 107.52688172043011 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T16:25:34.736080+0800 INFO Generating masks took: 0:16:54.222165
+2024-11-27T16:38:01.574395+0800 INFO UnderS (0.15) [%]: 4.47407407
+2024-11-27T16:38:01.575210+0800 INFO OverS (8) [%]: 10.16296296
+2024-11-27T16:38:01.575210+0800 INFO Mean Size : 3.90262250
+2024-11-27T16:38:01.575210+0800 INFO D90mm : 8.04949969
+2024-11-27T16:38:01.575210+0800 INFO D10mm : 0.35118133
+2024-11-27T16:38:01.575210+0800 INFO D50mm : 3.07577538
+2024-11-27T16:38:01.575210+0800 INFO Minimu Area : 0.01156203
+2024-11-27T16:38:01.579824+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T16:38:02.798480+0800 INFO UnderS (0.15) [%]: 4.47407407
+2024-11-27T16:38:02.798480+0800 INFO OverS (8) [%]: 10.16296296
+2024-11-27T16:38:02.798480+0800 INFO Mean Size : 3.90262250
+2024-11-27T16:38:02.798480+0800 INFO D90mm : 8.04949969
+2024-11-27T16:38:02.798480+0800 INFO D10mm : 0.35118133
+2024-11-27T16:38:02.801072+0800 INFO D50mm : 3.07577538
+2024-11-27T16:38:02.801072+0800 INFO Minimu Area : 0.01156203
+2024-11-27T16:38:02.801072+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
 2024-11-27T11:04:38.692996+0800 ERROR Segments csv file can  not be parsed due to [Errno 2] No such file or directory: 'Samples/RCB1489190_DFK_S1/RCB1489190_DFK_S1.csv' error
 2024-11-27T11:04:38.693803+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
 2024-11-27T15:54:35.341114+0800 INFO Generating masks - image: /Users/licui/Desktop/Samples/RCB1489190/RCB1489190_S5/final_RCB1489190_S5.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints/sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
@@ -821,3 +1099,603 @@
 2024-11-27T16:31:16.235814+0800 INFO Minimu Area : 0.01117161
 2024-11-27T16:31:16.236159+0800 INFO Minimum Diameter : 0.029816243405342377
 2024-11-27T16:31:16.236498+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T16:41:37.532972+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V17\final_RCB1489190_V17.png, scaling factor: 106.88836104513064 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T16:58:37.083112+0800 INFO Generating masks took: 0:16:59.550140
+2024-11-27T17:04:34.901392+0800 INFO UnderS (0.15) [%]: 6.44555695
+2024-11-27T17:04:34.901392+0800 INFO OverS (8) [%]: 13.89236546
+2024-11-27T17:04:34.901392+0800 INFO Mean Size : 4.46351788
+2024-11-27T17:04:34.901392+0800 INFO D90mm : 9.00447719
+2024-11-27T17:04:34.901392+0800 INFO D10mm : 0.21377672
+2024-11-27T17:04:34.901392+0800 INFO D50mm : 3.84818009
+2024-11-27T17:04:34.904834+0800 INFO Minimum Area : 0.01142512
+2024-11-27T17:04:34.904834+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-27T17:04:34.904834+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T17:04:35.147801+0800 INFO UnderS (0.15) [%]: 6.44555695
+2024-11-27T17:04:35.147801+0800 INFO OverS (8) [%]: 13.89236546
+2024-11-27T17:04:35.147801+0800 INFO Mean Size : 4.46351788
+2024-11-27T17:04:35.153370+0800 INFO D90mm : 9.00447719
+2024-11-27T17:04:35.153370+0800 INFO D10mm : 0.21377672
+2024-11-27T17:04:35.153370+0800 INFO D50mm : 3.84818009
+2024-11-27T17:04:35.153370+0800 INFO Minimum Area : 0.01142512
+2024-11-27T17:04:35.153370+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-27T17:04:35.157473+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T17:05:37.758440+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V18\final_RCB1489190_V18.png, scaling factor: 108.43373493975903 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T17:25:24.974825+0800 INFO Generating masks took: 0:19:47.208315
+2024-11-27T17:31:20.647747+0800 INFO UnderS (0.15) [%]: 6.66468313
+2024-11-27T17:31:20.647747+0800 INFO OverS (8) [%]: 15.08479619
+2024-11-27T17:31:20.647747+0800 INFO Mean Size : 4.56167569
+2024-11-27T17:31:20.647747+0800 INFO D90mm : 9.32722858
+2024-11-27T17:31:20.647747+0800 INFO D10mm : 0.21686747
+2024-11-27T17:31:20.647747+0800 INFO D50mm : 3.95820823
+2024-11-27T17:31:20.647747+0800 INFO Minimum Area : 0.01175787
+2024-11-27T17:31:20.647747+0800 INFO Minimum Diameter : 0.030588591879095222
+2024-11-27T17:31:20.663493+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T17:31:20.837967+0800 INFO UnderS (0.15) [%]: 6.66468313
+2024-11-27T17:31:20.837967+0800 INFO OverS (8) [%]: 15.08479619
+2024-11-27T17:31:20.837967+0800 INFO Mean Size : 4.56167569
+2024-11-27T17:31:20.837967+0800 INFO D90mm : 9.32722858
+2024-11-27T17:31:20.837967+0800 INFO D10mm : 0.21686747
+2024-11-27T17:31:20.837967+0800 INFO D50mm : 3.95820823
+2024-11-27T17:31:20.837967+0800 INFO Minimum Area : 0.01175787
+2024-11-27T17:31:20.837967+0800 INFO Minimum Diameter : 0.030588591879095222
+2024-11-27T17:31:20.855156+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T17:31:33.465719+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V19\final_RCB1489190_V19.png, scaling factor: 108.10810810810811 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T17:51:08.593701+0800 INFO Generating masks took: 0:19:35.112314
+2024-11-27T17:57:04.938292+0800 INFO UnderS (0.15) [%]: 5.96372579
+2024-11-27T17:57:04.938292+0800 INFO OverS (8) [%]: 11.46633876
+2024-11-27T17:57:04.938292+0800 INFO Mean Size : 4.13690509
+2024-11-27T17:57:04.938292+0800 INFO D90mm : 8.49081525
+2024-11-27T17:57:04.938292+0800 INFO D10mm : 0.30577591
+2024-11-27T17:57:04.938292+0800 INFO D50mm : 3.39570950
+2024-11-27T17:57:04.938292+0800 INFO Minimum Area : 0.01168736
+2024-11-27T17:57:04.938292+0800 INFO Minimum Diameter : 0.030496734245824667
+2024-11-27T17:57:04.949999+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T17:57:05.130835+0800 INFO UnderS (0.15) [%]: 5.96372579
+2024-11-27T17:57:05.130835+0800 INFO OverS (8) [%]: 11.46633876
+2024-11-27T17:57:05.130835+0800 INFO Mean Size : 4.13690509
+2024-11-27T17:57:05.130835+0800 INFO D90mm : 8.49081525
+2024-11-27T17:57:05.130835+0800 INFO D10mm : 0.30577591
+2024-11-27T17:57:05.130835+0800 INFO D50mm : 3.39570950
+2024-11-27T17:57:05.130835+0800 INFO Minimum Area : 0.01168736
+2024-11-27T17:57:05.130835+0800 INFO Minimum Diameter : 0.030496734245824667
+2024-11-27T17:57:05.135896+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T17:57:13.781599+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V20\final_RCB1489190_V20.png, scaling factor: 107.52688172043011 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T18:15:13.528888+0800 INFO Generating masks took: 0:17:59.747289
+2024-11-27T18:21:40.839489+0800 INFO UnderS (0.15) [%]: 7.26597719
+2024-11-27T18:21:40.843174+0800 INFO OverS (8) [%]: 13.31211880
+2024-11-27T18:21:40.843174+0800 INFO Mean Size : 4.24393263
+2024-11-27T18:21:40.843174+0800 INFO D90mm : 8.85588131
+2024-11-27T18:21:40.843174+0800 INFO D10mm : 0.21505376
+2024-11-27T18:21:40.843174+0800 INFO D50mm : 3.56558151
+2024-11-27T18:21:40.843174+0800 INFO Minimum Area : 0.01156203
+2024-11-27T18:21:40.843174+0800 INFO Minimum Diameter : 0.030332773309019158
+2024-11-27T18:21:40.848376+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T18:21:41.032714+0800 INFO UnderS (0.15) [%]: 7.26597719
+2024-11-27T18:21:41.032714+0800 INFO OverS (8) [%]: 13.31211880
+2024-11-27T18:21:41.032714+0800 INFO Mean Size : 4.24393263
+2024-11-27T18:21:41.032714+0800 INFO D90mm : 8.85588131
+2024-11-27T18:21:41.032714+0800 INFO D10mm : 0.21505376
+2024-11-27T18:21:41.032714+0800 INFO D50mm : 3.56558151
+2024-11-27T18:21:41.032714+0800 INFO Minimum Area : 0.01156203
+2024-11-27T18:21:41.032714+0800 INFO Minimum Diameter : 0.030332773309019158
+2024-11-27T18:21:41.032714+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T18:21:49.414892+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V6\final_RCB1489190_V6.png, scaling factor: 100.11123470522803 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T18:38:08.883072+0800 INFO Generating masks took: 0:16:19.458343
+2024-11-27T18:41:30.258875+0800 INFO UnderS (0.15) [%]: 5.76000000
+2024-11-27T18:41:30.258875+0800 INFO OverS (8) [%]: 6.45333333
+2024-11-27T18:41:30.258875+0800 INFO Mean Size : 3.62431891
+2024-11-27T18:41:30.258875+0800 INFO D90mm : 6.88037618
+2024-11-27T18:41:30.258875+0800 INFO D10mm : 0.20022247
+2024-11-27T18:41:30.258875+0800 INFO D50mm : 3.29737728
+2024-11-27T18:41:30.258875+0800 INFO Minimum Area : 0.01002226
+2024-11-27T18:41:30.258875+0800 INFO Minimum Diameter : 0.028240857908397147
+2024-11-27T18:41:30.263509+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T18:41:30.441553+0800 INFO UnderS (0.15) [%]: 5.76000000
+2024-11-27T18:41:30.441553+0800 INFO OverS (8) [%]: 6.45333333
+2024-11-27T18:41:30.441553+0800 INFO Mean Size : 3.62431891
+2024-11-27T18:41:30.446610+0800 INFO D90mm : 6.88037618
+2024-11-27T18:41:30.446610+0800 INFO D10mm : 0.20022247
+2024-11-27T18:41:30.446610+0800 INFO D50mm : 3.29737728
+2024-11-27T18:41:30.446610+0800 INFO Minimum Area : 0.01002226
+2024-11-27T18:41:30.446610+0800 INFO Minimum Diameter : 0.028240857908397147
+2024-11-27T18:41:30.446610+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T18:41:37.854256+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_S1\final_RCB1751016_S1.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T19:01:01.872203+0800 INFO Generating masks took: 0:19:24.017947
+2024-11-27T19:05:56.899584+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:05:56.901123+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:05:56.901492+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:05:56.901492+0800 INFO D90mm : 3.44402705
+2024-11-27T19:05:56.901492+0800 INFO D10mm : 1.04803821
+2024-11-27T19:05:56.901492+0800 INFO D50mm : 1.73913748
+2024-11-27T19:05:56.901492+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:05:56.901492+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:05:56.901492+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T19:05:57.075122+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:05:57.075122+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:05:57.075122+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:05:57.075122+0800 INFO D90mm : 3.44402705
+2024-11-27T19:05:57.075122+0800 INFO D10mm : 1.04803821
+2024-11-27T19:05:57.075122+0800 INFO D50mm : 1.73913748
+2024-11-27T19:05:57.075122+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:05:57.075122+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:05:57.090780+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T19:06:04.777845+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_S2\final_RCB1751016_S2.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T19:25:28.930239+0800 INFO Generating masks took: 0:19:24.150650
+2024-11-27T19:30:26.873089+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:30:26.873089+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:30:26.873089+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:30:26.873089+0800 INFO D90mm : 3.44402705
+2024-11-27T19:30:26.873089+0800 INFO D10mm : 1.04803821
+2024-11-27T19:30:26.873089+0800 INFO D50mm : 1.73913748
+2024-11-27T19:30:26.873089+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:30:26.873089+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:30:26.873089+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T19:30:27.063641+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:30:27.063641+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:30:27.063641+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:30:27.063641+0800 INFO D90mm : 3.44402705
+2024-11-27T19:30:27.063641+0800 INFO D10mm : 1.04803821
+2024-11-27T19:30:27.063641+0800 INFO D50mm : 1.73913748
+2024-11-27T19:30:27.063641+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:30:27.063641+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:30:27.063641+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T19:30:34.627740+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_S3\final_RCB1751016_S3.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T19:49:59.993322+0800 INFO Generating masks took: 0:19:25.365582
+2024-11-27T19:54:59.724986+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:54:59.724986+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:54:59.724986+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:54:59.724986+0800 INFO D90mm : 3.44402705
+2024-11-27T19:54:59.724986+0800 INFO D10mm : 1.04803821
+2024-11-27T19:54:59.724986+0800 INFO D50mm : 1.73913748
+2024-11-27T19:54:59.724986+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:54:59.724986+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:54:59.740275+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T19:54:59.917579+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T19:54:59.917579+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T19:54:59.917579+0800 INFO Mean Size : 2.04984987
+2024-11-27T19:54:59.917579+0800 INFO D90mm : 3.44402705
+2024-11-27T19:54:59.917579+0800 INFO D10mm : 1.04803821
+2024-11-27T19:54:59.917579+0800 INFO D50mm : 1.73913748
+2024-11-27T19:54:59.917579+0800 INFO Minimum Area : 0.01147959
+2024-11-27T19:54:59.917579+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T19:54:59.917579+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T19:55:07.546566+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_S4\final_RCB1751016_S4.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T20:14:34.930936+0800 INFO Generating masks took: 0:19:27.384370
+2024-11-27T20:19:35.122883+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T20:19:35.122883+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T20:19:35.122883+0800 INFO Mean Size : 2.04984987
+2024-11-27T20:19:35.122883+0800 INFO D90mm : 3.44402705
+2024-11-27T20:19:35.122883+0800 INFO D10mm : 1.04803821
+2024-11-27T20:19:35.126180+0800 INFO D50mm : 1.73913748
+2024-11-27T20:19:35.126180+0800 INFO Minimum Area : 0.01147959
+2024-11-27T20:19:35.126180+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T20:19:35.129487+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T20:19:35.306760+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T20:19:35.306760+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T20:19:35.306760+0800 INFO Mean Size : 2.04984987
+2024-11-27T20:19:35.306760+0800 INFO D90mm : 3.44402705
+2024-11-27T20:19:35.306760+0800 INFO D10mm : 1.04803821
+2024-11-27T20:19:35.306760+0800 INFO D50mm : 1.73913748
+2024-11-27T20:19:35.306760+0800 INFO Minimum Area : 0.01147959
+2024-11-27T20:19:35.306760+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T20:19:35.316657+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T20:19:42.862134+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_S5\final_RCB1751016_S5.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T20:39:04.898964+0800 INFO Generating masks took: 0:19:22.036830
+2024-11-27T20:44:01.236993+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T20:44:01.236993+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T20:44:01.236993+0800 INFO Mean Size : 2.04984987
+2024-11-27T20:44:01.251784+0800 INFO D90mm : 3.44402705
+2024-11-27T20:44:01.252552+0800 INFO D10mm : 1.04803821
+2024-11-27T20:44:01.252552+0800 INFO D50mm : 1.73913748
+2024-11-27T20:44:01.252552+0800 INFO Minimum Area : 0.01147959
+2024-11-27T20:44:01.252552+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T20:44:01.252552+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T20:44:01.427660+0800 INFO UnderS (0.15) [%]: 1.44373673
+2024-11-27T20:44:01.427660+0800 INFO OverS (8) [%]: 0.67940552
+2024-11-27T20:44:01.427660+0800 INFO Mean Size : 2.04984987
+2024-11-27T20:44:01.427660+0800 INFO D90mm : 3.44402705
+2024-11-27T20:44:01.427660+0800 INFO D10mm : 1.04803821
+2024-11-27T20:44:01.427660+0800 INFO D50mm : 1.73913748
+2024-11-27T20:44:01.427660+0800 INFO Minimum Area : 0.01147959
+2024-11-27T20:44:01.427660+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-27T20:44:01.427660+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T20:44:11.695877+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V1\final_RCB1751016_V1.png, scaling factor: 105.57184750733138 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T21:01:11.279665+0800 INFO Generating masks took: 0:16:59.583788
+2024-11-27T21:05:42.279137+0800 INFO UnderS (0.15) [%]: 2.28290063
+2024-11-27T21:05:42.279137+0800 INFO OverS (8) [%]: 0.40286482
+2024-11-27T21:05:42.279137+0800 INFO Mean Size : 1.98988591
+2024-11-27T21:05:42.281618+0800 INFO D90mm : 3.52541757
+2024-11-27T21:05:42.281618+0800 INFO D10mm : 0.92380870
+2024-11-27T21:05:42.281618+0800 INFO D50mm : 1.68387072
+2024-11-27T21:05:42.281618+0800 INFO Minimum Area : 0.01114541
+2024-11-27T21:05:42.281618+0800 INFO Minimum Diameter : 0.029781268339764265
+2024-11-27T21:05:42.281618+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T21:05:42.468438+0800 INFO UnderS (0.15) [%]: 2.28290063
+2024-11-27T21:05:42.473144+0800 INFO OverS (8) [%]: 0.40286482
+2024-11-27T21:05:42.473144+0800 INFO Mean Size : 1.98988591
+2024-11-27T21:05:42.473144+0800 INFO D90mm : 3.52541757
+2024-11-27T21:05:42.473144+0800 INFO D10mm : 0.92380870
+2024-11-27T21:05:42.473144+0800 INFO D50mm : 1.68387072
+2024-11-27T21:05:42.473144+0800 INFO Minimum Area : 0.01114541
+2024-11-27T21:05:42.473144+0800 INFO Minimum Diameter : 0.029781268339764265
+2024-11-27T21:05:42.473144+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T21:05:49.883115+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V10\final_RCB1751016_V10.png, scaling factor: 106.76156583629893 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T21:13:03.340270+0800 INFO Generating masks took: 0:07:13.457155
+2024-11-27T21:21:59.703806+0800 INFO UnderS (0.15) [%]: 2.55763689
+2024-11-27T21:21:59.705616+0800 INFO OverS (8) [%]: 1.44092219
+2024-11-27T21:21:59.706055+0800 INFO Mean Size : 2.44985875
+2024-11-27T21:21:59.707073+0800 INFO D90mm : 4.22016293
+2024-11-27T21:21:59.709072+0800 INFO D10mm : 1.09656494
+2024-11-27T21:21:59.710071+0800 INFO D50mm : 2.09186937
+2024-11-27T21:21:59.711066+0800 INFO Minimum Area : 0.01139803
+2024-11-27T21:21:59.712066+0800 INFO Minimum Diameter : 0.030116881684043927
+2024-11-27T21:21:59.716067+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T21:22:00.053922+0800 INFO UnderS (0.15) [%]: 2.55763689
+2024-11-27T21:22:00.054926+0800 INFO OverS (8) [%]: 1.44092219
+2024-11-27T21:22:00.054926+0800 INFO Mean Size : 2.44985875
+2024-11-27T21:22:00.055923+0800 INFO D90mm : 4.22016293
+2024-11-27T21:22:00.056919+0800 INFO D10mm : 1.09656494
+2024-11-27T21:22:00.056919+0800 INFO D50mm : 2.09186937
+2024-11-27T21:22:00.057919+0800 INFO Minimum Area : 0.01139803
+2024-11-27T21:22:00.058926+0800 INFO Minimum Diameter : 0.030116881684043927
+2024-11-27T21:22:00.067389+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T21:22:07.982285+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V11\final_RCB1751016_V11.png, scaling factor: 106.38297872340425 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T21:38:30.275870+0800 INFO Generating masks took: 0:16:22.292521
+2024-11-27T21:48:26.308303+0800 INFO UnderS (0.15) [%]: 2.04374328
+2024-11-27T21:48:26.308303+0800 INFO OverS (8) [%]: 0.71710290
+2024-11-27T21:48:26.308303+0800 INFO Mean Size : 2.19468327
+2024-11-27T21:48:26.308303+0800 INFO D90mm : 3.78692037
+2024-11-27T21:48:26.308303+0800 INFO D10mm : 1.10675655
+2024-11-27T21:48:26.308303+0800 INFO D50mm : 1.85332137
+2024-11-27T21:48:26.308303+0800 INFO Minimum Area : 0.01131734
+2024-11-27T21:48:26.308303+0800 INFO Minimum Diameter : 0.030010084231263633
+2024-11-27T21:48:26.308303+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T21:48:26.593818+0800 INFO UnderS (0.15) [%]: 2.04374328
+2024-11-27T21:48:26.609478+0800 INFO OverS (8) [%]: 0.71710290
+2024-11-27T21:48:26.609478+0800 INFO Mean Size : 2.19468327
+2024-11-27T21:48:26.609478+0800 INFO D90mm : 3.78692037
+2024-11-27T21:48:26.609478+0800 INFO D10mm : 1.10675655
+2024-11-27T21:48:26.609478+0800 INFO D50mm : 1.85332137
+2024-11-27T21:48:26.609478+0800 INFO Minimum Area : 0.01131734
+2024-11-27T21:48:26.609478+0800 INFO Minimum Diameter : 0.030010084231263633
+2024-11-27T21:48:26.609478+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T21:48:34.765118+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V12\final_RCB1751016_V12.png, scaling factor: 107.07911957168352 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T21:55:44.508805+0800 INFO Generating masks took: 0:07:09.743687
+2024-11-27T22:03:55.464297+0800 INFO UnderS (0.15) [%]: 2.76613579
+2024-11-27T22:03:55.464297+0800 INFO OverS (8) [%]: 2.51466890
+2024-11-27T22:03:55.464297+0800 INFO Mean Size : 2.55721020
+2024-11-27T22:03:55.464297+0800 INFO D90mm : 4.77207434
+2024-11-27T22:03:55.464297+0800 INFO D10mm : 1.06533442
+2024-11-27T22:03:55.464297+0800 INFO D50mm : 2.04018764
+2024-11-27T22:03:55.464297+0800 INFO Minimum Area : 0.01146594
+2024-11-27T22:03:55.464297+0800 INFO Minimum Diameter : 0.03020646193890426
+2024-11-27T22:03:55.478316+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T22:03:55.781256+0800 INFO UnderS (0.15) [%]: 2.76613579
+2024-11-27T22:03:55.781256+0800 INFO OverS (8) [%]: 2.51466890
+2024-11-27T22:03:55.781256+0800 INFO Mean Size : 2.55721020
+2024-11-27T22:03:55.797248+0800 INFO D90mm : 4.77207434
+2024-11-27T22:03:55.797248+0800 INFO D10mm : 1.06533442
+2024-11-27T22:03:55.797248+0800 INFO D50mm : 2.04018764
+2024-11-27T22:03:55.797248+0800 INFO Minimum Area : 0.01146594
+2024-11-27T22:03:55.797248+0800 INFO Minimum Diameter : 0.03020646193890426
+2024-11-27T22:03:55.806955+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T22:04:04.148099+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V13\final_RCB1751016_V13.png, scaling factor: 107.27056019070322 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T22:11:28.108780+0800 INFO Generating masks took: 0:07:23.944961
+2024-11-27T22:22:40.071236+0800 INFO UnderS (0.15) [%]: 3.21002751
+2024-11-27T22:22:40.071236+0800 INFO OverS (8) [%]: 2.20116172
+2024-11-27T22:22:40.071236+0800 INFO Mean Size : 2.64758898
+2024-11-27T22:22:40.071236+0800 INFO D90mm : 4.88986102
+2024-11-27T22:22:40.076487+0800 INFO D10mm : 1.01113864
+2024-11-27T22:22:40.076487+0800 INFO D50mm : 2.19870005
+2024-11-27T22:22:40.076487+0800 INFO Minimum Area : 0.01150697
+2024-11-27T22:22:40.076487+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-27T22:22:40.084011+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T22:22:40.426341+0800 INFO UnderS (0.15) [%]: 3.21002751
+2024-11-27T22:22:40.426341+0800 INFO OverS (8) [%]: 2.20116172
+2024-11-27T22:22:40.426341+0800 INFO Mean Size : 2.64758898
+2024-11-27T22:22:40.426341+0800 INFO D90mm : 4.88986102
+2024-11-27T22:22:40.426341+0800 INFO D10mm : 1.01113864
+2024-11-27T22:22:40.426341+0800 INFO D50mm : 2.19870005
+2024-11-27T22:22:40.426341+0800 INFO Minimum Area : 0.01150697
+2024-11-27T22:22:40.426341+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-27T22:22:40.442638+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T22:22:48.200407+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V14\final_RCB1751016_V14.png, scaling factor: 107.27056019070322 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T22:38:11.127137+0800 INFO Generating masks took: 0:15:22.926730
+2024-11-27T22:47:33.547300+0800 INFO UnderS (0.15) [%]: 3.28719723
+2024-11-27T22:47:33.547300+0800 INFO OverS (8) [%]: 0.79584775
+2024-11-27T22:47:33.557398+0800 INFO Mean Size : 2.16247755
+2024-11-27T22:47:33.557398+0800 INFO D90mm : 3.83421370
+2024-11-27T22:47:33.557398+0800 INFO D10mm : 0.42041302
+2024-11-27T22:47:33.557398+0800 INFO D50mm : 1.84353125
+2024-11-27T22:47:33.562835+0800 INFO Minimum Area : 0.01150697
+2024-11-27T22:47:33.562835+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-27T22:47:33.562835+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T22:47:33.911893+0800 INFO UnderS (0.15) [%]: 3.28719723
+2024-11-27T22:47:33.911893+0800 INFO OverS (8) [%]: 0.79584775
+2024-11-27T22:47:33.911893+0800 INFO Mean Size : 2.16247755
+2024-11-27T22:47:33.911893+0800 INFO D90mm : 3.83421370
+2024-11-27T22:47:33.911893+0800 INFO D10mm : 0.42041302
+2024-11-27T22:47:33.911893+0800 INFO D50mm : 1.84353125
+2024-11-27T22:47:33.911893+0800 INFO Minimum Area : 0.01150697
+2024-11-27T22:47:33.911893+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-27T22:47:33.927795+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T22:47:42.009895+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V15\final_RCB1751016_V15.png, scaling factor: 107.6555023923445 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T23:02:33.384833+0800 INFO Generating masks took: 0:14:51.374938
+2024-11-27T23:12:10.166034+0800 INFO UnderS (0.15) [%]: 3.59612725
+2024-11-27T23:12:10.166034+0800 INFO OverS (8) [%]: 2.17842324
+2024-11-27T23:12:10.166034+0800 INFO Mean Size : 2.64158380
+2024-11-27T23:12:10.166034+0800 INFO D90mm : 4.97910834
+2024-11-27T23:12:10.166034+0800 INFO D10mm : 0.89374708
+2024-11-27T23:12:10.166034+0800 INFO D50mm : 2.21061247
+2024-11-27T23:12:10.166034+0800 INFO Minimum Area : 0.01158971
+2024-11-27T23:12:10.166034+0800 INFO Minimum Diameter : 0.03036905653068066
+2024-11-27T23:12:10.182726+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T23:12:10.658602+0800 INFO UnderS (0.15) [%]: 3.59612725
+2024-11-27T23:12:10.658602+0800 INFO OverS (8) [%]: 2.17842324
+2024-11-27T23:12:10.658602+0800 INFO Mean Size : 2.64158380
+2024-11-27T23:12:10.658602+0800 INFO D90mm : 4.97910834
+2024-11-27T23:12:10.658602+0800 INFO D10mm : 0.89374708
+2024-11-27T23:12:10.658602+0800 INFO D50mm : 2.21061247
+2024-11-27T23:12:10.658602+0800 INFO Minimum Area : 0.01158971
+2024-11-27T23:12:10.658602+0800 INFO Minimum Diameter : 0.03036905653068066
+2024-11-27T23:12:10.674542+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T23:12:19.154449+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V16\final_RCB1751016_V16.png, scaling factor: 107.39856801909308 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T23:27:56.343247+0800 INFO Generating masks took: 0:15:37.187592
+2024-11-27T23:37:59.493806+0800 INFO UnderS (0.15) [%]: 3.98394070
+2024-11-27T23:37:59.493806+0800 INFO OverS (8) [%]: 3.70599135
+2024-11-27T23:37:59.493806+0800 INFO Mean Size : 2.98179143
+2024-11-27T23:37:59.509917+0800 INFO D90mm : 5.71853877
+2024-11-27T23:37:59.509917+0800 INFO D10mm : 0.48030100
+2024-11-27T23:37:59.509917+0800 INFO D50mm : 2.47368874
+2024-11-27T23:37:59.509917+0800 INFO Minimum Area : 0.01153445
+2024-11-27T23:37:59.509917+0800 INFO Minimum Diameter : 0.030296576682158752
+2024-11-27T23:37:59.509917+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-27T23:37:59.890075+0800 INFO UnderS (0.15) [%]: 3.98394070
+2024-11-27T23:37:59.890075+0800 INFO OverS (8) [%]: 3.70599135
+2024-11-27T23:37:59.890075+0800 INFO Mean Size : 2.98179143
+2024-11-27T23:37:59.890075+0800 INFO D90mm : 5.71853877
+2024-11-27T23:37:59.890075+0800 INFO D10mm : 0.48030100
+2024-11-27T23:37:59.890075+0800 INFO D50mm : 2.47368874
+2024-11-27T23:37:59.890075+0800 INFO Minimum Area : 0.01153445
+2024-11-27T23:37:59.890075+0800 INFO Minimum Diameter : 0.030296576682158752
+2024-11-27T23:37:59.906012+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-27T23:38:08.928083+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V17\final_RCB1751016_V17.png, scaling factor: 107.27056019070322 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-27T23:55:03.523325+0800 INFO Generating masks took: 0:16:54.595242
+2024-11-28T00:03:56.973247+0800 INFO UnderS (0.15) [%]: 4.77893368
+2024-11-28T00:03:56.973247+0800 INFO OverS (8) [%]: 2.17815345
+2024-11-28T00:03:56.973247+0800 INFO Mean Size : 2.40860851
+2024-11-28T00:03:56.973247+0800 INFO D90mm : 4.58325212
+2024-11-28T00:03:56.973247+0800 INFO D10mm : 0.27137544
+2024-11-28T00:03:56.973247+0800 INFO D50mm : 2.00151017
+2024-11-28T00:03:56.988971+0800 INFO Minimum Area : 0.01150697
+2024-11-28T00:03:56.988971+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-28T00:03:56.988971+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T00:03:57.321468+0800 INFO UnderS (0.15) [%]: 4.77893368
+2024-11-28T00:03:57.321468+0800 INFO OverS (8) [%]: 2.17815345
+2024-11-28T00:03:57.321468+0800 INFO Mean Size : 2.40860851
+2024-11-28T00:03:57.321468+0800 INFO D90mm : 4.58325212
+2024-11-28T00:03:57.321468+0800 INFO D10mm : 0.27137544
+2024-11-28T00:03:57.321468+0800 INFO D50mm : 2.00151017
+2024-11-28T00:03:57.321468+0800 INFO Minimum Area : 0.01150697
+2024-11-28T00:03:57.321468+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-28T00:03:57.337489+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T00:04:05.422955+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V18\final_RCB1751016_V18.png, scaling factor: 106.44589000591365 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T00:18:48.770388+0800 INFO Generating masks took: 0:14:43.347433
+2024-11-28T00:28:06.717485+0800 INFO UnderS (0.15) [%]: 2.45691236
+2024-11-28T00:28:06.717485+0800 INFO OverS (8) [%]: 1.90685735
+2024-11-28T00:28:06.717485+0800 INFO Mean Size : 2.44416379
+2024-11-28T00:28:06.717485+0800 INFO D90mm : 4.35542792
+2024-11-28T00:28:06.717485+0800 INFO D10mm : 1.02685070
+2024-11-28T00:28:06.717485+0800 INFO D50mm : 2.01562751
+2024-11-28T00:28:06.717485+0800 INFO Minimum Area : 0.01133073
+2024-11-28T00:28:06.717485+0800 INFO Minimum Diameter : 0.030027831176403348
+2024-11-28T00:28:06.733300+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T00:28:07.035009+0800 INFO UnderS (0.15) [%]: 2.45691236
+2024-11-28T00:28:07.035009+0800 INFO OverS (8) [%]: 1.90685735
+2024-11-28T00:28:07.035009+0800 INFO Mean Size : 2.44416379
+2024-11-28T00:28:07.035009+0800 INFO D90mm : 4.35542792
+2024-11-28T00:28:07.035009+0800 INFO D10mm : 1.02685070
+2024-11-28T00:28:07.035009+0800 INFO D50mm : 2.01562751
+2024-11-28T00:28:07.035009+0800 INFO Minimum Area : 0.01133073
+2024-11-28T00:28:07.035009+0800 INFO Minimum Diameter : 0.030027831176403348
+2024-11-28T00:28:07.051131+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T00:28:15.439852+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V19\final_RCB1751016_V19.png, scaling factor: 106.38297872340425 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T00:35:44.326293+0800 INFO Generating masks took: 0:07:28.870322
+2024-11-28T00:44:33.940149+0800 INFO UnderS (0.15) [%]: 2.95639320
+2024-11-28T00:44:33.940149+0800 INFO OverS (8) [%]: 2.29120473
+2024-11-28T00:44:33.940149+0800 INFO Mean Size : 2.44848594
+2024-11-28T00:44:33.940149+0800 INFO D90mm : 4.49752588
+2024-11-28T00:44:33.940149+0800 INFO D10mm : 0.57754463
+2024-11-28T00:44:33.940149+0800 INFO D50mm : 2.01742600
+2024-11-28T00:44:33.940149+0800 INFO Minimum Area : 0.01131734
+2024-11-28T00:44:33.940149+0800 INFO Minimum Diameter : 0.030010084231263633
+2024-11-28T00:44:33.953770+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T00:44:34.307354+0800 INFO UnderS (0.15) [%]: 2.95639320
+2024-11-28T00:44:34.307354+0800 INFO OverS (8) [%]: 2.29120473
+2024-11-28T00:44:34.307354+0800 INFO Mean Size : 2.44848594
+2024-11-28T00:44:34.307354+0800 INFO D90mm : 4.49752588
+2024-11-28T00:44:34.307354+0800 INFO D10mm : 0.57754463
+2024-11-28T00:44:34.307354+0800 INFO D50mm : 2.01742600
+2024-11-28T00:44:34.307354+0800 INFO Minimum Area : 0.01131734
+2024-11-28T00:44:34.307354+0800 INFO Minimum Diameter : 0.030010084231263633
+2024-11-28T00:44:34.323165+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T00:44:41.495513+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V2\final_RCB1751016_V2.png, scaling factor: 106.0695344725987 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T01:03:25.996994+0800 INFO Generating masks took: 0:18:44.501481
+2024-11-28T01:11:57.128266+0800 INFO UnderS (0.15) [%]: 3.27357755
+2024-11-28T01:11:57.128266+0800 INFO OverS (8) [%]: 0.62353858
+2024-11-28T01:11:57.128266+0800 INFO Mean Size : 2.09913057
+2024-11-28T01:11:57.128266+0800 INFO D90mm : 3.63609447
+2024-11-28T01:11:57.128266+0800 INFO D10mm : 0.88877036
+2024-11-28T01:11:57.144043+0800 INFO D50mm : 1.82553961
+2024-11-28T01:11:57.144043+0800 INFO Minimum Area : 0.01125075
+2024-11-28T01:11:57.144043+0800 INFO Minimum Diameter : 0.029921663240599923
+2024-11-28T01:11:57.144043+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T01:11:57.492484+0800 INFO UnderS (0.15) [%]: 3.27357755
+2024-11-28T01:11:57.492484+0800 INFO OverS (8) [%]: 0.62353858
+2024-11-28T01:11:57.492484+0800 INFO Mean Size : 2.09913057
+2024-11-28T01:11:57.492484+0800 INFO D90mm : 3.63609447
+2024-11-28T01:11:57.492484+0800 INFO D10mm : 0.88877036
+2024-11-28T01:11:57.492484+0800 INFO D50mm : 1.82553961
+2024-11-28T01:11:57.492484+0800 INFO Minimum Area : 0.01125075
+2024-11-28T01:11:57.492484+0800 INFO Minimum Diameter : 0.029921663240599923
+2024-11-28T01:11:57.508560+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T01:12:05.014473+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V20\final_RCB1751016_V20.png, scaling factor: 107.39856801909308 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T01:29:00.181680+0800 INFO Generating masks took: 0:16:55.167207
+2024-11-28T01:36:06.179087+0800 INFO UnderS (0.15) [%]: 4.24058849
+2024-11-28T01:36:06.179087+0800 INFO OverS (8) [%]: 0.47598442
+2024-11-28T01:36:06.179087+0800 INFO Mean Size : 1.96597674
+2024-11-28T01:36:06.185631+0800 INFO D90mm : 3.53182015
+2024-11-28T01:36:06.185631+0800 INFO D10mm : 0.32474275
+2024-11-28T01:36:06.185631+0800 INFO D50mm : 1.70561702
+2024-11-28T01:36:06.185631+0800 INFO Minimum Area : 0.01153445
+2024-11-28T01:36:06.185631+0800 INFO Minimum Diameter : 0.030296576682158752
+2024-11-28T01:36:06.192410+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T01:36:06.508415+0800 INFO UnderS (0.15) [%]: 4.24058849
+2024-11-28T01:36:06.508415+0800 INFO OverS (8) [%]: 0.47598442
+2024-11-28T01:36:06.508415+0800 INFO Mean Size : 1.96597674
+2024-11-28T01:36:06.510426+0800 INFO D90mm : 3.53182015
+2024-11-28T01:36:06.510426+0800 INFO D10mm : 0.32474275
+2024-11-28T01:36:06.512432+0800 INFO D50mm : 1.70561702
+2024-11-28T01:36:06.512432+0800 INFO Minimum Area : 0.01153445
+2024-11-28T01:36:06.512432+0800 INFO Minimum Diameter : 0.030296576682158752
+2024-11-28T01:36:06.514433+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T01:36:15.804800+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V3\final_RCB1751016_V3.png, scaling factor: 108.499095840868 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T01:50:07.002370+0800 INFO Generating masks took: 0:13:51.197570
+2024-11-28T01:58:36.423189+0800 INFO UnderS (0.15) [%]: 2.35521236
+2024-11-28T01:58:36.423189+0800 INFO OverS (8) [%]: 1.58301158
+2024-11-28T01:58:36.423189+0800 INFO Mean Size : 2.38959897
+2024-11-28T01:58:36.423189+0800 INFO D90mm : 4.41113734
+2024-11-28T01:58:36.423189+0800 INFO D10mm : 0.53017540
+2024-11-28T01:58:36.423189+0800 INFO D50mm : 1.98667982
+2024-11-28T01:58:36.438906+0800 INFO Minimum Area : 0.01177205
+2024-11-28T01:58:36.438906+0800 INFO Minimum Diameter : 0.030607029848883704
+2024-11-28T01:58:36.438906+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T01:58:36.819777+0800 INFO UnderS (0.15) [%]: 2.35521236
+2024-11-28T01:58:36.819777+0800 INFO OverS (8) [%]: 1.58301158
+2024-11-28T01:58:36.819777+0800 INFO Mean Size : 2.38959897
+2024-11-28T01:58:36.819777+0800 INFO D90mm : 4.41113734
+2024-11-28T01:58:36.819777+0800 INFO D10mm : 0.53017540
+2024-11-28T01:58:36.819777+0800 INFO D50mm : 1.98667982
+2024-11-28T01:58:36.830385+0800 INFO Minimum Area : 0.01177205
+2024-11-28T01:58:36.830385+0800 INFO Minimum Diameter : 0.030607029848883704
+2024-11-28T01:58:36.835742+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T01:58:44.127467+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V4\final_RCB1751016_V4.png, scaling factor: 107.27056019070322 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T02:06:54.535868+0800 INFO Generating masks took: 0:08:10.408401
+2024-11-28T02:17:05.220862+0800 INFO UnderS (0.15) [%]: 2.83505155
+2024-11-28T02:17:05.220862+0800 INFO OverS (8) [%]: 1.57860825
+2024-11-28T02:17:05.220862+0800 INFO Mean Size : 2.44031506
+2024-11-28T02:17:05.220862+0800 INFO D90mm : 4.43717818
+2024-11-28T02:17:05.220862+0800 INFO D10mm : 0.55818763
+2024-11-28T02:17:05.220862+0800 INFO D50mm : 2.05335050
+2024-11-28T02:17:05.220862+0800 INFO Minimum Area : 0.01150697
+2024-11-28T02:17:05.220862+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-28T02:17:05.236673+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T02:17:05.618564+0800 INFO UnderS (0.15) [%]: 2.83505155
+2024-11-28T02:17:05.618564+0800 INFO OverS (8) [%]: 1.57860825
+2024-11-28T02:17:05.618564+0800 INFO Mean Size : 2.44031506
+2024-11-28T02:17:05.618564+0800 INFO D90mm : 4.43717818
+2024-11-28T02:17:05.618564+0800 INFO D10mm : 0.55818763
+2024-11-28T02:17:05.618564+0800 INFO D50mm : 2.05335050
+2024-11-28T02:17:05.618564+0800 INFO Minimum Area : 0.01150697
+2024-11-28T02:17:05.618564+0800 INFO Minimum Diameter : 0.030260466340463688
+2024-11-28T02:17:05.650615+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T02:17:13.239449+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V5\final_RCB1751016_V5.png, scaling factor: 107.46268656716418 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T02:25:16.220503+0800 INFO Generating masks took: 0:08:02.981054
+2024-11-28T02:33:50.994820+0800 INFO UnderS (0.15) [%]: 2.69726248
+2024-11-28T02:33:50.994820+0800 INFO OverS (8) [%]: 1.85185185
+2024-11-28T02:33:50.994820+0800 INFO Mean Size : 2.59480801
+2024-11-28T02:33:50.994820+0800 INFO D90mm : 4.71542622
+2024-11-28T02:33:50.994820+0800 INFO D10mm : 1.07307236
+2024-11-28T02:33:50.994820+0800 INFO D50mm : 2.18246526
+2024-11-28T02:33:50.994820+0800 INFO Minimum Area : 0.01154823
+2024-11-28T02:33:50.994820+0800 INFO Minimum Diameter : 0.030314664190625715
+2024-11-28T02:33:51.010688+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T02:33:51.360133+0800 INFO UnderS (0.15) [%]: 2.69726248
+2024-11-28T02:33:51.360133+0800 INFO OverS (8) [%]: 1.85185185
+2024-11-28T02:33:51.360133+0800 INFO Mean Size : 2.59480801
+2024-11-28T02:33:51.360133+0800 INFO D90mm : 4.71542622
+2024-11-28T02:33:51.360133+0800 INFO D10mm : 1.07307236
+2024-11-28T02:33:51.360133+0800 INFO D50mm : 2.18246526
+2024-11-28T02:33:51.360133+0800 INFO Minimum Area : 0.01154823
+2024-11-28T02:33:51.360133+0800 INFO Minimum Diameter : 0.030314664190625715
+2024-11-28T02:33:51.376122+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T02:33:58.865221+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V6\final_RCB1751016_V6.png, scaling factor: 106.88836104513064 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T02:47:23.783651+0800 INFO Generating masks took: 0:13:24.918430
+2024-11-28T02:54:28.310801+0800 INFO UnderS (0.15) [%]: 3.35409679
+2024-11-28T02:54:28.310801+0800 INFO OverS (8) [%]: 1.53330139
+2024-11-28T02:54:28.310801+0800 INFO Mean Size : 2.37683979
+2024-11-28T02:54:28.310801+0800 INFO D90mm : 4.42422050
+2024-11-28T02:54:28.310801+0800 INFO D10mm : 0.85284615
+2024-11-28T02:54:28.310801+0800 INFO D50mm : 1.93014312
+2024-11-28T02:54:28.310801+0800 INFO Minimum Area : 0.01142512
+2024-11-28T02:54:28.310801+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-28T02:54:28.310801+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T02:54:28.644898+0800 INFO UnderS (0.15) [%]: 3.35409679
+2024-11-28T02:54:28.644898+0800 INFO OverS (8) [%]: 1.53330139
+2024-11-28T02:54:28.644898+0800 INFO Mean Size : 2.37683979
+2024-11-28T02:54:28.644898+0800 INFO D90mm : 4.42422050
+2024-11-28T02:54:28.644898+0800 INFO D10mm : 0.85284615
+2024-11-28T02:54:28.644898+0800 INFO D50mm : 1.93014312
+2024-11-28T02:54:28.644898+0800 INFO Minimum Area : 0.01142512
+2024-11-28T02:54:28.644898+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-28T02:54:28.660768+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T02:54:36.140399+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V7\final_RCB1751016_V7.png, scaling factor: 106.88836104513064 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T03:09:37.516286+0800 INFO Generating masks took: 0:15:01.375887
+2024-11-28T03:18:22.258244+0800 INFO UnderS (0.15) [%]: 2.75049116
+2024-11-28T03:18:22.258244+0800 INFO OverS (8) [%]: 1.45383104
+2024-11-28T03:18:22.258244+0800 INFO Mean Size : 2.53240714
+2024-11-28T03:18:22.258244+0800 INFO D90mm : 4.43657504
+2024-11-28T03:18:22.258244+0800 INFO D10mm : 1.06535241
+2024-11-28T03:18:22.258244+0800 INFO D50mm : 2.18126230
+2024-11-28T03:18:22.258244+0800 INFO Minimum Area : 0.01142512
+2024-11-28T03:18:22.258244+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-28T03:18:22.272093+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T03:18:22.590416+0800 INFO UnderS (0.15) [%]: 2.75049116
+2024-11-28T03:18:22.590416+0800 INFO OverS (8) [%]: 1.45383104
+2024-11-28T03:18:22.590416+0800 INFO Mean Size : 2.53240714
+2024-11-28T03:18:22.590416+0800 INFO D90mm : 4.43657504
+2024-11-28T03:18:22.590416+0800 INFO D10mm : 1.06535241
+2024-11-28T03:18:22.590416+0800 INFO D50mm : 2.18126230
+2024-11-28T03:18:22.590416+0800 INFO Minimum Area : 0.01142512
+2024-11-28T03:18:22.590416+0800 INFO Minimum Diameter : 0.030152649952077233
+2024-11-28T03:18:22.610537+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T03:18:30.735129+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V8\final_RCB1751016_V8.png, scaling factor: 107.14285714285714 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T03:35:35.878514+0800 INFO Generating masks took: 0:17:05.143385
+2024-11-28T03:44:16.758388+0800 INFO UnderS (0.15) [%]: 2.05002050
+2024-11-28T03:44:16.758388+0800 INFO OverS (8) [%]: 0.82000820
+2024-11-28T03:44:16.758388+0800 INFO Mean Size : 2.27038707
+2024-11-28T03:44:16.758388+0800 INFO D90mm : 3.85477460
+2024-11-28T03:44:16.758388+0800 INFO D10mm : 1.11528239
+2024-11-28T03:44:16.758388+0800 INFO D50mm : 1.94687047
+2024-11-28T03:44:16.758388+0800 INFO Minimum Area : 0.01147959
+2024-11-28T03:44:16.758388+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-28T03:44:16.774159+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T03:44:17.123477+0800 INFO UnderS (0.15) [%]: 2.05002050
+2024-11-28T03:44:17.123477+0800 INFO OverS (8) [%]: 0.82000820
+2024-11-28T03:44:17.123477+0800 INFO Mean Size : 2.27038707
+2024-11-28T03:44:17.123477+0800 INFO D90mm : 3.85477460
+2024-11-28T03:44:17.123477+0800 INFO D10mm : 1.11528239
+2024-11-28T03:44:17.123477+0800 INFO D50mm : 1.94687047
+2024-11-28T03:44:17.139585+0800 INFO Minimum Area : 0.01147959
+2024-11-28T03:44:17.139585+0800 INFO Minimum Diameter : 0.030224441975772655
+2024-11-28T03:44:17.139585+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
+2024-11-28T03:44:25.515571+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\Samples\RCB1751016\RCB1751016_V9\final_RCB1751016_V9.png, scaling factor: 106.95187165775401 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.9, use_m2m: (True,)
+2024-11-28T04:01:00.177744+0800 INFO Generating masks took: 0:16:34.662173
+2024-11-28T04:11:53.703124+0800 INFO UnderS (0.15) [%]: 2.73972603
+2024-11-28T04:11:53.703124+0800 INFO OverS (8) [%]: 1.27646326
+2024-11-28T04:11:53.703124+0800 INFO Mean Size : 2.51767978
+2024-11-28T04:11:53.703124+0800 INFO D90mm : 4.41865687
+2024-11-28T04:11:53.703124+0800 INFO D10mm : 1.09304988
+2024-11-28T04:11:53.703124+0800 INFO D50mm : 2.17898683
+2024-11-28T04:11:53.703124+0800 INFO Minimum Area : 0.01143870
+2024-11-28T04:11:53.703124+0800 INFO Minimum Diameter : 0.03017056596512066
+2024-11-28T04:11:53.711813+0800 INFO bins:['8.0', '1.0', '0.106', '0.038', 'Bottom'] 
+2024-11-28T04:11:54.179366+0800 INFO UnderS (0.15) [%]: 2.73972603
+2024-11-28T04:11:54.179366+0800 INFO OverS (8) [%]: 1.27646326
+2024-11-28T04:11:54.179366+0800 INFO Mean Size : 2.51767978
+2024-11-28T04:11:54.179366+0800 INFO D90mm : 4.41865687
+2024-11-28T04:11:54.179366+0800 INFO D10mm : 1.09304988
+2024-11-28T04:11:54.179366+0800 INFO D50mm : 2.17898683
+2024-11-28T04:11:54.179366+0800 INFO Minimum Area : 0.01143870
+2024-11-28T04:11:54.179366+0800 INFO Minimum Diameter : 0.03017056596512066
+2024-11-28T04:11:54.190030+0800 INFO bins:['10.0', '9.0', '8.0', '7.0', '6.0', '5.0', '4.0', '3.0', '2.0', '1.0', 'Bottom'] 
