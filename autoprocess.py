@@ -2,7 +2,7 @@ import os
 import subprocess
 import argparse
 """
-autoprocess
+autoprocess command
 """
 
 def check_and_run_command(samples_root_folder):
