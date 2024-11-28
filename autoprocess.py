@@ -1,7 +1,9 @@
 import os
 import subprocess
 import argparse
-
+"""
+autoprocess
+"""
 
 def check_and_run_command(samples_root_folder):
     # Traverse through each main sample folder
