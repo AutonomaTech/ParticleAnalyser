@@ -1,0 +1,12 @@
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\bin\x86\Debug\Grabbing an Image.exe.config
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\bin\x86\Debug\Grabbing an Image.exe
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\bin\x86\Debug\Grabbing an Image.pdb
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\bin\x86\Debug\TIS.Imaging.ICImagingControl35.dll
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\bin\x86\Debug\TIS.Imaging.ICImagingControl35.xml
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing_an_Image.Form1.resources
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing_an_Image.Properties.Resources.resources
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing an Image.csproj.GenerateResource.cache
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing an Image.csproj.CoreCompileInputs.cache
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing an Image.csproj.CopyComplete
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing an Image.exe
+C:\Users\Work\OneDrive - Autonoma\Documents\IC Imaging Control 3.5\samples\C#\Grabbing an Image\Grabbing an Image\obj\x86\Debug\Grabbing an Image.pdb
