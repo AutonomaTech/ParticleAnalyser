@@ -118,7 +118,7 @@ class sizeAnalysisModel:
             overSValuePercentage = overSValue / len(self.particles) * 100
 
         # Format the percentage value
-        overSValuePercentage = format(max(float(overSValuePercentage), 0), '.8f')
+        overSValuePercentage = format(max(float(overSValuePercentage), 0), '.4f')
 
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
@@ -160,7 +160,7 @@ class sizeAnalysisModel:
                 underSValuePercentage = 0
 
         # Format the percentage value
-        underSValuePercentage = format(max(float(underSValuePercentage), 0), '.8f')
+        underSValuePercentage = format(max(float(underSValuePercentage), 0), '.4f')
 
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
 
@@ -197,7 +197,7 @@ class sizeAnalysisModel:
 
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
-        self.minimum_diameter = max(float(sorted_diameters[0] / 1000), 0)
+        self.minimum_diameter = format(max(float(sorted_diameters[0] / 1000), 0),'.8f' )
 
         logger.info("Minimum Diameter : {}", self.minimum_diameter)
     def __countD10(self):
@@ -314,8 +314,8 @@ class sizeAnalysisModel:
             # Convert lists to integer arrays, formatting floats to 8 decimal places
             # and replacing negative numbers with zero
             print(passing_raw)
-            passing = [format(max(float(num), 0), '.8f') for num in passing_raw]
-            retaining = [format(max(float(num), 0), '.8f') for num in retaining_raw]
+            passing = [format(max(float(num), 0), '.4f') for num in passing_raw]
+            retaining = [format(max(float(num), 0), '.4f') for num in retaining_raw]
 
             self.passing = passing
             self.retaining = retaining
@@ -419,10 +419,10 @@ class sizeAnalysisModel:
             for value in self.sieveDesc:
                 try:
 
-                    formatted_value = f"{float(value):.8f}"
+                    formatted_value = f"{float(value)}"
                 except (ValueError, TypeError):
 
-                    formatted_value = "0.00000000"
+                    formatted_value = "0"
                 self.sieveValues.append(formatted_value)
 
 
