@@ -62,7 +62,7 @@ class ParticleSegmentationModel:
         self.crop_n_points_downscale_factor = 2
         self.min_mask_region_area = 0.0
         self.box_nms_tresh = 0.9
-        self.use_m2m = True,
+        self.use_m2m = True
 
         self.openedImage =Image.open(image_path)
         self.image = np.array(self.openedImage.convert("RGB"))
