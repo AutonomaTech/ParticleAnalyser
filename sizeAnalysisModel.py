@@ -354,8 +354,8 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'Intensity').text = str(self.intensity)
         ET.SubElement(root, 'DateTime').text = self.date_time
         ET.SubElement(root, 'AnalysisTime').text = self.analysis_time
-        ET.SubElement(root, 'MinimumArea').text = str(self.minimum_area)
-        ET.SubElement(root, 'MinimumDiameter').text = str(self.minimum_diameter)
+        # ET.SubElement(root, 'MinimumArea').text = str(self.minimum_area)
+        ET.SubElement(root, 'MinimumSize').text = str(self.minimum_diameter)
         ET.SubElement(root, 'NumResultTables').text=str(1)
         ET.SubElement(root, 'NumSummaryData').text=str(8)
         result_table = ET.SubElement(root, 'ResultTable')
