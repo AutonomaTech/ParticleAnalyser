@@ -3,14 +3,19 @@ import logger_config
 import os
 from xml.dom import minidom
 from datetime import datetime
-
+import configparser
 logger = logger_config.get_logger(__name__)
 
 ##Every value will be in milimeter
 class sizeAnalysisModel:
     def __init__(self, sampleId,sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
                  analysis_time=None,diameter_threshold=None,circularity_threshold=None):
-
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        if 'output' in config and 'rounding' in config['output']:
+            self.rounding = int(config['output']['rounding'])
+        else:
+            self.rounding = 4
         self.tot_area = tot_area
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath
@@ -42,7 +47,7 @@ class sizeAnalysisModel:
 
     def __getToArea(self):
         if self.tot_area is not None:
-            self.tot_area=self.tot_area/1000
+            self.tot_area=self.tot_area/1000000
 
 
 
@@ -116,9 +121,9 @@ class sizeAnalysisModel:
         # Calculate the percentage of particles with area >= 8
         if overSValue > 0:
             overSValuePercentage = overSValue / len(self.particles) * 100
-
+        format_string = '.{}f'.format(self.rounding)
         # Format the percentage value
-        overSValuePercentage = format(max(float(overSValuePercentage), 0), '.4f')
+        overSValuePercentage = format(max(float(overSValuePercentage), 0), format_string)
 
         logger.info("OverS (8) [%]: {}", overSValuePercentage)
 
@@ -158,9 +163,9 @@ class sizeAnalysisModel:
             underSValuePercentage = underSValue / len(self.particles) * 100
             if len(self.particles) == 0:  # Prevent division by zero
                 underSValuePercentage = 0
-
+        format_string = '.{}f'.format(self.rounding)
         # Format the percentage value
-        underSValuePercentage = format(max(float(underSValuePercentage), 0), '.4f')
+        underSValuePercentage = format(max(float(underSValuePercentage), 0),  format_string)
 
         logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
 
@@ -313,9 +318,9 @@ class sizeAnalysisModel:
 
             # Convert lists to integer arrays, formatting floats to 8 decimal places
             # and replacing negative numbers with zero
-            print(passing_raw)
-            passing = [format(max(float(num), 0), '.4f') for num in passing_raw]
-            retaining = [format(max(float(num), 0), '.4f') for num in retaining_raw]
+            format_string = '.{}f'.format(self.rounding)
+            passing = [format(max(float(num), 0), format_string) for num in passing_raw]
+            retaining = [format(max(float(num), 0), format_string) for num in retaining_raw]
 
             self.passing = passing
             self.retaining = retaining
@@ -347,7 +352,7 @@ class sizeAnalysisModel:
         ET.SubElement(root, 'CustomField4')
         ET.SubElement(root, 'CustomField5')
         ET.SubElement(root, 'NumParticles').text = str(len(self.particles))
-        ET.SubElement(root, 'TotArea').text = str(self.tot_area)
+        ET.SubElement(root, 'TotArea').text = str(self.tot_area)+("(mm²)")
         ET.SubElement(root, 'ScalingFact').text = str(self.scaling_fact)
         ET.SubElement(root, 'ScalingNum').text = str(self.scaling_num)
         ET.SubElement(root, 'ScalingStamp').text = self.scaling_stamp
