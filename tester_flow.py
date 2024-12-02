@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 import os
-import argparse
 import sys
 import ImageAnalysisModel as pa
 import requests
