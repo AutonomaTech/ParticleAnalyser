@@ -156,6 +156,30 @@ class ParticleSegmentationModel:
         logger.info("Generating masks took: {}", self.execution_time)
         return masks
 
+    def testing_generate_mask_1(self, pred_iou_thresh=0.1, stability_score_thresh=0.1, stability_score_offset=0.1,
+                              crop_n_layers=1, crop_n_points_downscale_factor=2, min_mask_region_area=100,
+                              box_nms_tresh=0.5, use_m2m=False):
+        # For validation
+        start_time = datetime.now()
+        masks = dp.generate_masks(
+            self.image,
+            self.sam_checkpoint_path,
+            points_per_side=4,
+            points_per_batch=1,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crop_n_layers=crop_n_layers,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            min_mask_region_area=min_mask_region_area,
+            box_nms_tresh=box_nms_tresh,
+            use_m2m=use_m2m
+        )
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("生成掩膜耗时: {}", self.execution_time)
+        return masks
     def visualise_masks(self,mask_file_name):
         if self.masks is None:
             self.generate_mask()

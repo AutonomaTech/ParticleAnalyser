@@ -168,6 +168,37 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
         self.showMasks()
+    def analyseValidationParticles(self, checkpoint_folder, testing_parameters=None):
+        """
+        Analyzes particles in the image by generating masks using the model, and calculates analysis time.
+
+        Inputs:
+        - checkpoint_folder: Path to the model checkpoint.
+        - testing: Boolean flag to enable test mode.
+
+        Output: None
+        """
+        def calculateAnalysisTime(duration):
+            total_seconds = duration.total_seconds()
+            # Total seconds for the first calculation (Entire image)
+            # self.totalSeconds=total_seconds
+            minutes = int(total_seconds // 60)
+            seconds = total_seconds % 60
+            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+
+        self.loadModel(checkpoint_folder)
+
+        if testing_parameters:
+            self.p.testing_generate_mask_1(**testing_parameters)
+        else:
+            self.p.generate_mask()
+
+        calculateAnalysisTime(self.p.getExecutionTime())
+        self.p.setdiameter_threshold(self.diameter_threshold)
+        self.csv_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}.csv")
+        self.p.save_masks_to_csv(self.csv_filename)
+        self.showMasks()
 
     def savePsdData(self):
         """
@@ -181,6 +212,7 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.folder_path)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+
     def savePsdDataForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -203,7 +235,6 @@ class ImageAnalysisModel:
 
         self.p.plotBins(self.folder_path,self.sampleID)
 
-        # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlotForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -231,6 +262,36 @@ class ImageAnalysisModel:
         self.folder_path = self.imageProcessor.getImageFolder()
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
+        self.p.setdiameter_threshold(self.diameter_threshold)
+        self.p.save_masks_to_csv(self.csv_filename)
+        print(f"--> Masks saved to CSV file: {self.csv_filename}")
+
+        self.savePsdData()
+        self.saveDistributionPlot()
+
+    def saveResultsForValidation(self, bins, parameter_folder_name):
+        """
+        Saves particle segmentation results to CSV and distribution files after setting bins.
+
+        Input:
+        - bins: List of bin boundaries for the segmentation model.
+        - parameter_folder_name: Name of the subfolder for the current parameter set.
+
+        Output: Saves results to CSV and distribution files in the specified subfolder.
+        """
+        self.setBins(bins)
+        if self.imageProcessor is None:
+            raise ValueError("Image is not initialised")
+
+        # Get Image folder Path
+        original_folder_path = self.imageProcessor.getImageFolder()
+
+        # Create subfolder for the current parameter set
+        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
+        os.makedirs(self.folder_path, exist_ok=True)
+
+        # Generate new csv
+        self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
         self.p.setdiameter_threshold(self.diameter_threshold)
         self.p.save_masks_to_csv(self.csv_filename)
         print(f"--> Masks saved to CSV file: {self.csv_filename}")

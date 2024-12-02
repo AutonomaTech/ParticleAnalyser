@@ -871,7 +871,112 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
     else:
         return bin_edges, counts, cumulative_area
 
+def custom_psd_data1(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True):
 
+    # sort the bins first
+    # because we are calculating bins we need to add a 0 at the front
+    plot_bins = [0] + bins[:]
+
+    stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
+
+    # Apply diameter and circularity thresholds
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+            stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        # If both thresholds are 0, no filtering is applied
+        filtered_stat = stat
+
+    # Calculate the total particles
+    total_particles = len(filtered_stat)
+    counts = [0] * (len(bins)+1)
+    cumulative = [0] * (len(bins)+1)
+    #For Retaining
+    # count_dict={}
+    # for diameter in filtered_stat['diameter']:
+    #     if diameter>=8000:
+    #         counts[0]+=1
+    #     if 8000>diameter >= 1000:
+    #         counts[1] += 1
+    #
+    #     if 1000>diameter >= 106:
+    #         counts[2] += 1
+    #     if 106>diameter >= 38:
+    #         counts[3] += 1
+    #     if 38 > diameter >= 0:
+    #         counts[4] += 1
+
+    # count_dict['diameter>=8000']=counts[0]
+    # count_dict['8000>diameter>=1000'] = counts[1]
+    # count_dict['1000>diameter>=106'] = counts[2]
+    # count_dict['106>diameter>=38'] = counts[3]
+    # count_dict['38>diameter>=0'] = counts[4]
+
+
+    bin_labels = [f"Diameter < {bins[0]}"]
+    for i in range(1, len(bins)):
+        bin_labels.append(f"{bins[i - 1]} <= Diameter < {bins[i]}")
+    bin_labels.append(f"Diameter >= {bins[-1]}")
+
+    # Initialize bin label dictionary
+    counts_dict = {label: 0 for label in bin_labels}
+
+    # Iterate all diameters in filtered_stat
+    for diameter in filtered_stat['diameter']:
+        if diameter < bins[0]:
+            counts[0] += 1
+            counts_dict[bin_labels[0]] += 1
+        elif diameter >= bins[-1]:  # The biggest bin value and above
+            counts[-1] += 1
+            counts_dict[bin_labels[-1]] += 1
+        else:
+            for i in range(1, len(bins)):
+                if bins[i - 1] <= diameter < bins[i]:
+                    counts[i] += 1
+                    counts_dict[bin_labels[i]] += 1
+                    break
+    count_percent=[]
+    for count in counts:
+       percent=count/total_particles*100
+       count_percent.append(percent)
+
+    print("counts:" ,counts)
+    print("counts_dict",counts_dict)
+    print("count percent: ",count_percent)
+
+    # for diameter in stat['diameter']:
+    #     if diameter <38:
+    #         cumulative[0] += 1
+    #     if  diameter < 106:
+    #         counts[1] += 1
+    #     if diameter <1000:
+    #         cumulative[2] += 1
+    #     if diameter <8000:
+    #         cumulative[3] += 1
+
+    cumulative_percent = []
+    for diameter in filtered_stat['diameter']:
+        # cumulative count jira
+        for i in range(len(bins)):
+            if diameter < bins[i]:
+                cumulative[i] += 1
+    for cumlative_particle in cumulative:
+        percent = cumlative_particle / total_particles * 100
+        cumulative_percent.append(percent)
+
+
+    print("cumulative percent: ", cumulative_percent)
+
+
+    if reverse_cumulative == True:
+        return bins, counts, cumulative
+    else:
+        return bins, counts, cumulative
 def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
     stat = adjustSegments(stat)
