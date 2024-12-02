@@ -48,7 +48,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, containerWidth, sampleID=None):
+    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -67,7 +67,7 @@ class ImageAnalysisModel:
         self.meshingImageFolderPath=None
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
-            self.imageProcessor.getWidth(), containerWidth)
+            imageWidth=self.imageProcessor.getWidth(),scalingNumber=scalingNumber, containerWidth=containerWidth)
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
         self.meshingTotalSeconds=0
@@ -168,7 +168,7 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
         self.showMasks()
-    def analyseValidationParticles(self, checkpoint_folder, testing_parameters=None):
+    def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
         """
         Analyzes particles in the image by generating masks using the model, and calculates analysis time.
 
@@ -188,13 +188,16 @@ class ImageAnalysisModel:
 
         self.loadModel(checkpoint_folder)
 
-        if testing_parameters:
-            self.p.testing_generate_mask_1(**testing_parameters)
-        else:
-            self.p.generate_mask()
+        self.p.testing_generate_mask_1(**testing_parameters)
+
 
         calculateAnalysisTime(self.p.getExecutionTime())
         self.p.setdiameter_threshold(self.diameter_threshold)
+        # Get Image folder Path
+        original_folder_path = self.imageProcessor.getImageFolder()
+        # Create subfolder for the current parameter set
+        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
+        os.makedirs(self.folder_path, exist_ok=True)
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
@@ -283,12 +286,7 @@ class ImageAnalysisModel:
         if self.imageProcessor is None:
             raise ValueError("Image is not initialised")
 
-        # Get Image folder Path
-        original_folder_path = self.imageProcessor.getImageFolder()
 
-        # Create subfolder for the current parameter set
-        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
-        os.makedirs(self.folder_path, exist_ok=True)
 
         # Generate new csv
         self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
@@ -463,6 +461,7 @@ class ImageAnalysisModel:
         self.p.save_segments(self.json_filename)
         print(f"Saving segments in {self.json_filename}")
 
+
     def loadSegments(self, checkpoint_folder, bins):
         """
         Loads segments from a JSON file and saves them to CSV and distribution files, useful for non-GPU environments.
@@ -519,6 +518,11 @@ class ImageAnalysisModel:
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 
+    def evenLightingWithValidation(self,parameter_folder_path):
+        self.imageProcessor.even_out_lighting_validation(parameter_folder_path)
+        # self.imagePath = self.imageProcessor.getImagePath()
+
+
     def overlayImage(self):
         """
         Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and 
@@ -530,6 +534,19 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+    def overlayImageWithValidation(self):
+        """
+        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
+        reducing the size of the image if it is bigger than 8MB
+
+        Input: None
+        Output: lighter PNG file and containing the same image overlayed 10 times
+        """
+        self.imageProcessor.overlayImage()
+        self.imagePath = self.imageProcessor.getImagePath()
+
+
+
     def  meshingImage(self):
         self.imageProcessor.processImageWithMeshing()
 

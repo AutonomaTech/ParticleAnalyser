@@ -299,6 +299,42 @@ class ImageProcessingModel:
         cv2.imwrite(self.imagePath, final_image)
         print(f"Evened out lighting picture saved as : {self.imagePath}")
 
+    def even_out_lighting_validation(self,parameter_folder_path):
+        """
+        Even out the lighting in the image using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+        to improve the contrast and smooth out lighting inconsistencies.
+
+        Inputs:None
+
+        Outputs:None
+        """
+        # Load the image
+        image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
+        lab_image = cv2.cvtColor(image,
+                                 cv2.COLOR_BGR2LAB)  # Convert to LAB color space to separate intensity from color information
+
+        l, a, b = cv2.split(lab_image)  # Split the LAB image into its channels
+
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(
+        16, 16))  # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to the L channel
+        l_clahe = clahe.apply(l)
+        lab_clahe = cv2.merge((l_clahe, a, b))
+        enhanced_image = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
+
+        # Perform a light normalization to smooth out lighting inconsistencies without over-smoothing
+        enhanced_image = cv2.normalize(enhanced_image, None, 0, 255, cv2.NORM_MINMAX)
+
+        # Apply a slight Gaussian blur to avoid too much noise while keeping details
+        final_image = cv2.GaussianBlur(enhanced_image, (3, 3), 0)
+        original_folder_path =  self.image_folder_path
+        self.image_folder_path=os.path.join(original_folder_path, parameter_folder_path)
+        os.makedirs(self.image_folder_path, exist_ok=True)
+        self.imagePath = os.path.join(self.image_folder_path, f"even_lighting_{self.imageName}")
+        ## self.evenLightingImagePath
+        self.evenLightingImagePath = self.imagePath
+        cv2.imwrite(self.imagePath, final_image)
+        print(f"Evened out lighting picture saved as : {self.imagePath}")
+
     def cropImage(self):
         """
         Allows the user to manually select a region of interest (ROI) and crop the image to that region.
