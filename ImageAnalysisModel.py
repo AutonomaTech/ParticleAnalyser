@@ -48,7 +48,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, containerWidth, sampleID=None):
+    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width.
         Sets up the sample ID, image processor, and container scaler.
@@ -67,7 +67,7 @@ class ImageAnalysisModel:
         self.meshingImageFolderPath=None
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
-            self.imageProcessor.getWidth(), containerWidth)
+            imageWidth=self.imageProcessor.getWidth(),scalingNumber=scalingNumber, containerWidth=containerWidth)
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
         self.meshingTotalSeconds=0
@@ -120,10 +120,10 @@ class ImageAnalysisModel:
 
     def loadModel(self, checkpoint_folder):
         """
-        Loads the ParticleSegmentationModel with a specified checkpoints.
+        Loads the ParticleSegmentationModel with a specified checkpoint.
 
         Input:
-        - checkpoint_folder: Path to the folder containing model checkpoints.
+        - checkpoint_folder: Path to the folder containing model checkpoint.
 
         Output: None
         """
@@ -143,7 +143,7 @@ class ImageAnalysisModel:
         Analyzes particles in the image by generating masks using the model, and calculates analysis time.
 
         Inputs:
-        - checkpoint_folder: Path to the model checkpoints.
+        - checkpoint_folder: Path to the model checkpoint.
         - testing: Boolean flag to enable test mode.
 
         Output: None
@@ -168,6 +168,40 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}.csv")
         self.p.save_masks_to_csv(self.csv_filename)
         self.showMasks()
+    def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
+        """
+        Analyzes particles in the image by generating masks using the model, and calculates analysis time.
+
+        Inputs:
+        - checkpoint_folder: Path to the model checkpoint.
+        - testing: Boolean flag to enable test mode.
+
+        Output: None
+        """
+        def calculateAnalysisTime(duration):
+            total_seconds = duration.total_seconds()
+            # Total seconds for the first calculation (Entire image)
+            # self.totalSeconds=total_seconds
+            minutes = int(total_seconds // 60)
+            seconds = total_seconds % 60
+            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+
+        self.loadModel(checkpoint_folder)
+
+        self.p.testing_generate_mask_1(**testing_parameters)
+
+
+        calculateAnalysisTime(self.p.getExecutionTime())
+        self.p.setdiameter_threshold(self.diameter_threshold)
+        # Get Image folder Path
+        original_folder_path = self.imageProcessor.getImageFolder()
+        # Create subfolder for the current parameter set
+        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
+        os.makedirs(self.folder_path, exist_ok=True)
+        self.csv_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}.csv")
+        self.p.save_masks_to_csv(self.csv_filename)
+        self.showMasks()
 
     def savePsdData(self):
         """
@@ -181,6 +215,7 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.folder_path)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+
     def savePsdDataForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -203,7 +238,6 @@ class ImageAnalysisModel:
 
         self.p.plotBins(self.folder_path,self.sampleID)
 
-        # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def saveDistributionPlotForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -231,6 +265,31 @@ class ImageAnalysisModel:
         self.folder_path = self.imageProcessor.getImageFolder()
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
+        self.p.setdiameter_threshold(self.diameter_threshold)
+        self.p.save_masks_to_csv(self.csv_filename)
+        print(f"--> Masks saved to CSV file: {self.csv_filename}")
+
+        self.savePsdData()
+        self.saveDistributionPlot()
+
+    def saveResultsForValidation(self, bins, parameter_folder_name):
+        """
+        Saves particle segmentation results to CSV and distribution files after setting bins.
+
+        Input:
+        - bins: List of bin boundaries for the segmentation model.
+        - parameter_folder_name: Name of the subfolder for the current parameter set.
+
+        Output: Saves results to CSV and distribution files in the specified subfolder.
+        """
+        self.setBins(bins)
+        if self.imageProcessor is None:
+            raise ValueError("Image is not initialised")
+
+
+
+        # Generate new csv
+        self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
         self.p.setdiameter_threshold(self.diameter_threshold)
         self.p.save_masks_to_csv(self.csv_filename)
         print(f"--> Masks saved to CSV file: {self.csv_filename}")
@@ -402,12 +461,13 @@ class ImageAnalysisModel:
         self.p.save_segments(self.json_filename)
         print(f"Saving segments in {self.json_filename}")
 
+
     def loadSegments(self, checkpoint_folder, bins):
         """
         Loads segments from a JSON file and saves them to CSV and distribution files, useful for non-GPU environments.
 
         Inputs:
-        - checkpoint_folder: Path to the model checkpoints.
+        - checkpoint_folder: Path to the model checkpoint.
         - bins: List of bin boundaries for the segmentation model.
 
         Output: Saves segment data to CSV and distribution files.
@@ -458,6 +518,11 @@ class ImageAnalysisModel:
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 
+    def evenLightingWithValidation(self,parameter_folder_path):
+        self.imageProcessor.even_out_lighting_validation(parameter_folder_path)
+        # self.imagePath = self.imageProcessor.getImagePath()
+
+
     def overlayImage(self):
         """
         Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
@@ -469,6 +534,19 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+    def overlayImageWithValidation(self):
+        """
+        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
+        reducing the size of the image if it is bigger than 8MB
+
+        Input: None
+        Output: lighter PNG file and containing the same image overlayed 10 times
+        """
+        self.imageProcessor.overlayImage()
+        self.imagePath = self.imageProcessor.getImagePath()
+
+
+
     def  meshingImage(self):
         self.imageProcessor.processImageWithMeshing()
 

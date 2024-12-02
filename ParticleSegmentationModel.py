@@ -1,4 +1,3 @@
-
 import os.path
 
 import pyDeepP2SA as dp
@@ -16,11 +15,11 @@ class ParticleSegmentationModel:
 
     """
 
-    ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library.
+    ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library. 
     It provides a simple way to generate masks, visualise masks, save masks to csv, save mask image, save masks as images, save masked regions, identify spheres, plot psd, get psd bins, plot psd bins, save psd, save segments, open segments, save psd as csv.
 
     To use this class:
-        1. Create an instance of the class with the image path, sam checkpoints path and pixel to micron scaling factor.
+        1. Create an instance of the class with the image path, sam checkpoint path and pixel to micron scaling factor. 
         2. Generate masks which will segment the image into masks.
         3. Segements are scaled to a micron value
 
@@ -37,11 +36,11 @@ class ParticleSegmentationModel:
         mask_threshold (float, optional, defaults to 0) — The threshold for the predicted masks.
         stability_score_offset (float, optional, defaults to 1) — The offset for the stability score used in the _compute_stability_score method.
 
-        What checkpoints to use?
-        The models are the same except for neural network size,
-        B stands for "base" and is the smallest, L is "large" and H is "huge".
-        The paper reports that the performance difference between L and H isn't much
-        and I would recommend L if your machine supports it.
+        What checkpoint to use?
+        The models are the same except for neural network size, 
+        B stands for "base" and is the smallest, L is "large" and H is "huge". 
+        The paper reports that the performance difference between L and H isn't much 
+        and I would recommend L if your machine supports it. 
         However, B is lighter and not far behind in performance.
         https://github.com/facebookresearch/segment-anything/issues/273
 
@@ -63,7 +62,7 @@ class ParticleSegmentationModel:
         self.crop_n_points_downscale_factor = 2
         self.min_mask_region_area = 0.0
         self.box_nms_tresh = 0.9
-        self.use_m2m = True,
+        self.use_m2m = True
 
         self.openedImage =Image.open(image_path)
         self.image = np.array(self.openedImage.convert("RGB"))
@@ -82,7 +81,7 @@ class ParticleSegmentationModel:
         if not os.path.exists(self.image_path):
             raise Exception('Image path does not exist')
         if not os.path.exists(self.sam_checkpoint_path):
-            raise Exception('Sam checkpoints path does not exist')
+            raise Exception('Sam checkpoint path does not exist')
 
     def load_image(self, image_path):
         """Load image from the specified path and update the image attribute."""
@@ -157,6 +156,38 @@ class ParticleSegmentationModel:
         logger.info("Generating masks took: {}", self.execution_time)
         return masks
 
+    def testing_generate_mask_1(self, pred_iou_thresh=None, stability_score_thresh=None, stability_score_offset=None,
+                              crop_n_layers=None, crop_n_points_downscale_factor=None, min_mask_region_area=None,
+                              box_nms_tresh=None, use_m2m=False):
+        # For validation
+        logger.info(
+            "Generating masks for validation - image: {}, scaling factor: {} um/px,  points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
+            stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
+            self.image_path,self.scaling_factor,  self.points_per_side, self.points_per_batch,
+            pred_iou_thresh,
+          stability_score_thresh,stability_score_offset, crop_n_layers,
+          crop_n_points_downscale_factor,
+         min_mask_region_area, box_nms_tresh, use_m2m)
+        start_time = datetime.now()
+        masks = dp.generate_masks(
+            self.image,
+            self.sam_checkpoint_path,
+            points_per_side=150,
+            points_per_batch=128,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crop_n_layers=crop_n_layers,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            min_mask_region_area=min_mask_region_area,
+            box_nms_tresh=box_nms_tresh,
+            use_m2m=use_m2m
+        )
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("Generating masks: {}", self.execution_time)
+        return masks
     def visualise_masks(self,mask_file_name):
         if self.masks is None:
             self.generate_mask()

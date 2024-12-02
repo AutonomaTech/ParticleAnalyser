@@ -29,11 +29,14 @@ class ContainerScalerModel:
         self.scalingStamp = datetime.now().strftime(
             "%Y-%m-%dT%H:%M:%S.%f")[:-3]
 
-    def updateScalingFactor(self, scalingNumber, containerWidth=None):
+    def updateScalingFactor(self, imageWidth=None, scalingNumber=None, containerWidth=None):
 
         if containerWidth is not None:
             self.containerWidth = containerWidth
-        self.scalingNumber = scalingNumber
+        if scalingNumber is not None:
+            self.scalingNumber = scalingNumber
+        else:
+            self.scalingNumber=imageWidth
         self.scalingFactor = self.containerWidth / self.scalingNumber
 
     def setScalingNumber(self, scalingNumber):
