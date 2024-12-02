@@ -10,7 +10,15 @@ import logging
 # Importing the ImageAnalysisModel from the analyser_module package
 import ImageAnalysisModel as pa
 
-
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def download_model(checkpoint_folder, file_url, file_name):
     """
@@ -144,7 +152,7 @@ def load_config(config_path):
     return config
 
 
-def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber,preCalculate_file_path):
+def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber,preCalculate_file_path,start):
     """
     Main function to execute the automated testing flow.
 
@@ -180,6 +188,15 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
         try:
             # Create a unique folder name for the current parameter set
             parameter_folder_name = f"parameter_{idx + 1}"
+            parameter_folder_path = os.path.join(image_folder_path, parameter_folder_name)
+            if not start:
+                if os.path.exists(parameter_folder_path):
+                    logging.info(
+                        f"Parameter folder '{parameter_folder_name}' already exists. Skipping this parameter set.")
+                    continue
+            else:
+                logging.info(
+                    f"Start is True. Processing parameter set '{parameter_folder_name}' regardless of existing folders.")
             logging.info(f"\n=== Processing Parameter Set {idx + 1}/{len(parameter_sets)} ===")
 
             # Instantiate ImageAnalysisModel with the provided image folder path
@@ -284,7 +301,14 @@ if __name__ == "__main__":
         default=r'C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\manual_calculation.xlsx',
         help='Pre manual calculation file .'
     )
-
+    # New 'Start' parameter
+    parser.add_argument(
+        '--start',
+        type=str2bool,
+        nargs='?',
+        default=False,
+        help='If set to True, the process runs from the very first parameter_set. If False, it skips existing parameter folders.'
+    )
     # Parse the arguments
     args = parser.parse_args()
 
@@ -297,5 +321,6 @@ if __name__ == "__main__":
         model_name=args.model_name,
         containerWidth=args.containerWidth,
         scalingNumber=args.scalingNumber,
-        preCalculate_file_path=args.preCalculate_file_path
+        preCalculate_file_path=args.preCalculate_file_path,
+        start=args.start
     )
