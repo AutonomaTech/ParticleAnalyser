@@ -1,5 +1,5 @@
 # tester_flow.py
-
+import pandas as pd
 import json
 from datetime import datetime
 import os
@@ -7,9 +7,9 @@ import sys
 import argparse
 import requests
 import logging
-
 # Importing the ImageAnalysisModel from the analyser_module package
 import ImageAnalysisModel as pa
+
 
 
 def download_model(checkpoint_folder, file_url, file_name):
@@ -42,7 +42,90 @@ def download_model(checkpoint_folder, file_url, file_name):
     else:
         logging.info("Checkpoint already exists, skipping download.")
 
+def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output_csv_path):
+    # Load CSV and Excel files
 
+    generated_df = pd.read_csv(generated_csv_path)
+    manual_df = pd.read_excel(manual_xlsx_path)
+
+    # Calculate total area from both the generated CSV and manual Excel
+    total_area_generated = generated_df['area'].sum()
+    total_area_manual = manual_df['calculated area'].sum()
+    generated_df.columns = generated_df.columns.str.strip()
+    manual_df.columns = manual_df.columns.str.strip()
+    # Calculate the total area difference and its percentage
+    area_difference = abs(total_area_generated - total_area_manual)
+    area_percentage_difference = (area_difference / total_area_manual) * 100 if total_area_manual != 0 else 0
+
+    # Sort the generated data by diameter in descending order
+    generated_df.sort_values(by='diameter', ascending=False, inplace=True)
+    manual_df.sort_values(by='diameter', ascending=False, inplace=True)
+
+    # Reset index after sorting to ensure alignment
+    generated_df.reset_index(drop=True, inplace=True)
+    manual_df.reset_index(drop=True, inplace=True)
+
+    # Calculate differences and convert to percentages for diameters
+    differences = abs(manual_df['diameter'] - generated_df['diameter'])
+    percentages = (differences / manual_df['diameter']) * 100
+
+    # Assign the percentage differences to the dataframe
+    generated_df['diameter_difference'] = percentages.round(4).astype(str) + '%'
+
+    # Append total area information to the DataFrame as new rows
+    area_row = pd.DataFrame({
+        'area': ['Total Area'],
+        'perimeter': [total_area_generated],
+        'diameter': [None],
+        'circularity': [None],
+        'diameter_difference': [None]
+    })
+
+    error_row = pd.DataFrame({
+        'area': ['Error %'],
+        'perimeter':[f"{area_percentage_difference:.2f}%"],
+        'diameter': [None],
+        'circularity': [None],
+        'diameter_difference': [None]
+    })
+
+    generated_df = pd.concat([generated_df, area_row, error_row], ignore_index=True)
+
+    input_string = ''
+    try:
+        # Take string in the psd file
+        with open(distribution_path, 'r') as file:
+
+            for line in file:
+                input_string = line
+        # Split the input string by comma
+        elements = input_string.split(',')
+        print(elements)
+
+        # Filter the bins from the input; these are assumed to be the values before "% Passing"
+        bin_array = elements[1:elements.index('Bottom') + 1]
+        rows = len(bin_array)
+
+        # Find the indices for passing and retaining percentages
+        passing_start = elements.index('% Passing') + 1
+        passing_end = elements.index('% Retained')
+        retaining_start = elements.index('% Retained') + 1
+
+        # Extract the passing and retaining percentages--only  values before bottom will be produced
+        passing_data = elements[passing_start:passing_end]
+        retaining_data = elements[retaining_start:]
+        format_string = '.{}f'.format(4)
+        passing = [format(max(float(num), 0), format_string) for num in passing_data]
+        retaining = [format(max(float(num), 0), format_string) for num in retaining_data]
+        generated_df['PSD'] = pd.Series(retaining[:len(generated_df)])
+        generated_df['Cumulative Passing'] = pd.Series(passing[:len(generated_df)])
+    except Exception as e:
+        print("Distribution file can not be parsed:{} ", e)
+
+
+    # Save the modified dataframe to a new CSV file
+    generated_df.to_csv(output_csv_path, index=False)
+    print(f"Validation CSV saved to: {output_csv_path}")
 def load_config(config_path):
     """
     Loads the parameters configuration JSON file.
@@ -61,7 +144,7 @@ def load_config(config_path):
     return config
 
 
-def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber):
+def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber,preCalculate_file_path):
     """
     Main function to execute the automated testing flow.
 
@@ -73,7 +156,9 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
         model_name (str): Name of the SAM model file.
         containerWidth (float): Width of the container used for scaling (in um).
         scalingNumber (float): Scaling number used for scaling factor calculation.
+        preCalculate_file_path (str): Scaling number used for scaling factor calculation.
     """
+
     # Load configuration file
     config = load_config(config_path)
     parameter_sets = config.get('parameter_sets', [])
@@ -123,7 +208,10 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
             analyser.saveSegments()
             analyser.saveResultsForValidation(bins, parameter_folder_name)
             analyser.formatResults()
-
+            output_csv = os.path.join(analyser.folder_path, f"{analyser.sampleID}_validating_report.csv")
+            generated_csv = os.path.join(analyser.folder_path, f"{analyser.sampleID}.csv")
+            distribution_path = os.path.join(analyser.folder_path, f"{analyser.sampleID}_distribution.txt")
+            size_validate(generated_csv,preCalculate_file_path,distribution_path,output_csv)
             # Record the end time
             end_time = datetime.now()
             logging.info(f"Completed particle analysis: {idx + 1}/{len(parameter_sets)}, End Time: {end_time}")
@@ -190,6 +278,13 @@ if __name__ == "__main__":
         help='Scaling number used for scaling factor calculation.'
     )
 
+    parser.add_argument(
+        '--preCalculate_file_path',
+        type=str,
+        default=r'C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\manual_calculation.xlsx',
+        help='Pre manual calculation file .'
+    )
+
     # Parse the arguments
     args = parser.parse_args()
 
@@ -201,5 +296,6 @@ if __name__ == "__main__":
         model_url=args.model_url,
         model_name=args.model_name,
         containerWidth=args.containerWidth,
-        scalingNumber=args.scalingNumber
+        scalingNumber=args.scalingNumber,
+        preCalculate_file_path=args.preCalculate_file_path
     )
