@@ -1,8 +1,9 @@
 {
     "parameter_sets": [
+
         {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
+            "pred_iou_thresh": 0.8,
+            "stability_score_thresh": 0.9,
             "stability_score_offset": 0.8,
             "crop_n_layers": 1,
             "crop_n_points_downscale_factor": 2,
@@ -10,196 +11,7 @@
             "box_nms_tresh": 0.2,
             "use_m2m": true
         },
-     {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 10.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-      {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 20.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-           {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 30.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-           {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 40.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-       {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 50.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-       {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 60.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-          {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 70.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-        {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 80.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-       {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.92,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 90.0,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-          {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 10,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-           {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 20,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-          {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 30,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },{
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 40,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-      {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 50,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-       {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 60,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-       {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 70,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-        {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 80,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-         {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 90,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-        {
-            "pred_iou_thresh": 0.9,
-            "stability_score_thresh": 0.9,
-            "stability_score_offset": 0.8,
-            "crop_n_layers": 1,
-            "crop_n_points_downscale_factor": 2,
-            "min_mask_region_area": 100,
-            "box_nms_tresh": 0.2,
-            "use_m2m": true
-        },
-      [
+
     {
         "pred_iou_thresh": 0.8,
         "stability_score_thresh": 0.92,
@@ -207,7 +19,7 @@
         "crop_n_layers": 1,
         "crop_n_points_downscale_factor": 1,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -217,7 +29,7 @@
         "crop_n_layers": 1,
         "crop_n_points_downscale_factor": 2,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -227,7 +39,7 @@
         "crop_n_layers": 1,
         "crop_n_points_downscale_factor": 3,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -237,7 +49,7 @@
         "crop_n_layers": 2,
         "crop_n_points_downscale_factor": 2,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -247,7 +59,7 @@
         "crop_n_layers": 2,
         "crop_n_points_downscale_factor": 1.5,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -257,7 +69,7 @@
         "crop_n_layers": 2,
         "crop_n_points_downscale_factor": 1,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -267,7 +79,7 @@
         "crop_n_layers": 3,
         "crop_n_points_downscale_factor": 1,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -277,7 +89,7 @@
         "crop_n_layers": 3,
         "crop_n_points_downscale_factor": 1.5,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -287,7 +99,7 @@
         "crop_n_layers": 3,
         "crop_n_points_downscale_factor": 2,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
         "use_m2m": true
     },
     {
@@ -297,14 +109,73 @@
         "crop_n_layers": 4,
         "crop_n_points_downscale_factor": 1,
         "min_mask_region_area": 0.0,
-        "box_nms_thresh": 0.2,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    },
+        {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 0.0,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    },
+
+          {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 50,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    },
+
+          {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 60,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    },
+          {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 70,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    }, {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 100,
+        "box_nms_tresh": 0.2,
+        "use_m2m": true
+    },
+        {
+        "pred_iou_thresh": 0.95,
+        "stability_score_thresh": 0.92,
+        "stability_score_offset": 0.8,
+        "crop_n_layers": 1,
+        "crop_n_points_downscale_factor": 2,
+        "min_mask_region_area": 100,
+        "box_nms_tresh": 0.1,
         "use_m2m": true
     }
 ]
 
-
-
-    ],
+    ,
     "bins": [50, 101, 151, 201, 250, 300, 350, 400, 450, 500]
 }
 

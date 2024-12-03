@@ -44,7 +44,7 @@ def main(image_folder_path, containerWidth):
 
     download_model(checkpoint_folder, model_url, model_name)
 
-    analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth)
+    analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth=containerWidth)
     analyser.evenLighting()
     analyser.overlayImage()
     Testing = False
