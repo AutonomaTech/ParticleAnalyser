@@ -215,6 +215,18 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.folder_path)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+    def savePsdDataWithDiameter(self):
+        """
+        Saves particle size distribution (PSD) data to a text file.
+
+        Input: None
+        Output: Saves PSD data to a TXT file.
+        """
+        self.p.get_psd_data_with_diameter()
+        self.distributions_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}_distribution.txt")
+        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
+        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
 
     def savePsdDataForNormalBins(self):
         """
@@ -238,6 +250,15 @@ class ImageAnalysisModel:
 
         self.p.plotBins(self.folder_path,self.sampleID)
 
+    def saveDistributionPlotForDiameter(self):
+        """
+        Saves particle size distribution (PSD) data to a text file.
+
+        Input: None
+        Output: Saves PSD data to a TXT file.
+        """
+
+        self.p.plotBinsForDiameter(self.folder_path, self.sampleID)
     def saveDistributionPlotForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -488,7 +509,8 @@ class ImageAnalysisModel:
             self.p.setdiameter_threshold(self.diameter_threshold)
             self.p.save_segments_as_csv(
                 self.json_masks_filename, self.csv_filename)
-            self.savePsdData()
+            # self.savePsdData()
+            self.savePsdDataWithDiameter()
 
         except FileNotFoundError as e:
             raise e

@@ -286,8 +286,19 @@ class ParticleSegmentationModel:
         self.psd_data = {'differential': list(zip(tuple([0]+self.bins), tuple(
             psd_data[1]))), 'cumulative': list(zip(tuple([0]+self.bins), tuple(psd_data[2][::-1])))}
         # print(self.psd_data)
+
         return self.psd_data
 
+    def get_psd_data_with_diameter(self):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+
+        psd_data=dp.custom_psd_data1(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,
+                            reverse_cumulative=True)
+        self.psd_data = {'differential': list(zip(tuple([0] + self.bins), tuple(
+            psd_data[1]))), 'cumulative': list(zip(tuple([0] + self.bins), tuple(psd_data[2][::-1])))}
+        return self.psd_data
     def get_totalArea(self):  # , withOverlappingArea):
         if self.segments is None:
             self.segments = dp.get_segments(
@@ -371,7 +382,10 @@ class ParticleSegmentationModel:
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
         fileName= f"{folder_path}/{sampleId}_plot.png"
         dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)
-
+    def plotBinsForDiameter(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName= f"{folder_path}/{sampleId}_plot.png"
+        dp.plot_psd_bins4(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName)
     def plotNormalBins(self,folder_path,sampleId):
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
         fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
