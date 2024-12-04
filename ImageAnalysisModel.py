@@ -467,7 +467,7 @@ class ImageAnalysisModel:
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
                                          self.p.circularity_threshold)
-        formatter.save_xml(normalFlag)
+        formatter.save_xml(normalFlag=normalFlag)
 
     def saveSegments(self):
         """

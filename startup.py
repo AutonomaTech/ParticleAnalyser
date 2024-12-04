@@ -52,8 +52,14 @@ def main(image_folder_path, containerWidth):
     analyser.saveSegments()
     industry_standard_bins = [38, 106, 1000, 8000]  # bins
     normal_bins = [ 1000, 2000,3000,4000,5000,6000,7000,8000,9000,10000]
-    analyser.saveResults(industry_standard_bins)
-    analyser.formatResults()
+    # analyser.saveResults(industry_standard_bins)
+    analyser.setBins(industry_standard_bins)
+    analyser.savePsdData()
+    analyser.formatResults(byArea=True)
+    analyser.saveDistributionPlot()
+    analyser.savePsdDataWithDiameter()
+    analyser.formatResults(bySize=True)
+    analyser.saveDistributionPlotForDiameter()
     analyser.saveResultsForNormalBinsOnly(normal_bins)
     analyser.formatResultsForNormalDistribution(True)
 
