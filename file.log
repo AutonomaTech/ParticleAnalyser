@@ -179,3 +179,66 @@
 2024-12-02T16:24:35.857224+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
 2024-12-02T16:24:36.156106+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_2\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.9, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 10.0, box_nms_tresh: 0.2, use_m2m: True
 2024-12-03T07:36:25.066481+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_2\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.9, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 10.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T09:07:18.169188+0800 INFO Generating masks: 1:30:53.101707
+2024-12-03T09:07:21.968959+0800 INFO UnderS (0.15) [%]: 33.3333
+2024-12-03T09:07:21.969959+0800 INFO OverS (8) [%]: 0.0000
+2024-12-03T09:07:21.969959+0800 INFO Mean Size : 0.23042486
+2024-12-03T09:07:21.969959+0800 INFO D90mm : 0.45002742
+2024-12-03T09:07:21.969959+0800 INFO D10mm : 0.00700597
+2024-12-03T09:07:21.969959+0800 INFO D50mm : 0.25038120
+2024-12-03T09:07:21.969959+0800 INFO Minimum Area : 0.00000200
+2024-12-03T09:07:21.971135+0800 INFO Minimum Diameter : 0.00200000
+2024-12-03T09:07:21.975143+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
+2024-12-03T09:07:22.298704+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_3\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.9, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 20.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T11:29:26.104683+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_4\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.9, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 30.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T11:52:55.235675+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_1\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.9,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 100, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T11:53:43.418838+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_1\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.9,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T12:07:02.019021+0800 INFO Generating masks: 0:13:18.599188
+2024-12-03T12:07:05.562643+0800 INFO UnderS (0.15) [%]: 33.3333
+2024-12-03T12:07:05.562643+0800 INFO OverS (8) [%]: 0.0000
+2024-12-03T12:07:05.563642+0800 INFO Mean Size : 0.23042486
+2024-12-03T12:07:05.563642+0800 INFO D90mm : 0.45002742
+2024-12-03T12:07:05.564147+0800 INFO D10mm : 0.00700597
+2024-12-03T12:07:05.564147+0800 INFO D50mm : 0.25038120
+2024-12-03T12:07:05.565151+0800 INFO Minimum Area : 0.00000200
+2024-12-03T12:07:05.565151+0800 INFO Minimum Diameter : 0.00200000
+2024-12-03T12:07:05.569584+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
+2024-12-03T12:24:28.150097+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_2\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 1, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T12:49:13.431629+0800 INFO Generating masks: 0:24:45.280483
+2024-12-03T12:49:16.983209+0800 INFO UnderS (0.15) [%]: 33.3333
+2024-12-03T12:49:16.983209+0800 INFO OverS (8) [%]: 0.0000
+2024-12-03T12:49:16.983209+0800 INFO Mean Size : 0.23048250
+2024-12-03T12:49:16.983209+0800 INFO D90mm : 0.45004314
+2024-12-03T12:49:16.983209+0800 INFO D10mm : 0.00700597
+2024-12-03T12:49:16.984713+0800 INFO D50mm : 0.25030812
+2024-12-03T12:49:16.984713+0800 INFO Minimum Area : 0.00000200
+2024-12-03T12:49:16.984713+0800 INFO Minimum Diameter : 0.00200000
+2024-12-03T12:49:16.988221+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
+2024-12-03T12:49:17.291201+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_3\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T13:47:08.418056+0800 INFO Generating masks: 0:57:51.126855
+2024-12-03T13:47:12.021441+0800 INFO UnderS (0.15) [%]: 33.3333
+2024-12-03T13:47:12.022445+0800 INFO OverS (8) [%]: 0.0000
+2024-12-03T13:47:12.022445+0800 INFO Mean Size : 0.23042486
+2024-12-03T13:47:12.022445+0800 INFO D90mm : 0.45002742
+2024-12-03T13:47:12.022445+0800 INFO D10mm : 0.00700597
+2024-12-03T13:47:12.022445+0800 INFO D50mm : 0.25038120
+2024-12-03T13:47:12.022445+0800 INFO Minimum Area : 0.00000200
+2024-12-03T13:47:12.022445+0800 INFO Minimum Diameter : 0.00200000
+2024-12-03T13:47:12.026462+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
+2024-12-03T13:47:12.230687+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_4\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 3, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T14:33:06.128431+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_4\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 3, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T14:47:28.964687+0800 INFO Generating masks: 0:14:22.835256
+2024-12-03T14:47:36.187384+0800 INFO UnderS (0.15) [%]: 33.3333
+2024-12-03T14:47:36.188390+0800 INFO OverS (8) [%]: 0.0000
+2024-12-03T14:47:36.189833+0800 INFO Mean Size : 0.23048988
+2024-12-03T14:47:36.189833+0800 INFO D90mm : 0.45006217
+2024-12-03T14:47:36.190826+0800 INFO D10mm : 0.00700597
+2024-12-03T14:47:36.191333+0800 INFO D50mm : 0.25031342
+2024-12-03T14:47:36.191333+0800 INFO Minimum Area : 0.00000200
+2024-12-03T14:47:36.192341+0800 INFO Minimum Diameter : 0.00200000
+2024-12-03T14:47:36.199385+0800 INFO bins:['0.5', '0.45', '0.4', '0.35', '0.3', '0.25', '0.201', '0.151', '0.101', '0.05', 'Bottom'] 
+2024-12-03T14:47:36.870049+0800 INFO Generating masks for validation - image: C:\Users\LiCui\Desktop\Samples\Circle_For_Validation\parameter_5\final_Circle_For_Validation.png, scaling factor: 1.0 um/px,  points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 2, crop_n_points_downscale_factor: 2, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T15:55:43.851296+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190_S1\final_RCB1489190_S1.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 3, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T16:04:28.507657+0800 INFO Generating masks took: 0:08:44.655849
+2024-12-03T16:14:23.983603+0800 INFO Generating masks - image: C:\Users\LiCui\Desktop\RCB1489190_S1\final_RCB1489190_S1.png, scaling factor: 105.69583088667058 um/px, sam_checkpoint: checkpoints\sam2.1_hiera_large.pt, points_per_side: 150,points_per_batch: 128, pred_iou_thresh: 0.8, stability_score_thresh: 0.92,             stability_score_offset:0.8, crop_n_layers: 1, crop_n_points_downscale_factor: 3, min_mask_region_area: 0.0, box_nms_tresh: 0.2, use_m2m: True
+2024-12-03T16:23:15.440510+0800 INFO Generating masks took: 0:08:51.456907

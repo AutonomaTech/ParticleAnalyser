@@ -15,9 +15,9 @@ def check_and_run_command(samples_root_folder):
 
                 if os.path.isdir(image_folder_path):
                     # Check for files ending with '_distribution.txt'
-                    distribution_files = [f for f in os.listdir(image_folder_path) if f.endswith('_distribution.txt')]
+                    # distribution_files = [f for f in os.listdir(image_folder_path) if f.endswith('_distribution.txt')]
 
-                    if not distribution_files:
+                    # if not distribution_files:
                         # If no distribution file is found, run the command
                         command = f"python startup.py {image_folder_path} 180000"
                         print(f"Running command: {command}")
