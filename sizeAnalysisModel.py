@@ -463,7 +463,7 @@ class sizeAnalysisModel:
         if self.segments_file_path is not None:
             directory_path = os.path.dirname(self.segments_file_path)
         return directory_path
-    def save_xml(self,normalFlag=False):
+    def save_xml(self,normalFlag=False,byArea=False,bySize=False):
         self.__build_xml()
 
         if self.xmlstring=="":
@@ -476,8 +476,13 @@ class sizeAnalysisModel:
         pretty_string_without_declaration = '\n'.join(pretty_string.split('\n')[1:])
         if normalFlag:
             filename = f"{self.sampleId}_normalBin.xml"
-        else:
+        elif byArea:
+            filename = f"{self.sampleId}_byArea.xml"
+        elif bySize:
+            filename = f"{self.sampleId}_bySize.xml"
+        else :
             filename = f"{self.sampleId}.xml"
+
         folderPath = self.__get_directory_path()
 
         filePath = folderPath + "/" + filename

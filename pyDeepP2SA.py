@@ -934,27 +934,6 @@ def custom_psd_data1(diameter_threshold, circularity_threshold, bins, segments, 
     total_particles = len(filtered_stat)
     counts = [0] * len(plot_bins)
     cumulative = [0] * len(plot_bins)
-    #For Retaining
-    # count_dict={}
-    # for diameter in filtered_stat['diameter']:
-    #     if diameter>=8000:
-    #         counts[0]+=1
-    #     if 8000>diameter >= 1000:
-    #         counts[1] += 1
-    #
-    #     if 1000>diameter >= 106:
-    #         counts[2] += 1
-    #     if 106>diameter >= 38:
-    #         counts[3] += 1
-    #     if 38 > diameter >= 0:
-    #         counts[4] += 1
-
-    # count_dict['diameter>=8000']=counts[0]
-    # count_dict['8000>diameter>=1000'] = counts[1]
-    # count_dict['1000>diameter>=106'] = counts[2]
-    # count_dict['106>diameter>=38'] = counts[3]
-    # count_dict['38>diameter>=0'] = counts[4]
-
 
     bin_labels = [f"Diameter < {bins[0]}"]
     for i in range(1, len(bins)):
@@ -1079,7 +1058,7 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 #     bins.sort()
 
 
-def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
+def save_psd_as_txt(id, bins, cumulative, differential, csvpath):
 
     # prepare for export arrangement
     # reverse order for bins
@@ -1089,7 +1068,7 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
     differential.reverse()
     cumulative.reverse()
 
-    csvpath = os.path.join(csv_directory, f"{id}_distribution.txt")
+    # csvpath = os.path.join(csv_directory, f"{id}_distribution.txt")
 
     # write to csv file id, bins, cumulative, differential
     with open(csvpath, 'w', newline='') as csvfile:

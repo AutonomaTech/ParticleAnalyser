@@ -212,8 +212,8 @@ class ImageAnalysisModel:
         """
         self.p.get_psd_data()
         self.distributions_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_distribution.txt")
-        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
+            self.folder_path, f"{self.sampleID}_byArea_distribution.txt")
+        self.p.save_psd_as_txt(self.sampleID, self.distributions_filename)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
     def savePsdDataWithDiameter(self):
         """
@@ -224,8 +224,8 @@ class ImageAnalysisModel:
         """
         self.p.get_psd_data_with_diameter()
         self.distributions_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_distribution.txt")
-        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
+            self.folder_path, f"{self.sampleID}_bySize_distribution.txt")
+        self.p.save_psd_as_txt(self.sampleID, self.distributions_filename)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
 
     def savePsdDataForNormalBins(self):
@@ -408,7 +408,7 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self):
+    def formatResults(self,byArea=False,bySize=False):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
@@ -436,7 +436,7 @@ class ImageAnalysisModel:
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
                                          self.p.circularity_threshold)
-        formatter.save_xml()
+        formatter.save_xml(byArea=byArea,bySize=bySize)
 
     def formatResultsForNormalDistribution(self,normalFlag):
         """
@@ -510,7 +510,7 @@ class ImageAnalysisModel:
             self.p.save_segments_as_csv(
                 self.json_masks_filename, self.csv_filename)
             # self.savePsdData()
-            self.savePsdDataWithDiameter()
+            # self.savePsdDataWithDiameter()
 
         except FileNotFoundError as e:
             raise e
