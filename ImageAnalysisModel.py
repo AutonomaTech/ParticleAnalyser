@@ -1,760 +1,393 @@
-import ContainerScalerModel as cs
-import sizeAnalysisModel as sa
-import ImageProcessingModel as ip
+import os.path
+
+import pyDeepP2SA as dp
+import cv2
 import logger_config
-import ParticleSegmentationModel as psa
-logger = logger_config.get_logger(__name__)
-import os
-import re
-import csv
 import json
-# if using Apple MPS, fall back to CPU for unsupported ops
-os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+import numpy as np
+from PIL import Image
+from datetime import datetime
 
-# -----------------------------------------------------------------------------
-# ImageAnalysisModel Class
-# -----------------------------------------------------------------------------
-# The ImageAnalysisModel class serves as the central interface for analyzing
-# images and extracting particle-related data. It integrates multiple models
-# and utilities for preprocessing, scaling, segmentation, and analysis.
-#
-# Core Features:
-# 1. Initialization:
-#    - Takes the path to a folder containing images and a container width.
-#    - Automatically sets up the sample ID, image processor, and scaling factor.
-#
-# 2. Preprocessing:
-#    - Allows cropping and lighting adjustments to improve image quality.
-#    - Supports overlaying images for enhanced visibility and size reduction.
-#
-# 3. Particle Segmentation and Analysis:
-#    - Uses a ParticleSegmentationModel to segment particles and generate masks.
-#    - Supports loading pretrained checkpoints for segmentation models.
-#    - Analyzes particle size distribution (PSD) and saves data in various formats.
-#
-# 4. Results Management:
-#    - Saves results such as particle masks, PSD data, and formatted XML files.
-#    - Provides functionality to load pre-segmented data for analysis.
-#
-# 5. Visualization:
-#    - Displays images and generated masks for inspection.
-#
-# 6. Customization:
-#    - Supports adjustable bins and diameter thresholds for segmentation.
-#
-# Designed for extensibility and efficient image analysis, this class is
-# structured to integrate with other models and tools seamlessly.
-# -----------------------------------------------------------------------------
+logger = logger_config.get_logger(__name__)
 
 
-class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None):
-        """
-        Initializes the ImageAnalysisModel with an image folder path and container width.
-        Sets up the sample ID, image processor, and container scaler.
+class ParticleSegmentationModel:
 
-        Inputs:
-        - image_folder_path: Path to the folder containing images for analysis.
-        - containerWidth: Width of the container used for scaling.
+    """
 
-        Output: None
-        """
-        self.sampleID = sampleID if sampleID else os.path.basename(
-            image_folder_path)
-        self.imageProcessor = ip.ImageProcessingModel(
-            image_folder_path, self.sampleID)
-        self.imagePath = self.imageProcessor.getImagePath()
-        self.meshingImageFolderPath=None
-        self.Scaler = cs.ContainerScalerModel(containerWidth)
-        self.Scaler.updateScalingFactor(
-            imageWidth=self.imageProcessor.getWidth(),scalingNumber=scalingNumber, containerWidth=containerWidth)
-        self.diameter_threshold = 100000  # 10cm
-        self.folder_path = image_folder_path
-        self.meshingTotalSeconds=0
-        self.totalSeconds=0
-        self.analysisTime = 0
-        self.numberofBins = 0
-        self.p = None
-        self.csv_filename = ""
-        self.totalSecondes=0
-        self.minimumArea=0
-        self.meshingSegmentAreas={}
-        self.miniParticles=[]
+    ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library.
+    It provides a simple way to generate masks, visualise masks, save masks to csv, save mask image, save masks as images, save masked regions, identify spheres, plot psd, get psd bins, plot psd bins, save psd, save segments, open segments, save psd as csv.
 
-    def analysewithCV2(self):
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.generate_with_cv2(self.csv_filename)
+    To use this class:
+        1. Create an instance of the class with the image path, sam checkpoint path and pixel to micron scaling factor.
+        2. Generate masks which will segment the image into masks.
+        3. Segements are scaled to a micron value
 
-    def showImage(self):
-        """
-        Displays the processed image using the ImageProcessingModel.
+        points_per_side=64, # increasing improves the detection of lots of small particles # exp increase in processing
+        pred_iou_thresh=0.85, # reducing the Iou and stablitiy score accepts more segments
+        stability_score_thresh=0.8, # no sig. influence system is very confident on particle detected `98-99`
+        box_nms_thresh=0.2 # reducing this reduces the number of duplicates
 
-        Input: None
-        Output: Shows the image.
-        """
-        self.imageProcessor.showImage()
+        iou_scores (Union[torch.Tensor, tf.Tensor]) — List of IoU scores.
+        original_size (Tuple[int,int]) — Size of the orginal image.
+        cropped_box_image (np.array) — The cropped image.
+        pred_iou_thresh (float, optional, defaults to 0.88) — The threshold for the iou scores.
+        stability_score_thresh (float, optional, defaults to 0.95) — The threshold for the stability score.
+        mask_threshold (float, optional, defaults to 0) — The threshold for the predicted masks.
+        stability_score_offset (float, optional, defaults to 1) — The offset for the stability score used in the _compute_stability_score method.
 
-    def showMasks(self):
-        """
-        Displays the masks generated by the ParticleSegmentationModel, if available.
+        What checkpoint to use?
+        The models are the same except for neural network size,
+        B stands for "base" and is the smallest, L is "large" and H is "huge".
+        The paper reports that the performance difference between L and H isn't much
+        and I would recommend L if your machine supports it.
+        However, B is lighter and not far behind in performance.
+        https://github.com/facebookresearch/segment-anything/issues/273
 
-        Input: None
-        Output: Shows mask visualization.
-        """
-        file_name = f"{self.folder_path}/{self.sampleID}_mask.png"
-        self.p.visualise_masks(file_name)
+    """
 
-    def setBins(self, bins):
-        """
-        Sets the number of bins in the ParticleSegmentationModel based on input.
+    def __init__(self, image_path, sam_checkpoint_path, pixel_to_micron):
+        self.image_path = image_path
+        self.sam_checkpoint_path = sam_checkpoint_path
+        self.masks = None
+        self.scaling_factor = pixel_to_micron
+        self.segments = None
+        # best SAM2 model parameters
+        self.points_per_side = 150
+        self.points_per_batch = 128
+        self.pred_iou_thresh = 0.8
+        self.stability_score_thresh = 0.92
+        self.stability_score_offset = 0.8
+        self.crop_n_layers = 1
+        self.crop_n_points_downscale_factor = 3
+        self.min_mask_region_area = 0.0
+        self.box_nms_tresh = 0.2
+        self.use_m2m = True
 
-        Inputs:
-        - bins: List of bin boundaries.
+        self.openedImage =Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
 
-        Output: None
-        """
-        if self.p is not None:
-            self.numberofBins = len(bins)
-            self.p.bins = bins[:]
+        self.psd_bins_data = None  # this is data for plotting
+        self.psd_data = None
+        self._bins = None
 
-    def loadModel(self, checkpoint_folder):
-        """
-        Loads the ParticleSegmentationModel with a specified checkpoint.
+        # parameters for processing
+        self.circularity_threshold = 0
+        self.diameter_threshold = 0
 
-        Input:
-        - checkpoint_folder: Path to the folder containing model checkpoint.
+        self.execution_time = None
 
-        Output: None
-        """
-        def loadSamModel(checkpoint_folder):
-            os.makedirs(checkpoint_folder, exist_ok=True)
-            checkpoint_filename = "sam2.1_hiera_large.pt"  # SAM2
-            CHECKPOINT_PATH = os.path.join(
-                checkpoint_folder, checkpoint_filename)
-            return CHECKPOINT_PATH
+        # check if the image path and sam check point path exists
+        if not os.path.exists(self.image_path):
+            raise Exception('Image path does not exist')
+        if not os.path.exists(self.sam_checkpoint_path):
+            raise Exception('Sam checkpoint path does not exist')
 
-        CHECKPOINT_PATH = loadSamModel(checkpoint_folder)
-        self.p = psa.ParticleSegmentationModel(
-            self.imagePath, CHECKPOINT_PATH, self.Scaler.scalingFactor)
+    def load_image(self, image_path):
+        """Load image from the specified path and update the image attribute."""
+        if not os.path.exists(image_path):
+            raise Exception('Image path does not exist')
 
-    def analyseParticles(self, checkpoint_folder, testing):
-        """
-        Analyzes particles in the image by generating masks using the model, and calculates analysis time.
-
-        Inputs:
-        - checkpoint_folder: Path to the model checkpoint.
-        - testing: Boolean flag to enable test mode.
-
-        Output: None
-        """
-        def calculateAnalysisTime(duration):
-            total_seconds = duration.total_seconds()
-            # Total seconds for the first calculation (Entire image)
-            # self.totalSeconds=total_seconds
-            minutes = int(total_seconds // 60)
-            seconds = total_seconds % 60
-            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
-
-        self.loadModel(checkpoint_folder)
-        if testing:
-            self.p.testing_generate_mask()
-        else:
-            self.p.generate_mask()
-
-        calculateAnalysisTime(self.p.getExecutionTime())
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.save_masks_to_csv(self.csv_filename)
-        self.showMasks()
-    def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
-        """
-        Analyzes particles in the image by generating masks using the model, and calculates analysis time.
-
-        Inputs:
-        - checkpoint_folder: Path to the model checkpoint.
-        - testing: Boolean flag to enable test mode.
-
-        Output: None
-        """
-        def calculateAnalysisTime(duration):
-            total_seconds = duration.total_seconds()
-            # Total seconds for the first calculation (Entire image)
-            # self.totalSeconds=total_seconds
-            minutes = int(total_seconds // 60)
-            seconds = total_seconds % 60
-            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
-
-        self.loadModel(checkpoint_folder)
-
-        self.p.testing_generate_mask_1(**testing_parameters)
+        self.openedImage = Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
 
 
-        calculateAnalysisTime(self.p.getExecutionTime())
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        # Get Image folder Path
-        original_folder_path = self.imageProcessor.getImageFolder()
-        # Create subfolder for the current parameter set
-        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
-        os.makedirs(self.folder_path, exist_ok=True)
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.save_masks_to_csv(self.csv_filename)
-        self.showMasks()
+    def update_image_path(self, new_image_path):
+        """Update image path and reload the image."""
+        self.load_image(new_image_path)
+    @property
+    def bins(self):
+        return self._bins
 
-    def savePsdData(self):
-        """
-        Saves particle size distribution (PSD) data to a text file.
+    @bins.setter
+    def bins(self, bins):
+        self._bins = sorted(bins)
 
-        Input: None
-        Output: Saves PSD data to a TXT file.
-        """
-        self.p.get_psd_data()
-        self.distributions_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_distribution.txt")
-        self.p.save_psd_as_txt(self.sampleID, self.folder_path)
-        print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+    def getExecutionTime(self):
+        if self.execution_time is not None:
+            return self.execution_time
 
-    def savePsdDataForNormalBins(self):
-        """
-        Saves particle size distribution (PSD) data to a text file.
+    def generate_mask(self):
+        logger.info(
+            "Generating masks - image: {}, scaling factor: {} um/px, sam_checkpoint: {}, points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
+            stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
+            self.image_path, self.scaling_factor, self.sam_checkpoint_path, self.points_per_side, self.points_per_batch, self.pred_iou_thresh,
+            self.stability_score_thresh, self.stability_score_offset, self.crop_n_layers, self.crop_n_points_downscale_factor,
+            self.min_mask_region_area, self.box_nms_tresh, self.use_m2m)
+        start_time = datetime.now()
+        masks = dp.generate_masks(self.image, self.sam_checkpoint_path,
+                                  points_per_side=self.points_per_side,
+                                  points_per_batch=self.points_per_batch,
+                                  pred_iou_thresh=self.pred_iou_thresh,
+                                  stability_score_thresh=self.stability_score_thresh,
+                                  stability_score_offset=self.stability_score_offset,
+                                  crop_n_layers=self.crop_n_layers,
+                                  crop_n_points_downscale_factor=self.crop_n_points_downscale_factor,
+                                  min_mask_region_area=self.min_mask_region_area,
+                                  box_nms_tresh=self.box_nms_tresh,
+                                  use_m2m=self.use_m2m)
+        # self.setdiameter_threshold(10)
+        # self.masks=dp.deleteWrongAreas(masks,self.scaling_factor,self.diameter_threshold)
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("Generating masks took: {}", self.execution_time)
+        return masks
 
-        Input: None
-        Output: Saves PSD data to a TXT file.
-        """
-        self.p.get_psd_data()
-        # self.distributions_filename = os.path.join(
-        #     self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
-        self.p.save_psd_as_txt_normal(self.sampleID, self.folder_path)
-        # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
-    def saveDistributionPlot(self):
-        """
-        Saves particle size distribution (PSD) data to a text file.
+    def testing_generate_mask(self):
+        # function TO Do test opn Colab to speed up process of testing. The results are not accurate
+        start_time = datetime.now()
+        masks = dp.generate_masks(self.image,
+                                  self.sam_checkpoint_path,
+                                  points_per_side=4,
+                                  points_per_batch=1,
+                                  pred_iou_thresh=0.1,
+                                  stability_score_thresh=0.1,
+                                  stability_score_offset=0.1,
+                                  crop_n_layers=1,
+                                  crop_n_points_downscale_factor=2,
+                                  min_mask_region_area=100,
+                                  box_nms_tresh=0.5,
+                                  use_m2m=False
+                                  )
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("Generating masks took: {}", self.execution_time)
+        return masks
 
-        Input: None
-        Output: Saves PSD data to a TXT file.
-        """
+    def testing_generate_mask_1(self, pred_iou_thresh=None, stability_score_thresh=None, stability_score_offset=None,
+                              crop_n_layers=None, crop_n_points_downscale_factor=None, min_mask_region_area=None,
+                              box_nms_tresh=None, use_m2m=False):
+        # For validation
+        logger.info(
+            "Generating masks for validation - image: {}, scaling factor: {} um/px,  points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
+            stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
+            self.image_path,self.scaling_factor,  self.points_per_side, self.points_per_batch,
+            pred_iou_thresh,
+          stability_score_thresh,stability_score_offset, crop_n_layers,
+          crop_n_points_downscale_factor,
+         min_mask_region_area, box_nms_tresh, use_m2m)
+        start_time = datetime.now()
+        masks = dp.generate_masks(
+            self.image,
+            self.sam_checkpoint_path,
+            points_per_side=150,
+            points_per_batch=128,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crop_n_layers=crop_n_layers,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            min_mask_region_area=min_mask_region_area,
+            box_nms_tresh=box_nms_tresh,
+            use_m2m=use_m2m
+        )
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("Generating masks: {}", self.execution_time)
+        return masks
+    def visualise_masks(self,mask_file_name):
+        if self.masks is None:
+            self.generate_mask()
 
-        self.p.plotBins(self.folder_path,self.sampleID)
+        dp.visualise_masks(self.image, self.masks,mask_file_name)
 
-    def saveDistributionPlotForNormalBins(self):
-        """
-        Saves particle size distribution (PSD) data to a text file.
+    def opposite_masks(self):
+        if self.masks is None:
+            self.generate_mask()
+        dp.visualiseRemainingfromMasks(self.image, self.masks)
+        dp.find_smallest_area_with_SAM
 
-        Input: None
-        Output: Saves PSD data to a TXT file.
-        """
-        self.p.plotNormalBins(self.folder_path, self.sampleID)
-
-
-
-    def saveResults(self, bins):
-        """
-        Saves particle segmentation results to CSV and distribution files after setting bins.
-
-        Input:
-        - bins: List of bin boundaries for the segmentation model.
-
-        Output: Saves results to CSV and distribution files.
-        """
-        self.setBins(bins)
-        if self.imageProcessor is None:
-            raise ValueError("Image is not initialised")
-
-        self.folder_path = self.imageProcessor.getImageFolder()
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.p.save_masks_to_csv(self.csv_filename)
-        print(f"--> Masks saved to CSV file: {self.csv_filename}")
-
-        self.savePsdData()
-        self.saveDistributionPlot()
-
-    def saveResultsForValidation(self, bins, parameter_folder_name):
-        """
-        Saves particle segmentation results to CSV and distribution files after setting bins.
-
-        Input:
-        - bins: List of bin boundaries for the segmentation model.
-        - parameter_folder_name: Name of the subfolder for the current parameter set.
-
-        Output: Saves results to CSV and distribution files in the specified subfolder.
-        """
-        self.setBins(bins)
-        if self.imageProcessor is None:
-            raise ValueError("Image is not initialised")
-
-
-
-        # Generate new csv
-        self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.p.save_masks_to_csv(self.csv_filename)
-        print(f"--> Masks saved to CSV file: {self.csv_filename}")
-
-        self.savePsdData()
-        self.saveDistributionPlot()
-    def saveResultsForNormalBinsOnly(self, bins):
-        """
-        Saves particle segmentation results to CSV and distribution files after setting bins.
-
-        Input:
-        - bins: List of bin boundaries for the segmentation model.
-
-        Output: Saves results to CSV and distribution files.
-        """
-        self.setBins(bins)
-        self.savePsdDataForNormalBins()
-        self.saveDistributionPlotForNormalBins()
-    def generateMasksForMeshing(self, testing):
-        """
-        Analyzes particles in the image by generating masks using the model for each segmented image
-        and saves the resulting segment files to a corresponding folder.
-
-        Inputs:
-        - testing: Boolean flag to enable test mode.
-
-        Output: None
-        """
-
-        def calculateTotalSeconds(duration):
-            total_seconds = duration.total_seconds()
-            self.meshingTotalSeconds += total_seconds
-
-        # Step 1: Assign `self.meshingImageFolderPath`
-        meshing_folder_name = "meshingImage"
-        self.meshingImageFolderPath = os.path.join(self.folder_path, meshing_folder_name)
-
-        # Step 2: Check if `meshingImage` folder exists
-        if not os.path.exists(self.meshingImageFolderPath):
-            print(f"Error: Folder '{meshing_folder_name}' not found at {self.folder_path}")
+    def save_masks_to_csv(self, filename):
+        if self.masks is None:
+            logger.error("No mask to save!")
             return
+        dp.save_masks_to_csv(self.masks, filename,
+                             self.scaling_factor, self.diameter_threshold)
 
-        print(f"Meshing image folder path: {self.meshingImageFolderPath}")
-
-        # Step 3: Assign `self.meshingSegmentsFolder`
-        meshing_segment_folder_name = "meshingSegments"
-        self.meshingSegmentsFolder = os.path.join(self.folder_path, meshing_segment_folder_name)
-
-        # Create `meshingSegments` folder if it doesn't exist
-        os.makedirs(self.meshingSegmentsFolder, exist_ok=True)
-        print(f"Meshing segments folder path: {self.meshingSegmentsFolder}")
-
-        # Step 4: List all image files in `meshingImageFolderPath` with natural sorting
-        def natural_key(file_name):
-            match = re.search(r'\d+', file_name)
-            return int(match.group()) if match else float('inf')
-
-        image_files = [
-            os.path.join(self.meshingImageFolderPath, file)
-            for file in sorted(os.listdir(self.meshingImageFolderPath),key=natural_key)
-            if file.endswith(".png")  # Filter for PNG images
-        ]
-
-        if not image_files:
-            print(f"No images found in {self.meshingImageFolderPath}")
+    def save_mask_image(self, filename):
+        if self.masks is None:
+            logger.error("No mask to save!")
             return
+        dp.save_masks_image(self.image, self.masks, filename)
 
-        print(f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
-
-        # Step 5: Loop through each image and process using the model
-        for index, image_path in enumerate(image_files, start=1):
-            print(f"Processing image: {image_path}")
-
-            # Update the model's image path directly
-            self.p.update_image_path(image_path)
-
-            # Generate masks
-            if testing:
-                self.p.testing_generate_mask()
-            else:
-                self.p.generate_mask()
-
-            # Step 6: Save masks to a corresponding CSV file
-            self.p.setdiameter_threshold(self.diameter_threshold)
-            csv_filename = os.path.join(self.meshingSegmentsFolder, f"meshing_{index}.csv")
-            self.p.save_masks_to_csv(csv_filename)
-            print(f"Segment file saved as: {csv_filename}")
-            self.showMasks()
-
-            # Calculate execution time
-            calculateTotalSeconds(self.p.getExecutionTime())
-
-        print("Finished processing all images.")
-
-    def setScalingFactor(self, scalingFactor):
-        self.Scaler.setScalingFactor(scalingFactor)
-
-    def formatResults(self):
-        """
-        Formats and displays analysis results, and saves formatted results as XML.
-
-        Input: None
-        Output: Prints formatted results and saves them to an XML file.
-        """
-        self.totArea = self.p.get_totalArea()
-        print("-----------------------------------------------")
-        print("Sample ID:", self.sampleID)
-        print(f"Total Area: {self.totArea} um2")
-        print(f"Total Area: {self.totArea / 100_000_000} cm2")
-        print(f"Scaling Factor: {self.Scaler.scalingFactor} um/pixels")
-        print(f"Scaling Number: {self.Scaler.scalingNumber} pixels")
-        self.intensity = self.imageProcessor.getIntensity()
-        print("Intensity:", self.intensity)
-        print("Scaling Stamp:", self.Scaler.scalingStamp)
-        print("Analysis Time:", self.analysisTime)
-        print(f"Diameter Threshold: {self.p.diameter_threshold} um")
-        print(f"Circularity Threshold: {self.p.circularity_threshold} um")
-        print("-----------------------------------------------")
-        print(f"CSV file: {self.csv_filename}")
-
-        formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
-                                         self.totArea, self.Scaler.scalingNumber,
-                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
-                                         self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold)
-        formatter.save_xml()
-
-    def formatResultsForNormalDistribution(self,normalFlag):
-        """
-        Formats and displays analysis results, and saves formatted results as XML.
-
-        Input: None
-        Output: Prints formatted results and saves them to an XML file.
-        """
-        self.totArea = self.p.get_totalArea()
-        print("-----------------------------------------------")
-        print("Sample ID:", self.sampleID)
-        print(f"Total Area: {self.totArea} um2")
-        print(f"Total Area: {self.totArea / 100_000_000} cm2")
-        print(f"Scaling Factor: {self.Scaler.scalingFactor} um/pixels")
-        print(f"Scaling Number: {self.Scaler.scalingNumber} pixels")
-        self.intensity = self.imageProcessor.getIntensity()
-        print("Intensity:", self.intensity)
-        print("Scaling Stamp:", self.Scaler.scalingStamp)
-        print("Analysis Time:", self.analysisTime)
-        print(f"Diameter Threshold: {self.p.diameter_threshold} um")
-        print(f"Circularity Threshold: {self.p.circularity_threshold} um")
-        print("-----------------------------------------------")
-        print(f"CSV file: {self.csv_filename}")
-        normalBins_distributions_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
-        formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, normalBins_distributions_filename,
-                                         self.totArea, self.Scaler.scalingNumber,
-                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
-                                         self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold)
-        formatter.save_xml(normalFlag)
-
-    def saveSegments(self):
-        """
-        Saves segment data as JSON for later use.
-
-        Input: None
-        Output: Saves segment data to JSON file.
-        """
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.json_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_segments.txt")
-        self.p.save_segments(self.json_filename)
-        print(f"Saving segments in {self.json_filename}")
-
-
-    def loadSegments(self, checkpoint_folder, bins):
-        """
-        Loads segments from a JSON file and saves them to CSV and distribution files, useful for non-GPU environments.
-
-        Inputs:
-        - checkpoint_folder: Path to the model checkpoint.
-        - bins: List of bin boundaries for the segmentation model.
-
-        Output: Saves segment data to CSV and distribution files.
-        """
-        try:
-            self.setFolderPath()
-            self.json_masks_filename = os.path.join(
-                self.folder_path, f"{self.sampleID}_segments.txt")
-
-            if not os.path.exists(self.json_masks_filename):
-                raise FileNotFoundError(
-                    f"The file {self.json_masks_filename} was not found.")
-
-            self.loadModel(checkpoint_folder)
-            self.setBins(bins)
-            self.csv_filename = os.path.join(
-                self.folder_path, f"{self.sampleID}.csv")
-            self.p.setdiameter_threshold(self.diameter_threshold)
-            self.p.save_segments_as_csv(
-                self.json_masks_filename, self.csv_filename)
-            self.savePsdData()
-
-        except FileNotFoundError as e:
-            raise e
-        except Exception as e:
-            raise Exception(f"An unexpected error occurred: {e}")
-
-    def setFolderPath(self):
-        """
-        Sets the folder path for saving results, based on the initialized image processor.
-
-        Input: None
-        Output: Sets self.folder_path based on image folder path.
-        """
-        if self.imageProcessor is not None:
-            self.folder_path = self.imageProcessor.getImageFolder()
-        else:
-            raise ValueError(
-                "Image not initialized. Please ensure that 'imageProcessor' is properly initialized.")
-
-    def crop_image(self):
-        self.imageProcessor.cropImage()
-        self.imagePath = self.imageProcessor.getImagePath()
-        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
-
-    def evenLighting(self):
-        self.imageProcessor.even_out_lighting()
-        self.imagePath = self.imageProcessor.getImagePath()
-        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
-
-    def evenLightingWithValidation(self,parameter_folder_path):
-        self.imageProcessor.even_out_lighting_validation(parameter_folder_path)
-        # self.imagePath = self.imageProcessor.getImagePath()
-
-
-    def overlayImage(self):
-        """
-        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
-        reducing the size of the image if it is bigger than 8MB
-
-        Input: None
-        Output: lighter PNG file and containing the same image overlayed 10 times
-        """
-        self.imageProcessor.overlayImage()
-        self.imagePath = self.imageProcessor.getImagePath()
-        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
-    def overlayImageWithValidation(self):
-        """
-        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
-        reducing the size of the image if it is bigger than 8MB
-
-        Input: None
-        Output: lighter PNG file and containing the same image overlayed 10 times
-        """
-        self.imageProcessor.overlayImage()
-        self.imagePath = self.imageProcessor.getImagePath()
-
-
-
-    def  meshingImage(self):
-        self.imageProcessor.processImageWithMeshing()
-
-
-    def plotBins(self):
-        self.p.plotBins()
-
-    def getAnalysisTime(self):
-        total_seconds = self.totalSeconds+self.meshingTotalSeconds
-        # Total seconds for the first calculation (Entire image)
-        minutes = int(total_seconds // 60)
-        seconds = total_seconds % 60
-        self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
-        print(f"""The final analysing time is {self.analysisTime}""")
-    def getSmallestAreaForFinalImage(self):
-        """
-        This function counts the number of data rows in a given file, ignoring the header row.
-
-        Args:
-        file_path (str): The path to the file.
-
-        Returns:
-        int: The number of data rows in the file.
-        """
-        particles=[]
-        try:
-            with open(self.csv_filename, 'r') as file:
-                next(file)
-                for line in file:
-                    if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                        item = {
-                            "area": area,
-                            "perimeter": perimeter,
-                            "diameter": diameter,
-                            "circularity": circularity
-                        }
-                        particles.append(item)
-            if len(particles) == 0:
-                logger.error("There is no particles for minimumArea(ImageAnalysisModel) to be processed")
-                return
-
-            areas = [particle['area'] for particle in particles]
-            sorted_areas = sorted(areas)
-            self.mimumArea = format(max(float(sorted_areas[0] / 1000000), 0), '.8f')
-            print(f'Minimu Area(ImageAnalysisModel) of the entire image analysis is :{self.mimumArea}')
-            logger.info("Minimu Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
-
-        except Exception as e :
-                logger.error("The give csv  file can  not be parsed due to {} error ",e)
-
-    def getMeshingSegmentByCompareAreas(self):
-        """
-        Processes all CSV files in `self.meshingSegmentsFolder` and extracts particle areas.
-        Compares each area with self.minimumArea and stores particles with areas smaller than self.minimumArea.
-
-        Args:
-        None
-
-        Returns:
-        None
-        """
-        # Ensure self.minimumArea is initialized
-        if not hasattr(self, 'minimumArea'):
-            self.minimumArea = float('inf')  # Set a large initial value if not set
-
-
-        # Check if the folder exists
-        if not os.path.exists(self.meshingSegmentsFolder):
-            logger.error(f"Meshing segments folder {self.meshingSegmentsFolder} does not exist.")
+    def save_masks_as_images(self, filename):
+        if self.masks is None:
+            logger.error("No mask to save!")
             return
+        dp.save_masks_as_images(self.image, self.masks, filename)
 
-        # Get all CSV files in the folder
-        segment_files = [
-            os.path.join(self.meshingSegmentsFolder, file)
-            for file in os.listdir(self.meshingSegmentsFolder)
-            if file.endswith('.csv')
-        ]
-
-        if not segment_files:
-            logger.error(f"No CSV files found in {self.meshingSegmentsFolder}")
+    def save_masked_regions(self, filename):
+        if self.masks is None:
+            logger.error("No mask to save!")
             return
+        dp.save_masked_regions(self.image, self.masks, filename)
 
-        # Process each CSV file
-        for segment_file in sorted(segment_files):
-            particles = []
-            try:
-                with open(segment_file, 'r') as file:
-                    next(file)  # Skip the header row
-                    for line in file:
-                        if line.strip():  # Remove white space
-                            # Parse the row
-                            area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                            formatted_area = format(max(float(area / 1000000), 0), '.8f')
-                            item = {
-                                "area": area,  # Store the original area
-                                "perimeter": perimeter,
-                                "diameter": diameter,
-                                "circularity": circularity
-                            }
-                            # Compare formatted_area and not the original area
-                            if float(formatted_area) < float(self.minimumArea):
-                                self.miniParticles.append(item)
-                            particles.append(item)
-
-                if not particles:
-                    logger.warning(f"No particles found in file {segment_file}")
-                    continue
-
-                print(f"Processed file {segment_file}: {len(particles)} particles")
-                logger.info(f"Processed file {segment_file}: {len(particles)} particles")
-
-            except Exception as e:
-                logger.error(f"Failed to process file {segment_file} due to error: {e}")
-
-        if not self.miniParticles:
-            logger.warning("No particles smaller than minimumArea were found.")
-        else:
-            logger.info(f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
-
-    def processingMiniParticles(self):
-        """
-        Check the `self.miniParticles` list and write its contents to a new CSV file along with the contents of another existing CSV file.
-
-        Args:
-        None
-
-        Returns:
-        None
-        """
-
-        final_csv_path = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
-        original_csv_path = os.path.join(self.folder_path, f"{self.sampleID}.csv")
-
-        # Check if miniParticles is not empty
-        if self.miniParticles:
-            with open(final_csv_path, 'w', newline='') as csvfile:
-                fieldnames = ['area', 'perimeter', 'diameter', 'circularity']
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-                # Write the header
-                writer.writeheader()
-
-                # Write miniParticles to the new CSV
-                for particle in self.miniParticles:
-                    writer.writerow(particle)
-
-                # Check if the original CSV exists and append its contents
-                if os.path.exists(original_csv_path):
-                    with open(original_csv_path, 'r') as original_csvfile:
-                        reader = csv.DictReader(original_csvfile)
-                        for row in reader:
-                            writer.writerow(row)
-                else:
-                    print(f"Original CSV file {original_csv_path} does not exist.")
-        else:
-            print("No mini particles to process.")
-
-    def save_final_results(self,bins):
-        self.setBins(bins)
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        final_csv = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
-        regular_csv = os.path.join(self.folder_path, f"{self.sampleID}.csv")
-
-        # Determine which file exists and set the appropriate output txt filename
-        if os.path.exists(final_csv):
-            input_file = final_csv
-            output_txt = os.path.join(self.folder_path, "final_mesh_segments.txt")
-        elif os.path.exists(regular_csv):
-            input_file = regular_csv
-            output_txt = os.path.join(self.folder_path, "final_segment.txt")
-        else:
-            print("No appropriate CSV file found.")
+    def identify_spheres(self, display=False):
+        if self.masks is None:
+            logger.error("No mask to identify spheres!")
             return
+        dp.plot_diameters(self.image, self.masks, self.diameter_threshold, self.circularity_threshold, self.scaling_factor,
+                          display)
 
-        # Convert the CSV to TXT in JSON format
-        self.convert_csv_to_json_txt(input_file, output_txt)
+    def identify_annotate_spheres(self, display=False):
+        if self.masks is None:
+            logger.error("No mask to identify spheres!")
+            return
+        dp.ind_mask(self.image, self.masks, self.diameter_threshold, self.circularity_threshold, self.scaling_factor,
+                    display)
 
-        # Assuming self.p has an open_segments method
-        self.p.open_segments(output_txt)
-
-        # Assuming a method to save PSD data
-        self.savePsdData()
-
-    def convert_csv_to_json_txt(self, csv_file_path, json_txt_output_path):
+    def plot_psd(self, num_bins, display=False):
         """
-        Converts a CSV file to a JSON-like format in plain text.
-
-        Args:
-        csv_file_path (str): Path to the input CSV file.
-        json_txt_output_path (str): Path to the output text file with JSON format.
-
-        Returns:
-        None
+        Plot the particle size distribution with threasholds. Values must be higher than the thresholds to be considered.
+        :param diameter_threshold:
+        :param circularity_threshold:
+        :param num_bins:
+        :param display:
+        :return:
         """
-        try:
-            data_list = []
-            with open(csv_file_path, mode='r', newline='') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    # build String
-                    line = "{\n" + ",\n".join(f"    {k}: {v}" for k, v in row.items()) + "\n},"
-                    data_list.append(line)
+        if self.masks is None:
+            logger.error("No mask to identify spheres!")
+            return
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        dp.plot_psd(self.diameter_threshold,
+                    self.circularity_threshold, num_bins, self.segments)
 
-            with open(json_txt_output_path, 'w') as output_file:
-                # write to the csv file
-                output_file.write("[\n" + ",\n".join(data_list)[:-1] + "\n]")
-            print(f"Data successfully written to {json_txt_output_path}")
+    def get_psd_bins(self, display=False):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        self.psd_bins_data = dp.get_psd_data(
+            self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
 
-        except Exception as e:
-            print(f"An error occurred while converting CSV to TXT: {e}")
+    def plot_psd_bins(self, display=False):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        dp.plot_psd_bins(self.diameter_threshold,
+                         self.circularity_threshold, self.bins, self.segments)
+
+    def setdiameter_threshold(self, diameter_threshold):
+        self.diameter_threshold = diameter_threshold
+
+    def setcircularity_threshold(self, circularity_threshold):
+        self.circularity_threshold = circularity_threshold
+    ####Based on Particles
+    def get_psd_data(self):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        extended_bins = self.bins + [float('inf')]
+        psd_data = dp.get_psd_data(
+            self.diameter_threshold, self.circularity_threshold, extended_bins, self.segments, False)
+        self.psd_data = {'differential': list(zip(tuple([0]+self.bins), tuple(
+            psd_data[1]))), 'cumulative': list(zip(tuple([0]+self.bins), tuple(psd_data[2][::-1])))}
+        # print(self.psd_data)
+
+        return self.psd_data
+
+    def get_psd_data_with_diameter(self):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+
+        psd_data=dp.custom_psd_data1(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,
+                            reverse_cumulative=True)
+        self.psd_data = {'differential': list(zip(tuple([0] + self.bins), tuple(
+            psd_data[1]))), 'cumulative': list(zip(tuple([0] + self.bins), tuple(psd_data[2][::-1])))}
+        return self.psd_data
+    def get_totalArea(self):  # , withOverlappingArea):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        # overlapping = 0
+        # if not withOverlappingArea:
+           # overlapping = dp.calculate_overlapping_area(
+            # self.masks, self.scaling_factor)
+        area = dp.calculate_totalArea(
+            self.diameter_threshold, self.circularity_threshold, self.segments)
+        return area  # -overlapping
+
+    def save_psd(self, filename):
+        """
+        Save the particle size distribution with threasholds. Values must be higher than the thresholds to be considered.
+        :param diameter_threshold:
+        :param circularity_threshold:
+        :param num_bins:
+        :param filename:
+        :return:
+        """
+        if self.masks is None:
+            logger.error("No mask to identify spheres!")
+            return
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+
+        dp.save_psd(self.diameter_threshold, self.circularity_threshold,
+                    self.bins, self.segments, filename)
+
+    def save_segments(self, filename):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        with open(filename, 'w') as file:
+            json.dump(self.segments, file)
+
+    def open_segments(self, filename):
+        # Open the file in read mode
+        with open(filename, 'r') as file:
+            # Read all lines from the file and strip newline characters
+            self.segments = json.load(file)
+
+    def getSegments(self):
+        if self.segments is not None:
+            return self.segments
+
+    def save_psd_as_txt(self, id, directory):
+        if self.psd_data is None:
+            logger.error("No PSD data to export!")
+            return
+        # get values of the distrubutions
+        cumulative = [i[1] for i in self.psd_data['cumulative']]
+        differential = [i[1] for i in self.psd_data['differential']]
+
+        dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
+
+    def save_psd_as_txt_normal(self, id, directory):
+        if self.psd_data is None:
+            logger.error("No PSD data to export!")
+            return
+        # get values of the distrubutions
+        cumulative = [i[1] for i in self.psd_data['cumulative']]
+        differential = [i[1] for i in self.psd_data['differential']]
+
+        dp.save_psd_as_txt_normal(id, self.bins, cumulative, differential, directory)
+    def save_segments_as_csv(self, txt_filename, csv_filename):
+        self.segments = dp.save_segments_as_csv(
+            txt_filename, csv_filename, self.diameter_threshold)
+
+    def generate_with_cv2(self, csv_filename):
+        # if self.masks is None:
+        # self.generate_mask()
+        # leftoverImage=dp.visualiseRemainingfromMasks(self.image, self.masks)
+        min_area_found = dp.find_smallest_area_with_SAM(csv_filename)
+        print(min_area_found)
+        dp.detect_rocks_withCV2(self.image, float(min_area_found))
+
+    def plotBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName= f"{folder_path}/{sampleId}_area_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)
+    def plotBinsForDiameter(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName= f"{folder_path}/{sampleId}_size_plot.png"
+        dp.plot_psd_bins4(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName)
+    def plotNormalBins(self,folder_path,sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName,sampleId)
