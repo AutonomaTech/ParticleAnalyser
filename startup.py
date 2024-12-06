@@ -1,7 +1,7 @@
 import os
 import argparse
 import sys
-
+import configparser
 import ImageAnalysisModel as pa
 import requests
 
@@ -30,13 +30,16 @@ def download_model(checkpoint_folder, file_url, file_name):
     else:
         print("Checkpoint already existed ，skip downloading")
 
-def main(image_folder_path, containerWidth):
+def main(image_folder_path, containerWidth,config_path='config.ini'):
     """
     Main function to execute the image analysis process.
     """
     if not image_folder_path or not containerWidth:
         print("Please provide image folder path as well as the container width.")
         return
+        # Read configuration
+    config = configparser.ConfigParser()
+    config.read(config_path)
 
     checkpoint_folder = 'checkpoints'
     model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
@@ -60,8 +63,24 @@ def main(image_folder_path, containerWidth):
     analyser.savePsdDataWithDiameter()
     analyser.formatResults(bySize=True)
     analyser.saveDistributionPlotForDiameter()
+
     analyser.saveResultsForNormalBinsOnly(normal_bins)
     analyser.formatResultsForNormalDistribution(True)
+    # Retrieve configuration settings for advanced bin calculations
+    calculated_size = int(config.get('switch', 'CalculatedAdjustedBins_Size', fallback='0'))
+    calculated_area = int(config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+    target_distribution = eval(config.get('PSD', 'lab', fallback='[]'))
+
+    # Decide based on configuration which advanced analysis to run
+    if target_distribution:
+        if calculated_size == 1:
+            print("Calculating bins by size...")
+            analyser.getTheCalculatedBinsBySize(target_distribution)
+        if calculated_area == 1:
+            print("Calculating bins by area...")
+            analyser.calculate_cumulative_bins_byArea(target_distribution)
+    else:
+        print("No target distribution provided. Skipping advanced bin calculations.")
 
 if __name__ == '__main__':
     # Parse command-line arguments
