@@ -1,9 +1,13 @@
 import os
 import subprocess
 import argparse
+import configparser
 
 
 def check_and_run_command(samples_root_folder):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    container_width = float(config['analysis']['containerWidth'])
     # Traverse through each main sample folder
     for folder in os.listdir(samples_root_folder):
         sample_folder = os.path.join(samples_root_folder, folder)
@@ -19,7 +23,7 @@ def check_and_run_command(samples_root_folder):
 
                     # if not distribution_files:
                         # If no distribution file is found, run the command
-                        command = f"python startup.py {image_folder_path} 180000"
+                        command = f"python startup.py {image_folder_path} {container_width}"
                         print(f"Running command: {command}")
                         subprocess.run(command, shell=True)
 
