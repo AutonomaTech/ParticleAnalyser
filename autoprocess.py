@@ -1,11 +1,13 @@
 import os
 import subprocess
 import argparse
-"""
-autoprocess command
-"""
+import configparser
+
 
 def check_and_run_command(samples_root_folder):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    container_width = float(config['analysis']['containerWidth'])
     # Traverse through each main sample folder
     for folder in os.listdir(samples_root_folder):
         sample_folder = os.path.join(samples_root_folder, folder)
@@ -17,11 +19,11 @@ def check_and_run_command(samples_root_folder):
 
                 if os.path.isdir(image_folder_path):
                     # Check for files ending with '_distribution.txt'
-                    distribution_files = [f for f in os.listdir(image_folder_path) if f.endswith('_distribution.txt')]
+                    # distribution_files = [f for f in os.listdir(image_folder_path) if f.endswith('_distribution.txt')]
 
-                    if not distribution_files:
+                    # if not distribution_files:
                         # If no distribution file is found, run the command
-                        command = f"python startup.py {image_folder_path} 180000"
+                        command = f"python startup.py {image_folder_path} {container_width}"
                         print(f"Running command: {command}")
                         subprocess.run(command, shell=True)
 

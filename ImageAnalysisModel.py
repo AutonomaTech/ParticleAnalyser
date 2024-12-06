@@ -8,6 +8,7 @@ import os
 import re
 import csv
 import math
+import configparser
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -50,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 class ImageAnalysisModel:
     def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None):
         """
-        Initializes the ImageAnalysisModel with an image folder path and container width. 
+        Initializes the ImageAnalysisModel with an image folder path and container width.
         Sets up the sample ID, image processor, and container scaler.
 
         Inputs:
@@ -80,6 +81,7 @@ class ImageAnalysisModel:
         self.minimumArea=0
         self.meshingSegmentAreas={}
         self.miniParticles=[]
+        self.UnSegmentedArea = None
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -547,7 +549,7 @@ class ImageAnalysisModel:
 
     def overlayImage(self):
         """
-        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and 
+        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
         reducing the size of the image if it is bigger than 8MB
 
         Input: None
@@ -894,3 +896,23 @@ class ImageAnalysisModel:
                 return round(particle['diameter'])
 
         return None
+
+    def calculate_unsegmented_area(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        # Extract containerWidth directly in micrometers (um)
+        container_width_um = float(config['analysis']['containerWidth'])
+        container_area_um2 = container_width_um ** 2  # Assuming the container is a square
+
+        if self.totArea is not None:  # Check if totArea has been set
+            if self.totArea < container_area_um2:
+                self.UnSegmentedArea = container_area_um2 - self.totArea
+            else:
+                self.UnSegmentedArea = 0
+        else:
+            print("Total area (self.totArea) is not set.")
+
+        print(f"Container Width (um): {container_width_um}")
+        print(f"Container Area (um²): {container_area_um2}")
+        print(f"Unsegmented Area (um²): {self.UnSegmentedArea}")
