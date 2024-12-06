@@ -8,6 +8,7 @@ import os
 import re
 import csv
 import math
+import bisect
 import configparser
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
@@ -82,6 +83,8 @@ class ImageAnalysisModel:
         self.meshingSegmentAreas={}
         self.miniParticles=[]
         self.UnSegmentedArea = None
+        self.particles=[]
+        self.csv_filename=""
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -795,27 +798,27 @@ class ImageAnalysisModel:
         """
 
 
-        self.segmentsFilePath = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        if not os.path.exists(self.segmentsFilePath):
-            return None
-        particles = []
+
+        if len(self.particles)==0:
+
+            if not os.path.exists(self.csv_filename):
+                return
+            with open(self.csv_filename, 'r') as file:
+                next(file)
+                for line in file:
+                    if line.strip():  # remove white space
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        item = {
+                            "area": area,
+                            "perimeter": perimeter,
+                            "diameter": diameter,
+                            "circularity": circularity
+                        }
+                        self.particles.append(item)
+        if len(self.particles)==0:
+            return
         cumulative_percentage = 0.0
-        with open(self.segmentsFilePath, 'r') as file:
-            next(file)
-            for line in file:
-                if line.strip():  # remove white space
-                    area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                    item = {
-                        "area": area,
-                        "perimeter": perimeter,
-                        "diameter": diameter,
-                        "circularity": circularity
-                    }
-                    particles.append(item)
-        if len(particles)==0:
-            return None
-        diameters = [particle['diameter'] for particle in particles]
+        diameters = [particle['diameter'] for particle in self.particles]
         diameters = sorted(diameters, reverse=True)
         # Sort diameters in ascending order
         total_particles = len(diameters)
@@ -848,26 +851,27 @@ class ImageAnalysisModel:
         Returns:
             dict: Dictionary where keys are cumulative percentages and values are the corresponding diameters.
         """
-        self.segmentsFilePath = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        if not os.path.exists(self.segmentsFilePath):
-            return None
+        if len(self.particles)==0:
 
-        particles = []
-        with open(self.segmentsFilePath, 'r') as file:
-            next(file)
-            for line in file:
-                if line.strip():  # remove white space
-                    area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                    item = {
-                        "area": area,
-                        "perimeter": perimeter,
-                        "diameter": diameter,
-                        "circularity": circularity
-                    }
-                    particles.append(item)
+            if not os.path.exists(self.csv_filename):
+                return
+
+            with open(self.csv_filename, 'r') as file:
+                next(file)
+                for line in file:
+                    if line.strip():  # remove white space
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        item = {
+                            "area": area,
+                            "perimeter": perimeter,
+                            "diameter": diameter,
+                            "circularity": circularity
+                        }
+                        self.particles.append(item)
         total_area = 0
-        areas = [particle['area'] for particle in particles]
+        if len(self.particles) == 0:
+            return
+        areas = [particle['area'] for particle in self.particles]
         for area in areas:
             total_area += area
 
@@ -876,7 +880,7 @@ class ImageAnalysisModel:
 
         for i, percentage in enumerate(target_distribution[:-1]):  # Exclude the last percentage
             cumulative_percentage += percentage
-            diameter = self.find_cumulative_area_diameter(particles, total_area, cumulative_percentage)
+            diameter = self.find_cumulative_area_diameter(self.particles, total_area, cumulative_percentage)
             bins.append(diameter)
         bins_file_path = os.path.join(self.folder_path, f"{self.sampleID}_bins_calibrated_area.txt")
         with open(bins_file_path, 'w') as file:
@@ -916,3 +920,48 @@ class ImageAnalysisModel:
         print(f"Container Width (um): {container_width_um}")
         print(f"Container Area (um²): {container_area_um2}")
         print(f"Unsegmented Area (um²): {self.UnSegmentedArea}")
+
+    def calculate_bins_with_unsegementedArea(self):
+
+        if len(self.particles)==0:
+
+            if not os.path.exists(self.csv_filename):
+                return
+
+            with open(self.csv_filename, 'r') as file:
+                next(file)
+                for line in file:
+                    if line.strip():  # remove white space
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        item = {
+                            "area": area,
+                            "perimeter": perimeter,
+                            "diameter": diameter,
+                            "circularity": circularity
+                        }
+                        self.particles.append(item)
+
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        # Extract containerWidth directly in micrometers (um)
+
+        standardBin = float(['analysis']['industryBin'])
+        if not standardBin:
+            return
+
+        if len(self.particles) == 0:
+            return
+        minBin = standardBin[0]
+        new_standardBin = []
+
+        diameters = [particle['diameter'] for particle in self.particles]
+        sorted_diameters = sorted(diameters)
+        minimum_diameter = sorted_diameters[0]
+        if minimum_diameter < minBin:
+                minBin = round(minimum_diameter)
+                new_standardBin = [minBin] + standardBin
+        if minimum_diameter > minBin:
+                bisect.insort(standardBin, round(minimum_diameter))
+                new_standardBin = standardBin
+        return new_standardBin
