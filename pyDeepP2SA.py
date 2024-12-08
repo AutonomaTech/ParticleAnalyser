@@ -685,7 +685,7 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
     plt.show()
 
 
-def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName,sampleId):
+def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName):
     bin_edges, counts, cumulative_area = get_psd_data(
         diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
 
