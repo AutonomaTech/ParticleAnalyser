@@ -10,6 +10,8 @@ import csv
 import math
 import bisect
 import configparser
+import matplotlib.pyplot as plt
+import numpy as np
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -85,6 +87,9 @@ class ImageAnalysisModel:
         self.UnSegmentedArea = None
         self.particles=[]
         self.csv_filename=""
+        self.newStandardBin=[]
+        self.unSegmentedArea=0
+        self.container_area_um2=0
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -907,21 +912,36 @@ class ImageAnalysisModel:
 
         # Extract containerWidth directly in micrometers (um)
         container_width_um = float(config['analysis']['containerWidth'])
-        container_area_um2 = container_width_um ** 2  # Assuming the container is a square
+        self.container_area_um2 = container_width_um ** 2  # Assuming the container is a square
 
         if self.totArea is not None:  # Check if totArea has been set
-            if self.totArea < container_area_um2:
-                self.UnSegmentedArea = container_area_um2 - self.totArea
-            else:
-                self.UnSegmentedArea = 0
+            if self.totArea < self.container_area_um2:
+                self.unSegmentedArea = self.container_area_um2 - self.totArea
+
         else:
             print("Total area (self.totArea) is not set.")
 
         print(f"Container Width (um): {container_width_um}")
-        print(f"Container Area (um²): {container_area_um2}")
-        print(f"Unsegmented Area (um²): {self.UnSegmentedArea}")
+        print(f"Container Area (um²): {self.container_area_um2}")
+        print(f"Unsegmented Area (um²): {self.unSegmentedArea}")
 
     def calculate_bins_with_unsegementedArea(self):
+        def parse_bins(industry_bins_string):
+            # Remove non-numeric characters and split by commas
+            import re
+            # Assuming industry_bins_string looks something like "[38, 106, 1000, 8000]"
+            # Removing brackets and spaces before splitting
+            cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
+            bins_list = cleaned_string.split(',')
+
+            # Convert each element to an integer
+            try:
+                industry_bins = [int(x) for x in bins_list]
+                print("Parsed industry bins:", industry_bins)
+                return industry_bins
+            except ValueError as e:
+                print("Error converting to integer:", e)
+                return []
 
         if len(self.particles)==0:
 
@@ -946,7 +966,9 @@ class ImageAnalysisModel:
 
         # Extract containerWidth directly in micrometers (um)
 
-        standardBin = float(['analysis']['industryBin'])
+        # Accessing the industryBin values, assuming they are stored as a comma-separated string
+        industry_bins_string = config['analysis']['industryBin']
+        standardBin =parse_bins(industry_bins_string)
         if not standardBin:
             return
 
@@ -964,8 +986,133 @@ class ImageAnalysisModel:
         if minimum_diameter > minBin:
                 bisect.insort(standardBin, round(minimum_diameter))
                 new_standardBin = standardBin
-        return new_standardBin
-    #TODO
-    def refactorPSD(self,psd_file_path):
+        self.newStandardBin=new_standardBin
 
-        pass
+    def refactorPSD(self):
+        """
+          Refactor PSD data with unsegmented area
+        """
+        self.calculate_unsegmented_area()
+        self.calculate_bins_with_unsegementedArea()
+        if len(self.newStandardBin)==0 or self.unSegmentedArea==0:
+            return
+        newCount=self.unSegmentedArea/self.container_area_um2*100
+        distributions_filename=os.path.join(self.folder_path,f'{self.sampleID}_byArea_distribution.txt')
+        input_string = ''
+        try:
+            # Take string in the psd file
+            with open(distributions_filename, 'r') as file:
+
+                for line in file:
+                    input_string = line
+            # Split the input string by commxa
+            elements = input_string.split(',')
+            bin_array = elements[1:elements.index('Bottom') + 1]
+
+            passing_start = elements.index('% Passing') + 1
+            passing_end = elements.index('% Retained')
+            retaining_start = elements.index('% Retained') + 1
+
+            # Extract the passing and retaining percentages--only 4 values will be produced
+            passing_raw = elements[passing_start:passing_end]
+
+            print("Old Passing:", passing_raw)
+
+            retaining_raw = elements[retaining_start:]
+
+            # If we have new bins with unsegemented area
+
+            if len(self.newStandardBin) > 0:
+                newBinarray = sorted(self.newStandardBin, reverse=True)
+                newBinarray.append(bin_array[-1])
+
+
+                new_retaining = self.update_retaining(bin_array, newBinarray, retaining_raw, newCount)
+                new_passing=self.update_passing(new_retaining)
+                refactor_csvPath=os.path.join(self.folder_path,f'{self.sampleID}_refactored_distribution.txt')
+                with open(refactor_csvPath, 'w', newline='') as csvfile:
+                    data = [self.sampleID] + newBinarray + ['% Passing'] + \
+                           new_passing + ['% Retained'] + new_retaining
+                    writer = csv.writer(csvfile)
+                    writer.writerow(data)
+                return newBinarray,new_retaining,new_passing
+
+        except Exception as e:
+            print(e)
+
+    def update_retaining(self,old_bins, new_bins, old_retaining, count):
+        print("Call update retaining function")
+        # Assuming the second-to-last element in old_bins, excluding 'Bottom'
+        key_bin = old_bins[-2]
+        print("key_bin:", key_bin)
+
+        # Find the position of the key_bin in the new_bins
+        key_bin_position = new_bins.index(int(key_bin))
+        # Recalculate old_retaining based on the new total area
+        # Convert percentage to area using the old total area (totArea)
+        areas = [float(value) * self.totArea / 100 for value in old_retaining]
+        # Recalculate percentages using the new total area (containerArea)
+        new_old_retaining = [area / self.container_area_um2 * 100 for area in areas]
+        # Create new retaining based on the position of key_bin in new_bins
+        if key_bin_position == len(new_bins) - 3:
+            # If key_bin is third-to-last, append count directly before 'Bottom'
+            new_retaining = new_old_retaining[:] + [count]
+        elif key_bin_position == len(new_bins) - 2:
+            # If key_bin is second-to-last, insert count just before the last element
+            new_retaining = new_old_retaining[:-1] + [count] + [new_old_retaining[-1]]
+
+        # Print results to verify
+        print("Old Bin Array:", old_bins)
+        print("New Bin Array:", new_bins)
+        print("Old Retaining:", old_retaining)
+        print("New Retaining:", new_retaining)
+        return new_retaining
+
+    def update_passing(self,new_retaining):
+        cumulative_area = []
+        for i, count in enumerate(new_retaining):
+            if i == 0:
+                cumulative_area.append(100 - float(count))
+            else:
+                cumulative_area.append(cumulative_area[i - 1] - float(count))
+        print("New Passing:", cumulative_area)
+        return cumulative_area
+
+    def refactor_plot_bins(self):
+        # Obtain particle size distribution data
+        bin_edges, counts, cumulative_area = self.refactorPSD()
+
+        # Reverse cumulative_area and skip the first data point
+        cumulative_area = cumulative_area[::-1][1:]  # Start from the second element
+
+        # Skip the first data point for counts as well
+        counts = counts[::-1][1:]
+        bin_edges = bin_edges[:-1][::-1]# Start from the second element
+
+        # Create the main histogram plot
+        f, ax = plt.subplots()
+        # Distribute bin_edges evenly
+        equal_spacing = np.linspace(0, 1, len(counts))
+        bin_width = equal_spacing[1] - equal_spacing[0]  # Calculate the width of each bin
+
+        # Draw the bars with a width of 80% of the equal spacing to ensure gaps
+        ax.bar(equal_spacing, counts, width=bin_width * 0.8, align='center', edgecolor='black', color='skyblue')
+
+        # Set the ticks and labels for the x-axis based on bin boundaries
+        ax.set_xticks(equal_spacing)
+        ax.set_xticklabels([f'{edge / 1000}' for edge in bin_edges])  # Convert edge to mm
+
+        # Create a secondary y-axis for the cumulative percentage
+        ax1 = ax.twinx()
+        ax1.plot(equal_spacing, cumulative_area, 'o-', color='red', linewidth=2)  # Ensure points are connected by lines
+
+        # Format the secondary y-axis as percentage
+        ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+
+        # Set labels for both axes
+        ax.set_xlabel('Particle size (mm)', labelpad=20)
+        ax.set_ylabel('% Retained (Area %)')
+        ax1.set_ylabel('Cumulative % passing (Area %)')
+        fileName=os.path.join(self.folder_path,f'{self.sampleID}_refactor_distribution.png')
+        plt.title("Particle Size Distribution")
+        plt.savefig(fileName)  # Save the plot to file
