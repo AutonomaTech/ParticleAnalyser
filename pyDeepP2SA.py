@@ -685,7 +685,7 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
     plt.show()
 
 
-def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName,sampleId):
+def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName):
     bin_edges, counts, cumulative_area = get_psd_data(
         diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
 
@@ -731,6 +731,8 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     plt.savefig(fileName)  # Save the plot to the path constructed
     # Show the plot
     # plt.show()
+
+ ## This is for the diamater distributions
 def plot_psd_bins4(diameter_threshold, circularity_threshold, bins, segments, fileName):
     # Obtain particle size distribution data
     bin_edges, counts, cumulative_area = custom_psd_data1(
