@@ -82,6 +82,7 @@ class ImageAnalysisModel:
         self.csv_filename = ""
         self.totalSecondes=0
         self.minimumArea=0
+        self.totArea=0
         self.meshingSegmentAreas={}
         self.miniParticles=[]
         self.UnSegmentedArea = None
@@ -418,7 +419,7 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self,byArea=False,bySize=False):
+    def formatResults(self,byArea=False,bySize=False,distribution_filename=None):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
@@ -440,12 +441,18 @@ class ImageAnalysisModel:
         print(f"Circularity Threshold: {self.p.circularity_threshold} um")
         print("-----------------------------------------------")
         print(f"CSV file: {self.csv_filename}")
-
-        formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
-                                         self.totArea, self.Scaler.scalingNumber,
-                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
-                                         self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold)
+        if distribution_filename:
+            formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, distribution_filename,
+                                             self.totArea, self.Scaler.scalingNumber,
+                                             self.Scaler.scalingFactor, self.Scaler.scalingStamp,
+                                             self.intensity, self.analysisTime, self.p.diameter_threshold,
+                                             self.p.circularity_threshold)
+        else:
+            formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
+                                             self.totArea, self.Scaler.scalingNumber,
+                                             self.Scaler.scalingFactor, self.Scaler.scalingStamp,
+                                             self.intensity, self.analysisTime, self.p.diameter_threshold,
+                                             self.p.circularity_threshold)
         formatter.save_xml(byArea=byArea,bySize=bySize)
 
     def formatResultsForNormalDistribution(self,normalFlag):
@@ -995,6 +1002,7 @@ class ImageAnalysisModel:
         self.calculate_unsegmented_area()
         self.calculate_bins_with_unsegementedArea()
         if len(self.newStandardBin)==0 or self.unSegmentedArea==0:
+            print("newStandardBins or unsegmented area not existed")
             return
         newCount=self.unSegmentedArea/self.container_area_um2*100
         distributions_filename=os.path.join(self.folder_path,f'{self.sampleID}_byArea_distribution.txt')

@@ -58,7 +58,14 @@ def main(image_folder_path, containerWidth,config_path='config.ini'):
     # analyser.saveResults(industry_standard_bins)
     analyser.setBins(industry_standard_bins)
     analyser.savePsdData()
-    analyser.formatResults(byArea=True)
+    # analyser.formatResults(byArea=True)
+    # Retrieve configuration settings for reminder area
+    calculated_reminder_area = int(config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+    if calculated_reminder_area == 1:
+        analyser.refactorPSD()
+        analyser.refactor_plot_bins()
+        distribution_fileName=os.path.join(analyser.folder_path,f'{analyser.sampleID}_refactored_distribution.txt')
+        analyser.formatResults(byArea=True,distribution_filename=distribution_fileName)
     analyser.saveDistributionPlot()
     analyser.savePsdDataWithDiameter()
     analyser.formatResults(bySize=True)
@@ -71,16 +78,18 @@ def main(image_folder_path, containerWidth,config_path='config.ini'):
     calculated_area = int(config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
     target_distribution = eval(config.get('PSD', 'lab', fallback='[]'))
 
+
+
     # Decide based on configuration which advanced analysis to run
-    if target_distribution:
-        if calculated_size == 1:
-            print("Calculating bins by size...")
-            analyser.getTheCalculatedBinsBySize(target_distribution)
-        if calculated_area == 1:
-            print("Calculating bins by area...")
-            analyser.calculate_cumulative_bins_byArea(target_distribution)
-    else:
-        print("No target distribution provided. Skipping advanced bin calculations.")
+    # if target_distribution:
+    #     if calculated_size == 1:
+    #         print("Calculating bins by size...")
+    #         analyser.getTheCalculatedBinsBySize(target_distribution)
+    #     if calculated_area == 1:
+    #         print("Calculating bins by area...")
+    #         analyser.calculate_cumulative_bins_byArea(target_distribution)
+    # else:
+    #     print("No target distribution provided. Skipping advanced bin calculations.")
 
 if __name__ == '__main__':
     # Parse command-line arguments
