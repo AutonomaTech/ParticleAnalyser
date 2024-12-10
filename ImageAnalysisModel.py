@@ -8,6 +8,8 @@ logger = logger_config.get_logger(__name__)
 import os
 import re
 import csv
+import configparser
+import requests
 
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
@@ -49,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None):
+    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None,config_path='config.ini'):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -86,8 +88,99 @@ class ImageAnalysisModel:
         self.particles=[]
         self.csv_filename=""
         self.bins=None
+        self.config_path = config_path
+        self.config = configparser.ConfigParser()
+        self.checkpoint_folder = 'checkpoints'
+        self.normal_bins = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+        self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
+        self.model_name = 'sam2.1_hiera_large.pt'
+        self.load_config()
 
+    def load_config(self):
+        # Load configuration file
+        self.config.read(self.config_path)
+        self.calculated_reminder_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+        self.calculated_size = int(self.config.get('switch', 'CalculatedAdjustedBins_Size', fallback='0'))
+        self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+        self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
 
+        # Load industry bins
+        industry_bins_string = self.config['analysis']['industryBin']
+        self.industry_bins = self.parse_bins(industry_bins_string)
+
+    def parse_bins(self, industry_bins_string):
+        # Remove non-numeric characters and split by commas
+        cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
+        bins_list = cleaned_string.split(',')
+        try:
+            return [int(x) for x in bins_list]
+        except ValueError as e:
+            print("Error converting to integer:", e)
+            return []
+
+    def download_model(self):
+        # Check if model exists; if not, download it
+        if not os.path.exists(self.checkpoint_folder):
+            os.makedirs(self.checkpoint_folder, exist_ok=True)
+            print(f"Checkpoints folder created: {self.checkpoint_folder}")
+
+        file_path = os.path.join(self.checkpoint_folder, self.model_name)
+        if not os.path.exists(file_path):
+            try:
+                print(f"Downloading model file: {self.model_name}...")
+                response = requests.get(self.model_url, stream=True)
+                response.raise_for_status()
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                print("Model downloaded successfully")
+            except Exception as e:
+                print(f"Error occurred during model downloading: {e}")
+                raise
+        else:
+            print("Model already exists, skipping download.")
+
+    def run_analysis(self):
+        # Step 1: Download model
+        self.download_model()
+
+        # Step 2: Perform image analysis
+        self.evenLighting()
+        self.overlayImage()
+        self.analyseParticles(self.checkpoint_folder, Testing=False)
+        self.saveSegments()
+
+        # Step 3: Save results
+        self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+        self.savePsdData()
+
+        if self.calculated_reminder_area == 1:
+            self.loadCalibrator()
+            self.calculate_unsegmented_area()
+            self.calibrated_bins_with_unSegementedArea()
+            self.refactor_psd()
+            distribution_fileName = os.path.join(self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
+            self.formatResults(byArea=True, distribution_filename=distribution_fileName)
+        else:
+            self.saveDistributionPlot()
+            self.formatResults(byArea=True)
+
+        self.savePsdDataWithDiameter()
+        self.formatResults(bySize=True)
+        self.saveDistributionPlotForDiameter()
+        self.saveResultsForNormalBinsOnly(self.normal_bins)
+        self.formatResultsForNormalDistribution(True)
+
+        if self.target_distribution:
+            if self.calculated_size == 1:
+                print("Calculating bins by size...")
+                self.calibrate_bin_with_size(self.target_distribution)
+            if self.calculated_area == 1:
+                print("Calculating bins by area...")
+                self.calibrate_bin_with_area(self.target_distribution)
+        else:
+            print("No target distribution provided. Skipping advanced bin calculations.")
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
