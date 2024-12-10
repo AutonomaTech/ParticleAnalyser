@@ -1,17 +1,14 @@
 import ContainerScalerModel as cs
 import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
+import CalibrationModel as cb
 import logger_config
 import ParticleSegmentationModel as psa
 logger = logger_config.get_logger(__name__)
 import os
 import re
 import csv
-import math
-import bisect
-import configparser
-import matplotlib.pyplot as plt
-import numpy as np
+
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -79,6 +76,7 @@ class ImageAnalysisModel:
         self.analysisTime = 0
         self.numberofBins = 0
         self.p = None
+        self.cb=None
         self.csv_filename = ""
         self.totalSecondes=0
         self.minimumArea=0
@@ -87,6 +85,7 @@ class ImageAnalysisModel:
         self.miniParticles=[]
         self.particles=[]
         self.csv_filename=""
+        self.bins=None
 
 
 
@@ -123,6 +122,7 @@ class ImageAnalysisModel:
 
         Output: None
         """
+        self.bins=bins[:]
         if self.p is not None:
             self.numberofBins = len(bins)
             self.p.bins = bins[:]
@@ -797,135 +797,32 @@ class ImageAnalysisModel:
             print(f"An error occurred while converting CSV to TXT: {e}")
 
 
-    def refactorPSD(self,unsegmentedArea,calibrated_bins,container_area):
+    "--------------------Calibration Logic-------------------------------------------------------------------------------------------------"
+
+    def loadCalibrator(self):
         """
-          Refactor PSD data with unsegmented area
+        Loads the CalibrationModel with necessary arguments.
+
+        Input:
+        - toArea: Total Area of all segmented particles
+        - csv_filename: Path to the folder containing segment csv file.
+        - folder_path: Path to the folder containing image.
+        - sampleId: Sample ID.
+        Output: None
         """
-        # self.calculate_unsegmented_area()
-        # self.calculate_bins_with_unsegementedArea()
-        if len(calibrated_bins)==0 or unsegmentedArea==0:
-            print("newStandardBins or unsegmented area not existed")
-            return
-        newCount=unsegmentedArea/container_area*100
-        distributions_filename=os.path.join(self.folder_path,f'{self.sampleID}_byArea_distribution.txt')
-        input_string = ''
 
-            # Take string in the psd file
-        with open(distributions_filename, 'r') as file:
+        self.cb = cb.CalibrationModel(
+            totArea=self.totArea,csv_filename=self.csv_filename,folder_path=self.folder_path,sampleId=self.sampleID,bins=self.bins)
+    def calibrate_bin_with_size(self, target_distribution=None):
+        self.cb.calibrate_bin_with_size(target_distribution)
 
-                for line in file:
-                    input_string = line
-            # Split the input string by commxa
-        elements = input_string.split(',')
-        bin_array = elements[1:elements.index('Bottom') + 1]
+    def calibrate_bin_with_area(self, target_distribution=None):
+        self.cb.calibrate_bin_with_area(target_distribution)
 
-        passing_start = elements.index('% Passing') + 1
-        passing_end = elements.index('% Retained')
-        retaining_start = elements.index('% Retained') + 1
+    def calculate_unsegmented_area(self):
+        self.cb.calculate_unsegmented_area()
 
-            # Extract the passing and retaining percentages--only 4 values will be produced
-        passing_raw = elements[passing_start:passing_end]
-
-        retaining_raw = elements[retaining_start:]
-
-            # If we have new bins with unsegemented area
-
-        if len(calibrated_bins) > 0:
-                newBinarray = sorted(calibrated_bins, reverse=True)
-                newBinarray.append(bin_array[-1])
-
-
-                new_retaining = self.update_retaining(bin_array, newBinarray, retaining_raw, newCount,container_area)
-                new_passing=self.update_passing(new_retaining)
-                refactor_csvPath=os.path.join(self.folder_path,f'{self.sampleID}_refactored_distribution.txt')
-                with open(refactor_csvPath, 'w', newline='') as csvfile:
-                    data = [self.sampleID] + newBinarray + ['% Passing'] + \
-                           new_passing + ['% Retained'] + new_retaining
-                    writer = csv.writer(csvfile)
-                    writer.writerow(data)
-                return newBinarray,new_retaining,new_passing
-
-
-        else:
-            return None
-
-    def update_retaining(self,old_bins, new_bins, old_retaining, count,container_area):
-        print("Call update retaining function")
-        # Assuming the second-to-last element in old_bins, excluding 'Bottom'
-        key_bin = old_bins[-2]
-        print("key_bin:", key_bin)
-
-        # Find the position of the key_bin in the new_bins
-        key_bin_position = new_bins.index(int(key_bin))
-        # Recalculate old_retaining based on the new total area
-        # Convert percentage to area using the old total area (totArea)
-        areas = [float(value) * self.totArea / 100 for value in old_retaining]
-        # Recalculate percentages using the new total area (containerArea)
-        new_old_retaining = [area / container_area * 100 for area in areas]
-        # Create new retaining based on the position of key_bin in new_bins
-        if key_bin_position == len(new_bins) - 3:
-            # If key_bin is third-to-last, append count directly before 'Bottom'
-            new_retaining = new_old_retaining[:] + [count]
-        elif key_bin_position == len(new_bins) - 2:
-            # If key_bin is second-to-last, insert count just before the last element
-            new_retaining = new_old_retaining[:-1] + [count] + [new_old_retaining[-1]]
-
-        # Print results to verify
-        print("Old Bin Array:", old_bins)
-        print("New Bin Array:", new_bins)
-        print("Old Retaining:", old_retaining)
-        print("New Retaining:", new_retaining)
-        return new_retaining
-
-    def update_passing(self,new_retaining):
-        cumulative_area = []
-        for i, count in enumerate(new_retaining):
-            if i == 0:
-                cumulative_area.append(100 - float(count))
-            else:
-                cumulative_area.append(cumulative_area[i - 1] - float(count))
-        print("New Passing:", cumulative_area)
-        return cumulative_area
-
-    def refactor_psd(self,unsegmentedArea=None,calibrated_bins=None,container_area=None):
-        # Obtain particle size distribution data
-        result = self.refactorPSD(unsegmentedArea, calibrated_bins, container_area)
-
-        if result is None:
-            return
-
-        bin_edges, counts, cumulative_area = result
-        # Reverse cumulative_area and skip the first data point
-        cumulative_area = cumulative_area[::-1][1:]  # Start from the second element
-
-        # Skip the first data point for counts as well
-        counts = counts[::-1][1:]
-        bin_edges = bin_edges[:-1][::-1]# Start from the second element
-
-        # Create the main histogram plot
-        f, ax = plt.subplots()
-        # Distribute bin_edges evenly
-        equal_spacing = np.linspace(0, 1, len(counts))
-        bin_width = equal_spacing[1] - equal_spacing[0]  # Calculate the width of each bin
-
-        # Draw the bars with a width of 80% of the equal spacing to ensure gaps
-        ax.bar(equal_spacing, counts, width=bin_width * 0.8, align='center', edgecolor='black', color='skyblue')
-
-        # Set the ticks and labels for the x-axis based on bin boundaries
-        ax.set_xticks(equal_spacing)
-        ax.set_xticklabels([f'{edge / 1000}' for edge in bin_edges])  # Convert edge to mm
-
-        # Create a secondary y-axis for the cumulative percentage
-        ax1 = ax.twinx()
-        ax1.plot(equal_spacing, cumulative_area, 'o-', color='red', linewidth=2)  # Ensure points are connected by lines
-
-        # Format the secondary y-axis as percentage
-        ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
-
-        # Set labels for both axes
-        ax.set_xlabel('Particle size (mm)', labelpad=20)
-        ax.set_ylabel('% Retained (Area %)')
-        ax1.set_ylabel('Cumulative % passing (Area %)')
-        fileName=os.path.join(self.folder_path,f'{self.sampleID}_refactor_distribution.png')
-        plt.title("Particle Size Distribution")
-        plt.savefig(fileName)  # Save the plot to file
+    def calibrated_bins_with_unSegementedArea(self):
+        self.cb.calibrated_bins_with_unSegementedArea()
+    def refactor_psd(self):
+        self.cb.refactor_psd()
