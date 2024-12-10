@@ -51,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None,config_path='config.ini'):
+    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None,config_path=None):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -148,7 +148,7 @@ class ImageAnalysisModel:
         # Step 2: Perform image analysis
         self.evenLighting()
         self.overlayImage()
-        self.analyseParticles(self.checkpoint_folder, Testing=False)
+        self.analyseParticles(self.checkpoint_folder, False)
         self.saveSegments()
 
         # Step 3: Save results
