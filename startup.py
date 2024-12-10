@@ -4,6 +4,7 @@ import sys
 import configparser
 import ImageAnalysisModel as pa
 import requests
+import CalibrationModel as cb
 
 def download_model(checkpoint_folder, file_url, file_name):
     """
@@ -58,15 +59,22 @@ def main(image_folder_path, containerWidth,config_path='config.ini'):
     # analyser.saveResults(industry_standard_bins)
     analyser.setBins(industry_standard_bins)
     analyser.savePsdData()
-    # analyser.formatResults(byArea=True)
+
     # Retrieve configuration settings for reminder area
     calculated_reminder_area = int(config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
     if calculated_reminder_area == 1:
-        analyser.refactorPSD()
-        analyser.refactor_plot_bins()
-        distribution_fileName=os.path.join(analyser.folder_path,f'{analyser.sampleID}_refactored_distribution.txt')
-        analyser.formatResults(byArea=True,distribution_filename=distribution_fileName)
-    analyser.saveDistributionPlot()
+        calibrator = cb.CalibrationModel(analyser.totArea, analyser.csv_filename, analyser.folder_path,
+                                         analyser.sampleID)
+        unsegementArea = calibrator.calculate_unsegmented_area()
+        calibratedBins = calibrator.calibrated_bins_with_unSegementedArea()
+        analyser.refactor_psd(unsegmentedArea=unsegementArea, calibrated_bins=calibratedBins,
+                              container_area=calibrator.container_area_um2)
+        distribution_fileName = os.path.join(analyser.folder_path, f'{analyser.sampleID}_refactored_distribution.txt')
+        analyser.formatResults(byArea=True, distribution_filename=distribution_fileName)
+    else:
+        analyser.saveDistributionPlot()
+        analyser.formatResults(byArea=True)
+
     analyser.savePsdDataWithDiameter()
     analyser.formatResults(bySize=True)
     analyser.saveDistributionPlotForDiameter()
@@ -81,15 +89,15 @@ def main(image_folder_path, containerWidth,config_path='config.ini'):
 
 
     # Decide based on configuration which advanced analysis to run
-    # if target_distribution:
-    #     if calculated_size == 1:
-    #         print("Calculating bins by size...")
-    #         analyser.getTheCalculatedBinsBySize(target_distribution)
-    #     if calculated_area == 1:
-    #         print("Calculating bins by area...")
-    #         analyser.calculate_cumulative_bins_byArea(target_distribution)
-    # else:
-    #     print("No target distribution provided. Skipping advanced bin calculations.")
+    if target_distribution:
+        if calculated_size == 1:
+            print("Calculating bins by size...")
+            calibrator.getTheCalculatedBinsBySize(target_distribution)
+        if calculated_area == 1:
+            print("Calculating bins by area...")
+            calibrator.calculate_cumulative_bins_byArea(target_distribution)
+    else:
+        print("No target distribution provided. Skipping advanced bin calculations.")
 
 if __name__ == '__main__':
     # Parse command-line arguments
