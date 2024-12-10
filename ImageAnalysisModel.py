@@ -85,12 +85,10 @@ class ImageAnalysisModel:
         self.totArea=0
         self.meshingSegmentAreas={}
         self.miniParticles=[]
-        self.UnSegmentedArea = None
         self.particles=[]
         self.csv_filename=""
-        self.newStandardBin=[]
-        self.unSegmentedArea=0
-        self.container_area_um2=0
+
+
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -798,244 +796,46 @@ class ImageAnalysisModel:
         except Exception as e:
             print(f"An error occurred while converting CSV to TXT: {e}")
 
-    def getTheCalculatedBinsBySize(self,target_distribution=None):
-        """
-        Calculate the adjusted bins aligns with lab result
-        Args:
 
-            segmentsFilePath: The segement.txt file path
-            target_distribution: Laboratory Screen Percentages (target distribution).
-        Returns:
-            bins: Adjusted bins that will fit the Laboratory Screen Percentages
-        """
-
-
-
-        if len(self.particles)==0:
-
-            if not os.path.exists(self.csv_filename):
-                return
-            with open(self.csv_filename, 'r') as file:
-                next(file)
-                for line in file:
-                    if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                        item = {
-                            "area": area,
-                            "perimeter": perimeter,
-                            "diameter": diameter,
-                            "circularity": circularity
-                        }
-                        self.particles.append(item)
-        if len(self.particles)==0:
-            return
-        cumulative_percentage = 0.0
-        diameters = [particle['diameter'] for particle in self.particles]
-        diameters = sorted(diameters, reverse=True)
-        # Sort diameters in ascending order
-        total_particles = len(diameters)
-        bins = []
-
-        for percentage in target_distribution[:-1]:  # The last bin does not require additional calculation
-            cumulative_percentage += percentage
-            index = int(
-                cumulative_percentage / 100 * total_particles)  # Locate the index corresponding to the target percentage
-            bin_value = diameters[min(index, total_particles - 1)]  # Ensure the index does not go out of bounds
-            bins.append(math.ceil(bin_value))
-        # Step 4: Add the maximum value of the last bin
-
-        # Save the bins to a text file
-        bins_file_path = os.path.join(self.folder_path, f"{self.sampleID}_bins_calibrated_size.txt")
-        with open(bins_file_path, 'w') as file:
-            file.write(', '.join(map(str, bins)))
-
-
-
-    def calculate_cumulative_bins_byArea(self,target_distribution=None):
-        """
-        Calculate the diameters for cumulative percentage thresholds.
-
-        Args:
-            particles (list of dicts): List containing particle data with 'diameter' and 'area'.
-            total_area (float): The total area of all particles.
-            target_percentages (list): List of target percentages for cumulative calculations.
-
-        Returns:
-            dict: Dictionary where keys are cumulative percentages and values are the corresponding diameters.
-        """
-        if len(self.particles)==0:
-
-            if not os.path.exists(self.csv_filename):
-                return
-
-            with open(self.csv_filename, 'r') as file:
-                next(file)
-                for line in file:
-                    if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                        item = {
-                            "area": area,
-                            "perimeter": perimeter,
-                            "diameter": diameter,
-                            "circularity": circularity
-                        }
-                        self.particles.append(item)
-        total_area = 0
-        if len(self.particles) == 0:
-            return
-        areas = [particle['area'] for particle in self.particles]
-        for area in areas:
-            total_area += area
-
-        bins=[]
-        cumulative_percentage = 0.0
-
-        for i, percentage in enumerate(target_distribution[:-1]):  # Exclude the last percentage
-            cumulative_percentage += percentage
-            diameter = self.find_cumulative_area_diameter(self.particles, total_area, cumulative_percentage)
-            bins.append(diameter)
-        bins_file_path = os.path.join(self.folder_path, f"{self.sampleID}_bins_calibrated_area.txt")
-        with open(bins_file_path, 'w') as file:
-            file.write(', '.join(map(str, bins)))
-
-    def find_cumulative_area_diameter(self,particles, total_area, target_percentage):
-        """
-        Helper function to find the diameter at which a specific cumulative area percentage is reached.
-        """
-        target_area = total_area * (target_percentage / 100)
-        particles_sorted = sorted(particles, key=lambda x: x['diameter'], reverse=True)
-        cumulative_sum = 0.0
-
-        for particle in particles_sorted:
-            cumulative_sum += particle['area']
-            if cumulative_sum >= target_area:
-                return round(particle['diameter'])
-
-        return None
-
-    def calculate_unsegmented_area(self):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-
-        # Extract containerWidth directly in micrometers (um)
-        container_width_um = float(config['analysis']['containerWidth'])
-        self.container_area_um2 = container_width_um ** 2  # Assuming the container is a square
-
-        if self.totArea is not None:  # Check if totArea has been set
-            if self.totArea < self.container_area_um2:
-                self.unSegmentedArea = self.container_area_um2 - self.totArea
-
-        else:
-            print("Total area (self.totArea) is not set.")
-
-        print(f"Container Width (um): {container_width_um}")
-        print(f"Container Area (um²): {self.container_area_um2}")
-        print(f"Unsegmented Area (um²): {self.unSegmentedArea}")
-
-    def calculate_bins_with_unsegementedArea(self):
-        def parse_bins(industry_bins_string):
-            # Remove non-numeric characters and split by commas
-            import re
-            # Assuming industry_bins_string looks something like "[38, 106, 1000, 8000]"
-            # Removing brackets and spaces before splitting
-            cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
-            bins_list = cleaned_string.split(',')
-
-            # Convert each element to an integer
-            try:
-                industry_bins = [int(x) for x in bins_list]
-                print("Parsed industry bins:", industry_bins)
-                return industry_bins
-            except ValueError as e:
-                print("Error converting to integer:", e)
-                return []
-
-        if len(self.particles)==0:
-
-            if not os.path.exists(self.csv_filename):
-                return
-
-            with open(self.csv_filename, 'r') as file:
-                next(file)
-                for line in file:
-                    if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                        item = {
-                            "area": area,
-                            "perimeter": perimeter,
-                            "diameter": diameter,
-                            "circularity": circularity
-                        }
-                        self.particles.append(item)
-
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-
-        # Extract containerWidth directly in micrometers (um)
-
-        # Accessing the industryBin values, assuming they are stored as a comma-separated string
-        industry_bins_string = config['analysis']['industryBin']
-        standardBin =parse_bins(industry_bins_string)
-        if not standardBin:
-            return
-
-        if len(self.particles) == 0:
-            return
-        minBin = standardBin[0]
-        new_standardBin = []
-
-        diameters = [particle['diameter'] for particle in self.particles]
-        sorted_diameters = sorted(diameters)
-        minimum_diameter = sorted_diameters[0]
-        if minimum_diameter < minBin:
-                minBin = round(minimum_diameter)
-                new_standardBin = [minBin] + standardBin
-        if minimum_diameter > minBin:
-                bisect.insort(standardBin, round(minimum_diameter))
-                new_standardBin = standardBin
-        self.newStandardBin=new_standardBin
-
-    def refactorPSD(self):
+    def refactorPSD(self,unsegmentedArea,calibrated_bins,container_area):
         """
           Refactor PSD data with unsegmented area
         """
-        self.calculate_unsegmented_area()
-        self.calculate_bins_with_unsegementedArea()
-        if len(self.newStandardBin)==0 or self.unSegmentedArea==0:
+        # self.calculate_unsegmented_area()
+        # self.calculate_bins_with_unsegementedArea()
+        if len(calibrated_bins)==0 or unsegmentedArea==0:
             print("newStandardBins or unsegmented area not existed")
             return
-        newCount=self.unSegmentedArea/self.container_area_um2*100
+        newCount=unsegmentedArea/container_area*100
         distributions_filename=os.path.join(self.folder_path,f'{self.sampleID}_byArea_distribution.txt')
         input_string = ''
-        try:
+
             # Take string in the psd file
-            with open(distributions_filename, 'r') as file:
+        with open(distributions_filename, 'r') as file:
 
                 for line in file:
                     input_string = line
             # Split the input string by commxa
-            elements = input_string.split(',')
-            bin_array = elements[1:elements.index('Bottom') + 1]
+        elements = input_string.split(',')
+        bin_array = elements[1:elements.index('Bottom') + 1]
 
-            passing_start = elements.index('% Passing') + 1
-            passing_end = elements.index('% Retained')
-            retaining_start = elements.index('% Retained') + 1
+        passing_start = elements.index('% Passing') + 1
+        passing_end = elements.index('% Retained')
+        retaining_start = elements.index('% Retained') + 1
 
             # Extract the passing and retaining percentages--only 4 values will be produced
-            passing_raw = elements[passing_start:passing_end]
+        passing_raw = elements[passing_start:passing_end]
 
-            print("Old Passing:", passing_raw)
-
-            retaining_raw = elements[retaining_start:]
+        retaining_raw = elements[retaining_start:]
 
             # If we have new bins with unsegemented area
 
-            if len(self.newStandardBin) > 0:
-                newBinarray = sorted(self.newStandardBin, reverse=True)
+        if len(calibrated_bins) > 0:
+                newBinarray = sorted(calibrated_bins, reverse=True)
                 newBinarray.append(bin_array[-1])
 
 
-                new_retaining = self.update_retaining(bin_array, newBinarray, retaining_raw, newCount)
+                new_retaining = self.update_retaining(bin_array, newBinarray, retaining_raw, newCount,container_area)
                 new_passing=self.update_passing(new_retaining)
                 refactor_csvPath=os.path.join(self.folder_path,f'{self.sampleID}_refactored_distribution.txt')
                 with open(refactor_csvPath, 'w', newline='') as csvfile:
@@ -1045,10 +845,11 @@ class ImageAnalysisModel:
                     writer.writerow(data)
                 return newBinarray,new_retaining,new_passing
 
-        except Exception as e:
-            print(e)
 
-    def update_retaining(self,old_bins, new_bins, old_retaining, count):
+        else:
+            return None
+
+    def update_retaining(self,old_bins, new_bins, old_retaining, count,container_area):
         print("Call update retaining function")
         # Assuming the second-to-last element in old_bins, excluding 'Bottom'
         key_bin = old_bins[-2]
@@ -1060,7 +861,7 @@ class ImageAnalysisModel:
         # Convert percentage to area using the old total area (totArea)
         areas = [float(value) * self.totArea / 100 for value in old_retaining]
         # Recalculate percentages using the new total area (containerArea)
-        new_old_retaining = [area / self.container_area_um2 * 100 for area in areas]
+        new_old_retaining = [area / container_area * 100 for area in areas]
         # Create new retaining based on the position of key_bin in new_bins
         if key_bin_position == len(new_bins) - 3:
             # If key_bin is third-to-last, append count directly before 'Bottom'
@@ -1086,10 +887,14 @@ class ImageAnalysisModel:
         print("New Passing:", cumulative_area)
         return cumulative_area
 
-    def refactor_plot_bins(self):
+    def refactor_psd(self,unsegmentedArea=None,calibrated_bins=None,container_area=None):
         # Obtain particle size distribution data
-        bin_edges, counts, cumulative_area = self.refactorPSD()
+        result = self.refactorPSD(unsegmentedArea, calibrated_bins, container_area)
 
+        if result is None:
+            return
+
+        bin_edges, counts, cumulative_area = result
         # Reverse cumulative_area and skip the first data point
         cumulative_area = cumulative_area[::-1][1:]  # Start from the second element
 
