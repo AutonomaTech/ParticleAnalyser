@@ -520,22 +520,23 @@ class ImageProcessingModel:
         if image_temp is None:
             logger.error("Can not get the original color temperature of the sample ID: {}",self.sampleID)
             return
-        if self.sampleID.startswith('RCB1489190'):
-            image_temp=2648
-        if self.sampleID.startswith('RCB1751016'):
-            image_temp = 2561
-        if self.sampleID.startswith('RCB1763362'):
-            image_temp = 2500
-        if self.sampleID.startswith('RCB1763004'):
-            image_temp = 2444
-        if self.sampleID.startswith('RCB1763013'):
-            image_temp = 2537
-        if self.sampleID.startswith('RCB1754033'):
-            image_temp = 2513
-        if self.sampleID.startswith('RCB1766399'):
-            image_temp = 2513
-        if self.sampleID.startswith('RCB1767022'):
-            image_temp = 2513
+        # TODO about the image_temp
+        # if self.sampleID.startswith('RCB1489190'):
+        #     image_temp=2648
+        # if self.sampleID.startswith('RCB1751016'):
+        #     image_temp = 2561
+        # if self.sampleID.startswith('RCB1763362'):
+        #     image_temp = 2500
+        # if self.sampleID.startswith('RCB1763004'):
+        #     image_temp = 2444
+        # if self.sampleID.startswith('RCB1763013'):
+        #     image_temp = 2537
+        # if self.sampleID.startswith('RCB1754033'):
+        #     image_temp = 2513
+        # if self.sampleID.startswith('RCB1766399'):
+        #     image_temp = 2513
+        # if self.sampleID.startswith('RCB1767022'):
+        #     image_temp = 2513
 
         print(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
         print(f"Target color temperature is {adjustedColorTemp}")
