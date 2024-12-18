@@ -19,7 +19,7 @@ def check_and_run_command(samples_root_folder):
 
                     # if not distribution_files:
                         # If no distribution file is found, run the command
-                        command = f"python startup.py {image_folder_path} 180000"
+                        command = f"python startup.py {image_folder_path} --containerWidth 180000"
                         print(f"Running command: {command}")
                         subprocess.run(command, shell=True)
 

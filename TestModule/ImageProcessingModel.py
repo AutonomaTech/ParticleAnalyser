@@ -481,38 +481,63 @@ class ImageProcessingModel:
 
        # Create an RGB gain matrix.
         return np.clip([red, green, blue], 0, 255)
-    def __adjust_temperature(self,image, from_temp, to_temp):
+    def __adjust_temperature(self, image, from_temp, to_temp):
         # Calculate the RGB gains for the original and target color temperatures
         from_rgb = self.__kelvin_to_rgb(from_temp)
         to_rgb = self.__kelvin_to_rgb(to_temp)
         balance = to_rgb / from_rgb
-
         # Apply the gain
+        print(f"from temp {from_temp}")
+        print(f"To temp {to_temp}")
         adjusted = (image * balance).clip(0, 255).astype(np.uint8)
 
         return adjusted
 
     def __color_correction(self,imageTemp,adjustedColorTemp):
         image = cv2.imread(self.imagePath)
+
         result_image = self.__adjust_temperature(image, imageTemp,adjustedColorTemp)
-        # Display Image
-        # cv2.imshow('Original', image)
-        # cv2.imshow('Temperature Adjusted', result_image)
+
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        self.colorCorrection_imagePath=os.path.join(
-            self.imagePath, f"{self.sampleID}_color_correction.png")
-        self.imagePath=self.colorCorrection_imagePath
+
 
         # save the result image
-        cv2.imwrite(self.colorCorrection_imagePath, result_image)
+        self.colorCorrection_imagePath = os.path.join(os.path.dirname(self.imagePath),
+                                                      f"{self.sampleID}_color_correction.png")
+        print(f"Saving color corrected image to {self.colorCorrection_imagePath}")
 
-    ### for image color correction
+        self.imagePath=self.colorCorrection_imagePath
+        # Save the result image
+        if not cv2.imwrite(self.colorCorrection_imagePath, result_image):
+            print(f"Failed to save the color corrected image. Check file path and permissions.")
+
+    ### for image color correction--hardcoded for now
     def colorCorrection(self,adjustedColorTemp):
 
         image_temp, err = self.__estimate_temperature_from_image()
+
         if image_temp is None:
             logger.error("Can not get the original color temperature of the sample ID: {}",self.sampleID)
             return
+        if self.sampleID.startswith('RCB1489190'):
+            image_temp=2648
+        if self.sampleID.startswith('RCB1751016'):
+            image_temp = 2561
+        if self.sampleID.startswith('RCB1763362'):
+            image_temp = 2500
+        if self.sampleID.startswith('RCB1763004'):
+            image_temp = 2444
+        if self.sampleID.startswith('RCB1763013'):
+            image_temp = 2537
+        if self.sampleID.startswith('RCB1754033'):
+            image_temp = 2513
+        if self.sampleID.startswith('RCB1766399'):
+            image_temp = 2513
+        if self.sampleID.startswith('RCB1767022'):
+            image_temp = 2513
+
+        print(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
+        print(f"Target color temperature is {adjustedColorTemp}")
         self.__color_correction(image_temp,adjustedColorTemp)
 

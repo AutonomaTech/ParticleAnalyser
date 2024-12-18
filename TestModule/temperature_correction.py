@@ -225,7 +225,7 @@ def estimate_temperature_from_image(image_path):
     return estimated_temp, error
 
 
-image_temp, err = estimate_temperature_from_image(r"C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V1\RCB1489190_BeforeCrop_V1.bmp")
+image_temp, err = estimate_temperature_from_image(r"C:\Users\LiCui\Desktop\ColorCorrectedImages\RCB1763362\RCB1763362_V1\RCB1763362_V1.bmp")
 print("估计的原图图片色温:", image_temp, "K, 误差:", err)
 
 def apply_temperature_to_image(image_path, target_temp, output_path):
@@ -314,13 +314,13 @@ img_dst[img_dst > 255] = 255
 img_dst = np.uint8(img_dst)
 
 
-image = cv2.imread(r"C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V1\RCB1489190_BeforeCrop_V1.bmp")
-result_image = adjust_temperature(image, 2243, 3000)
-# 显示结果
-cv2.imshow('Original', image)
-cv2.imshow('Temperature Adjusted', result_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# 保存结果图片
-cv2.imwrite('Samples/RCB1489190_S1/RCB1489190_S1.png', result_image)
+# image = cv2.imread(r"C:\Users\LiCui\Desktop\Samples\RCB1489190\RCB1489190_V19\RCB1489190_V19.bmp")
+# result_image = adjust_temperature(image,  2648
+# , 3000)
+# # 显示结果
+# cv2.imshow('Original', image)
+# cv2.imshow('Temperature Adjusted', result_image)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+# # 保存结果图片
+# cv2.imwrite('Samples/RCB1489190_S1/RCB1489190_S1.png', result_image)

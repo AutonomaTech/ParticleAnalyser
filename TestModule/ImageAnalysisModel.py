@@ -88,6 +88,8 @@ class ImageAnalysisModel:
         self.particles=[]
         self.csv_filename=""
         self.bins=None
+        self.processImageOnly = False
+        self.temperature = 3000
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.checkpoint_folder = 'checkpoints'
@@ -95,8 +97,8 @@ class ImageAnalysisModel:
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
         self.load_config()
-        self.temperature=0
-        self.processImageOnly=False
+
+
     def load_config(self):
         # Load configuration file
         self.config.read(self.config_path)
@@ -105,11 +107,15 @@ class ImageAnalysisModel:
         self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
         self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
         self.temperature=int(self.config.get('Color', 'temperature', fallback='0'))
-        self.processImageOnly = bool(self.config.get('Image', 'processImageOnly', fallback='0'))
+        self.processImageOnly = self.str_to_bool(self.config.get('Image', 'processImageOnly', fallback='false'))
         # Load industry bins
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
 
+    def str_to_bool(self,s):
+        if s.lower() in ['true', '1', 'yes']:
+            return True
+        return False
     def parse_bins(self, industry_bins_string):
         # Remove non-numeric characters and split by commas
         cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
