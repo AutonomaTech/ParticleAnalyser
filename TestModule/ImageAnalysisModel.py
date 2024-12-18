@@ -95,7 +95,8 @@ class ImageAnalysisModel:
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
         self.load_config()
-
+        self.temperature=0
+        self.processImageOnly=False
     def load_config(self):
         # Load configuration file
         self.config.read(self.config_path)
@@ -103,7 +104,8 @@ class ImageAnalysisModel:
         self.calculated_size = int(self.config.get('switch', 'CalculatedAdjustedBins_Size', fallback='0'))
         self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
         self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
-
+        self.temperature=int(self.config.get('Color', 'temperature', fallback='0'))
+        self.processImageOnly = bool(self.config.get('Image', 'processImageOnly', fallback='0'))
         # Load industry bins
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
@@ -145,16 +147,22 @@ class ImageAnalysisModel:
         # Step 1: Download model
         self.download_model()
 
-        # Step 2: Perform image analysis
+        # Step 2: Perform image processing
+        self.color_correction()
         self.evenLighting()
         self.overlayImage()
+        if self.processImageOnly:
+            logger.info("For this run process image only without analysis")
+            return
+        # Step 3: Perform image analysis
         self.analyseParticles(self.checkpoint_folder, False)
         self.saveSegments()
 
-        # Step 3: Save results
+        # Step 4: Save results
         self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
         self.savePsdData()
 
+        # Step 4: Perform calibration based on the results
         if self.calculated_reminder_area == 1:
             self.loadCalibrator()
             self.calculate_unsegmented_area()
@@ -646,7 +654,7 @@ class ImageAnalysisModel:
     def evenLighting(self):
         self.imageProcessor.even_out_lighting()
         self.imagePath = self.imageProcessor.getImagePath()
-        self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+        self.Scaler.updateScalingFactor(imageWidth=self.imageProcessor.getWidth())
 
     def evenLightingWithValidation(self,parameter_folder_path):
         self.imageProcessor.even_out_lighting_validation(parameter_folder_path)
@@ -664,6 +672,17 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+
+    def color_correction(self):
+        """
+        Calls the ImageProcessingModel's color correction function to color correct the image
+
+        Input: None
+        Output: color corrected image
+        """
+        self.imageProcessor.colorCorrection(self.temperature)
+        self.imagePath = self.imageProcessor.getImagePath()
+
     def overlayImageWithValidation(self):
         """
         Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
