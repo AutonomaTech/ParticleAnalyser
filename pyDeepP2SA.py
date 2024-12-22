@@ -103,7 +103,7 @@ def generate_masks(image, sam2_checkpoint,
     return masks
 
 
-def visualise_masks(image, masks):
+def visualise_masks(image, masks,file_name):
     def show_anns(anns, borders=True):
         if len(anns) == 0:
             return
@@ -133,12 +133,17 @@ def visualise_masks(image, masks):
 
         ax.imshow(img)
 
+
     # Plot the original image with masks overlaid
     plt.figure(figsize=(20, 20))
     plt.imshow(image)
     show_anns(masks)
     plt.axis('off')  # Hide axis
-    plt.show()
+    plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
+    # plt.show()
+    # Save the generated image
+
+    print(f"Mask saved to {file_name}")
 
 
 def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
@@ -357,7 +362,7 @@ def get_segments(masks, pixel_to_micron, diameter_threshold=0):
         cleared_mask = clear_border(labeled_mask)
 
         # Loop over each connected component and extract its region props
-        for region in measure.regionprops(labeled_mask):
+        for region in measure.regionprops(cleared_mask):
             # Convert area, perimeter, and diameter from pixels to micrometers
             area_pixels = region.area
             perimeter_pixels = region.perimeter
@@ -680,6 +685,93 @@ def plot_psd_bins(diameter_threshold, circularity_threshold, bins, segments):
     plt.show()
 
 
+def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fileName):
+    bin_edges, counts, cumulative_area = get_psd_data(
+        diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
+
+    # append 0 for bottom
+    plot_bins = [0] + bins[:]
+
+    # Create equal spacing for plotting
+    equal_spacing = np.arange(len(plot_bins))
+
+    # Plot the histogram on the primary axis
+    f, ax = plt.subplots()
+    ax.bar(equal_spacing[:-1], counts, align='center',
+           edgecolor='black', color='skyblue')
+
+    # Set the x-axis limits and ticks to match the equal spacing
+    ax.set_xlim(min(equal_spacing), max(equal_spacing))
+    ax.set_xticks(equal_spacing)
+    ax.set_xticklabels([''] * len(equal_spacing))  # Hide the edge tick labels
+
+    # Manually set the positions of the tick labels to be at the midpoints
+    for i, (midpoint, label) in enumerate(zip(equal_spacing, [f'{edge:.2f}' for edge in bin_edges[1:]]), start=1):
+        ax.text(midpoint, -0.04, str(float(label) / 1000), ha='center',
+                va='bottom', fontsize=8, transform=ax.get_xaxis_transform())
+
+    # Create the secondary axis for the cumulative area plot
+    ax1 = ax.twinx()
+    ax1.plot(equal_spacing[::-1][:-1],
+             cumulative_area, color='red', linewidth=2)
+
+    # Convert the y-axis of the cumulative area plot to percentage
+    ax1.yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+
+    # Set the labels for both axes
+    # Adjust the labelpad value to move the title lower
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
+    ax.set_ylabel('% Retained (Area %)')
+    ax1.set_ylabel('Cumulative % passing (Area %)')
+
+    plt.title("Particle size distribution")
+    # Save the plot as an image file
+    # filename = f"{folder_path}/{sampleId}_plot.png"
+    plt.savefig(fileName)  # Save the plot to the path constructed
+    # Show the plot
+    # plt.show()
+
+ ## This is for the diamater distributions
+def plot_psd_bins4(diameter_threshold, circularity_threshold, bins, segments, fileName):
+    # Obtain particle size distribution data
+    bin_edges, counts, cumulative_area = custom_psd_data1(
+        diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True)
+
+    # Reverse cumulative_area and skip the first data point
+    cumulative_area = cumulative_area[::-1][1:]  # Start from the second element
+
+    # Skip the first data point for counts as well
+    counts = counts[1:]  # Start from the second element
+
+    # Create the main histogram plot
+    f, ax = plt.subplots()
+    # Distribute bin_edges evenly
+    equal_spacing = np.linspace(0, 1, len(counts))
+    bin_width = equal_spacing[1] - equal_spacing[0]   # Calculate the width of each bin
+
+    # Draw the bars with a width of 80% of the equal spacing to ensure gaps
+    ax.bar(equal_spacing, counts, width=bin_width * 0.8, align='center', edgecolor='black', color='skyblue')
+
+    # Set the ticks and labels for the x-axis based on bin boundaries
+    ax.set_xticks(equal_spacing)
+    ax.set_xticklabels([f'{edge/1000}' for edge in bin_edges])# Convert edge to mm
+
+    # Create a secondary y-axis for the cumulative percentage
+    ax1 = ax.twinx()
+    ax1.plot(equal_spacing, cumulative_area, 'o-', color='red', linewidth=2)  # Ensure points are connected by lines
+
+    # Format the secondary y-axis as percentage
+    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
+
+    # Set labels for both axes
+    ax.set_xlabel('Particle size (mm)', labelpad=20)
+    ax.set_ylabel('% Retained (Diameter %)')
+    ax1.set_ylabel('Cumulative % passing (Diameter %)')
+
+    plt.title("Particle Size Distribution")
+    plt.savefig(fileName)   # Save the plot to file
+
 def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
 
@@ -819,7 +911,79 @@ def get_psd_data(diameter_threshold, circularity_threshold, bins, segments, reve
     else:
         return bin_edges, counts, cumulative_area
 
+def custom_psd_data1(diameter_threshold, circularity_threshold, bins, segments, reverse_cumulative=True):
 
+    # sort the bins first
+    # because we are calculating bins we need to add a 0 at the front
+    plot_bins = [0] + bins[:]
+
+    stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
+
+    # Apply diameter and circularity thresholds
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+            stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        # If both thresholds are 0, no filtering is applied
+        filtered_stat = stat
+
+    # Calculate the total particles
+    total_particles = len(filtered_stat)
+    counts = [0] * len(plot_bins)
+    cumulative = [0] * len(plot_bins)
+
+    bin_labels = [f"Diameter < {bins[0]}"]
+    for i in range(1, len(bins)):
+        bin_labels.append(f"{bins[i - 1]} <= Diameter < {bins[i]}")
+    bin_labels.append(f"Diameter >= {bins[-1]}")
+
+    # Initialize bin label dictionary
+    counts_dict = {label: 0 for label in bin_labels}
+
+    # Iterate all diameters in filtered_stat
+    for diameter in filtered_stat['diameter']:
+        if diameter < bins[0]:
+            counts[0] += 1
+            counts_dict[bin_labels[0]] += 1
+        elif diameter >= bins[-1]:  # The biggest bin value and above
+            counts[-1] += 1
+            counts_dict[bin_labels[-1]] += 1
+        else:
+            for i in range(1, len(bins)):
+                if bins[i - 1] <= diameter < bins[i]:
+                    counts[i] += 1
+                    counts_dict[bin_labels[i]] += 1
+                    break
+    count_percent=[]
+    for count in counts:
+       percent=count/total_particles*100
+       count_percent.append(percent)
+
+    print("counts:" ,counts)
+    print("counts_dict",counts_dict)
+    print("count percent: ",count_percent)
+
+    cumulative_percent = []
+    for diameter in filtered_stat['diameter']:
+        # cumulative count
+        for i in range(len(bins)):
+            if diameter < bins[i]:
+                cumulative[i+1] += 1
+    for cumlative_particle in cumulative:
+        percent = cumlative_particle / total_particles * 100
+        cumulative_percent.append(percent)
+    cumulative_percent.reverse()
+    print("cumulative_percent",cumulative_percent)
+
+    if reverse_cumulative == True:
+        return bins, count_percent, cumulative_percent
+    else:
+        return bins, count_percent, cumulative_percent
 def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
     stat = adjustSegments(stat)
@@ -896,7 +1060,7 @@ def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
 #     bins.sort()
 
 
-def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
+def save_psd_as_txt(id, bins, cumulative, differential, csvpath):
 
     # prepare for export arrangement
     # reverse order for bins
@@ -906,7 +1070,7 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
     differential.reverse()
     cumulative.reverse()
 
-    csvpath = os.path.join(csv_directory, f"{id}_distribution.txt")
+    # csvpath = os.path.join(csv_directory, f"{id}_distribution.txt")
 
     # write to csv file id, bins, cumulative, differential
     with open(csvpath, 'w', newline='') as csvfile:
@@ -915,7 +1079,25 @@ def save_psd_as_txt(id, bins, cumulative, differential, csv_directory):
         writer = csv.writer(csvfile)
         writer.writerow(data)
     return
+def save_psd_as_txt_normal(id, bins, cumulative, differential, csv_directory):
 
+    # prepare for export arrangement
+    # reverse order for bins
+    bins_export = [0] + bins[:]
+    bins_export[0] = "Bottom"
+    bins_export.reverse()
+    differential.reverse()
+    cumulative.reverse()
+
+    csvpath = os.path.join(csv_directory, f"{id}_normalBin_distribution.txt")
+
+    # write to csv file id, bins, cumulative, differential
+    with open(csvpath, 'w', newline='') as csvfile:
+        data = [id] + bins_export + ['% Passing'] + \
+            cumulative + ['% Retained'] + differential
+        writer = csv.writer(csvfile)
+        writer.writerow(data)
+    return
 
 def plot_cir(diameter_threshold, circularity_threshold, num_bins, csv_directory):
     stat = pd.read_csv(csv_directory)

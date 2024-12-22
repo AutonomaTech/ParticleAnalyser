@@ -1,7 +1,3 @@
 /test.py
-*.log
-/__pycache__
-/.venv
-*.pyc
+/tester.py
 /checkpoints
-file.log
