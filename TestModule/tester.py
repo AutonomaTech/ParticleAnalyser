@@ -12,7 +12,7 @@ containerWidth = 180000
 # initialise analyser
 analyser = pa.ImageAnalysisModel(image_folder_path, containerWidth=containerWidth,config_path='config.ini')
 
-# Post processing of the image
+# Post-processing of the image
 analyser.color_correction()
 analyser.evenLighting()
 analyser.overlayImage()
@@ -39,6 +39,8 @@ analyser.loadSegments(checkpoint_folder, bins)
 # analyser.analysesCV2()
 # analyser.setScalingFactor(1)
 analyser.savePsdData()
-analyser.savePsdDataWithDiameter()
-analyser.formatResults(True)
 analyser.saveDistributionPlot()
+analyser.formatResults(byArea=True)
+analyser.savePsdDataWithDiameter()
+analyser.saveDistributionPlotForDiameter()
+analyser.formatResults(bySize=True)

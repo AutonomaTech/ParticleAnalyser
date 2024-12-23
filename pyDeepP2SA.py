@@ -695,8 +695,11 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     # Create equal spacing for plotting
     equal_spacing = np.arange(len(plot_bins))
 
+
     # Plot the histogram on the primary axis
-    f, ax = plt.subplots()
+    f, ax = plt.subplots(figsize=(12, 8))
+    # Add more padding to prevent cutoff
+    plt.subplots_adjust(left=0.15, right=0.85, bottom=0.2, top=0.9)
     ax.bar(equal_spacing[:-1], counts, align='center',
            edgecolor='black', color='skyblue', label='% Retained (Area %)')
 
@@ -722,8 +725,8 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     # Set the labels for both axes
     # Adjust the labelpad value to move the title lower
     ax.set_xlabel('Particle size (mm)', labelpad=20)
-    ax.set_ylabel('% Retained (Area %)')
-    ax1.set_ylabel('Cumulative % passing (Area %)')
+    ax.set_ylabel('% Retained (Area %)',labelpad=20)
+    ax1.set_ylabel('Cumulative % passing (Area %)',labelpad=10)
     # Get handles and labels from both axes
     lines1, labels1 = ax.get_legend_handles_labels()
     lines2, labels2 = ax1.get_legend_handles_labels()
@@ -736,11 +739,12 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     plt.tight_layout()
     # Save the plot as an image file with adjusted figure size to accommodate legend
     plt.gcf().set_size_inches(8, 7)  # Adjust figure size if needed
-    plt.title("Particle size distribution")
+    plt.title("Particle size distribution",pad=20)
     # Adjust the layout to prevent legend cutoff
-    plt.savefig(fileName)  # Save the plot to the path constructed
-    # Show the plot
-    # plt.show()
+    plt.savefig(fileName, bbox_inches='tight', dpi=300, pad_inches=0.5)  # Save the plot to the path constructed
+
+    plt.close()
+
 
  ## This is for the diamater distributions
 def plot_psd_bins4(diameter_threshold, circularity_threshold, bins, segments, fileName):
@@ -754,14 +758,16 @@ def plot_psd_bins4(diameter_threshold, circularity_threshold, bins, segments, fi
     # Skip the first data point for counts as well
     counts = counts[1:]  # Start from the second element
 
-    # Create the main histogram plot
-    f, ax = plt.subplots()
+    # Plot the histogram on the primary axis
+    f, ax = plt.subplots(figsize=(12, 8))
+    # Add more padding to prevent cutoff
+    plt.subplots_adjust(left=0.15, right=0.85, bottom=0.2, top=0.9)
     # Distribute bin_edges evenly
     equal_spacing = np.linspace(0, 1, len(counts))
     bin_width = equal_spacing[1] - equal_spacing[0]   # Calculate the width of each bin
 
     # Draw the bars with a width of 80% of the equal spacing to ensure gaps
-    ax.bar(equal_spacing, counts, width=bin_width * 0.8, align='center', edgecolor='black', color='skyblue')
+    ax.bar(equal_spacing, counts, width=bin_width * 0.8, align='center', edgecolor='black', color='skyblue', label='% Retained (Diameter %)')
 
     # Set the ticks and labels for the x-axis based on bin boundaries
     ax.set_xticks(equal_spacing)
@@ -769,18 +775,31 @@ def plot_psd_bins4(diameter_threshold, circularity_threshold, bins, segments, fi
 
     # Create a secondary y-axis for the cumulative percentage
     ax1 = ax.twinx()
-    ax1.plot(equal_spacing, cumulative_area, 'o-', color='red', linewidth=2)  # Ensure points are connected by lines
+    ax1.plot(equal_spacing, cumulative_area, 'o-', color='red', linewidth=2,label='Cumulative % passing (Diameter %)')  # Ensure points are connected by lines
 
     # Format the secondary y-axis as percentage
     ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:.0f}%'.format(x)))
 
     # Set labels for both axes
     ax.set_xlabel('Particle size (mm)', labelpad=20)
-    ax.set_ylabel('% Retained (Diameter %)')
-    ax1.set_ylabel('Cumulative % passing (Diameter %)')
+    ax.set_ylabel('% Retained (Diameter %)', labelpad=20)
+    ax1.set_ylabel('Cumulative % passing (Diameter %)', labelpad=10)
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax1.get_legend_handles_labels()
 
-    plt.title("Particle Size Distribution")
-    plt.savefig(fileName)   # Save the plot to file
+    # Create a unified legend below the plot
+    ax1.legend(lines1 + lines2, labels1 + labels2,
+               loc='center', bbox_to_anchor=(0.5, -0.25),
+               ncol=1, frameon=True, fancybox=True, shadow=True)
+    # Adjust the layout to prevent legend cutoff
+    plt.tight_layout()
+    # Save the plot as an image file with adjusted figure size to accommodate legend
+    plt.gcf().set_size_inches(8, 7)  # Adjust figure size if needed
+    plt.title("Particle size distribution", pad=20)
+
+    plt.savefig(fileName, bbox_inches='tight', dpi=300, pad_inches=0.5)  # Save the plot to the path constructed
+
+    plt.close()
 
 def plot_psd_bins1(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
