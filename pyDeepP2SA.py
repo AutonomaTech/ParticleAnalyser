@@ -698,7 +698,7 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     # Plot the histogram on the primary axis
     f, ax = plt.subplots()
     ax.bar(equal_spacing[:-1], counts, align='center',
-           edgecolor='black', color='skyblue')
+           edgecolor='black', color='skyblue', label='% Retained (Area %)')
 
     # Set the x-axis limits and ticks to match the equal spacing
     ax.set_xlim(min(equal_spacing), max(equal_spacing))
@@ -713,7 +713,7 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     # Create the secondary axis for the cumulative area plot
     ax1 = ax.twinx()
     ax1.plot(equal_spacing[::-1][:-1],
-             cumulative_area, color='red', linewidth=2)
+             cumulative_area, color='red', linewidth=2,label='Cumulative % passing (Area %)')
 
     # Convert the y-axis of the cumulative area plot to percentage
     ax1.yaxis.set_major_formatter(
@@ -724,10 +724,20 @@ def plot_psd_bins2(diameter_threshold, circularity_threshold, bins, segments,fil
     ax.set_xlabel('Particle size (mm)', labelpad=20)
     ax.set_ylabel('% Retained (Area %)')
     ax1.set_ylabel('Cumulative % passing (Area %)')
+    # Get handles and labels from both axes
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax1.get_legend_handles_labels()
 
+    # Create a unified legend below the plot
+    ax1.legend(lines1 + lines2, labels1 + labels2,
+               loc='center', bbox_to_anchor=(0.5, -0.25),
+               ncol=1, frameon=True, fancybox=True, shadow=True)
+    # Adjust the layout to prevent legend cutoff
+    plt.tight_layout()
+    # Save the plot as an image file with adjusted figure size to accommodate legend
+    plt.gcf().set_size_inches(8, 7)  # Adjust figure size if needed
     plt.title("Particle size distribution")
-    # Save the plot as an image file
-    # filename = f"{folder_path}/{sampleId}_plot.png"
+    # Adjust the layout to prevent legend cutoff
     plt.savefig(fileName)  # Save the plot to the path constructed
     # Show the plot
     # plt.show()

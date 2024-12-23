@@ -4,7 +4,7 @@ import os
 current_path = os.getcwd()
 
 # Construct the absolute paths by joining the current working directory with relative paths
-image_folder_path = os.path.join(current_path, "Samples/RCB1763013_S1")
+image_folder_path = os.path.join(current_path, "Samples/0002")
 checkpoint_folder = os.path.join(current_path, "checkpoints")
 
 # in um
@@ -41,4 +41,4 @@ analyser.loadSegments(checkpoint_folder, bins)
 analyser.savePsdData()
 analyser.savePsdDataWithDiameter()
 analyser.formatResults(True)
-analyser.plotBins()
+analyser.saveDistributionPlot()
