@@ -62,6 +62,9 @@ class ImageAnalysisModel:
 
         Output: None
         """
+        self.calibration_file_path = "calibration.ini"
+        self.calibratedSizeBin = None
+        self.calibratedAreaBin = None
         self.sampleID = sampleID if sampleID else os.path.basename(
             image_folder_path)
         self.imageProcessor = ip.ImageProcessingModel(
@@ -103,10 +106,17 @@ class ImageAnalysisModel:
         self.calculated_size = int(self.config.get('switch', 'CalculatedAdjustedBins_Size', fallback='0'))
         self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
         self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
-
+        self.UseCalibratedBin = int(self.config.get('switch', 'UseCalibratedBin', fallback='0'))
         # Load industry bins
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
+        if self.UseCalibratedBin != 0:
+            self.load_calibrated_bins()
+
+    def load_calibrated_bins(self):
+        calibration_config = configparser.ConfigParser()
+        calibration_config.read(self.calibration_file_path)
+        bin_key = str(self.UseCalibratedBin)
 
     def parse_bins(self, industry_bins_string):
         # Remove non-numeric characters and split by commas
@@ -151,8 +161,12 @@ class ImageAnalysisModel:
         self.analyseParticles(self.checkpoint_folder, False)
         self.saveSegments()
 
-        # Step 3: Save results
-        self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+        # Step 4: Save results
+        if self.calibratedAreaBin:
+
+            self.setBins(self.calibratedAreaBin)
+        else:
+            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
         self.savePsdData()
 
         if self.calculated_reminder_area == 1:
@@ -165,7 +179,11 @@ class ImageAnalysisModel:
         else:
             self.saveDistributionPlot()
             self.formatResults(byArea=True)
+        if self.calibratedSizeBin:
 
+            self.setBins(self.calibratedSizeBin)
+        else:
+            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
         self.savePsdDataWithDiameter()
         self.formatResults(bySize=True)
         self.saveDistributionPlotForDiameter()

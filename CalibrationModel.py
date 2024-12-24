@@ -23,6 +23,17 @@ class CalibrationModel:
         self.calibrated_bins_with_size = []
         self.particles=[]
         self.bins=bins
+        self.ini_file_path = os.path.join(self.folder_path, "calibration.ini")
+        self.config = configparser.ConfigParser()
+        self.load_config()
+
+    def load_config(self):
+            if os.path.exists(self.ini_file_path):
+                self.config.read(self.ini_file_path)
+                existing_bins = [int(section) for section in self.config.sections() if section.isdigit()]
+                self.new_bin_number = max(existing_bins, default=0) + 1
+            else:
+                self.new_bin_number = 1
 
     def calibrate_bin_with_size(self, target_distribution=None):
         """
@@ -68,10 +79,9 @@ class CalibrationModel:
             self.calibrated_bins_with_size.append(math.ceil(bin_value))
         # Step 4: Add the maximum value of the last bin
 
-        # Save the bins to a text file
-        bins_file_path = os.path.join(self.folder_path, f"{self.sampleID}_bins_calibrated_size.txt")
-        with open(bins_file_path, 'w') as file:
-            file.write(', '.join(map(str, self.calibrated_bins_with_size)))
+        self.config[str(self.new_bin_number)] = {}
+        self.config[str(self.new_bin_number)]['bySize'] = f"[{', '.join(map(str, self.calibrated_bins_with_size))}]"
+        self.save_config()
         return self.calibrated_bins_with_size
 
     def calibrate_bin_with_area(self, target_distribution=None):
@@ -117,9 +127,9 @@ class CalibrationModel:
             cumulative_percentage += percentage
             diameter = self.find_cumulative_area_diameter(self.particles, total_area, cumulative_percentage)
             self.calibrated_bins_with_area.append(diameter)
-        bins_file_path = os.path.join(self.folder_path, f"{self.sampleID}_bins_calibrated_area.txt")
-        with open(bins_file_path, 'w') as file:
-            file.write(', '.join(map(str, self.calibrated_bins_with_area)))
+        self.config[str(self.new_bin_number)] = {}
+        self.config[str(self.new_bin_number)]['byArea'] = f"[{', '.join(map(str, self.calibrated_bins_with_area))}]"
+        self.save_config()
         return self.calibrated_bins_with_area
 
     def find_cumulative_area_diameter(self, particles, total_area, target_percentage):
@@ -347,3 +357,6 @@ class CalibrationModel:
             plt.title("Particle size distribution", pad=20)
             plt.savefig(fileName, bbox_inches='tight', dpi=300, pad_inches=0.5)  # Save the plot to the path constructed
             plt.close()
+    def save_config(self):
+        with open(self.ini_file_path, 'w') as configfile:
+            self.config.write(configfile)
