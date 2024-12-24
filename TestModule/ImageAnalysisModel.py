@@ -62,6 +62,9 @@ class ImageAnalysisModel:
 
         Output: None
         """
+        self.calibration_file_path ="calibration.ini"
+        self.calibratedSizeBin = None
+        self.calibratedAreaBin = None
         self.sampleID = sampleID if sampleID else os.path.basename(
             image_folder_path)
         self.imageProcessor = ip.ImageProcessingModel(
@@ -108,10 +111,24 @@ class ImageAnalysisModel:
         self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
         self.temperature=int(self.config.get('Color', 'temperature', fallback='0'))
         self.processImageOnly = self.str_to_bool(self.config.get('Image', 'processImageOnly', fallback='false'))
+        self.UseCalibratedBin =int(self.config.get('switch', 'UseCalibratedBin', fallback='0'))
+
         # Load industry bins
         industry_bins_string = self.config['analysis']['industryBin']
-        self.industry_bins = self.parse_bins(industry_bins_string)
 
+        self.industry_bins = self.parse_bins(industry_bins_string)
+        # Load calibrated bins if UseCalibratedBin is set
+        if self.UseCalibratedBin != 0:
+            self.load_calibrated_bins()
+
+    def load_calibrated_bins(self):
+        calibration_config = configparser.ConfigParser()
+        calibration_config.read(self.calibration_file_path)
+        bin_key = str(self.UseCalibratedBin)
+
+        # Read byArea and bySize from the calibration file
+        self.calibratedAreaBin = eval(calibration_config.get(bin_key, 'byArea', fallback='[]'))
+        self.calibratedSizeBin = eval(calibration_config.get(bin_key, 'bySize', fallback='[]'))
     def str_to_bool(self,s):
         if s.lower() in ['true', '1', 'yes']:
             return True
@@ -154,7 +171,7 @@ class ImageAnalysisModel:
         self.download_model()
 
         # Step 2: Perform image processing
-        self.color_correction()
+        # self.color_correction()
         self.evenLighting()
         self.overlayImage()
         if self.processImageOnly:
@@ -165,10 +182,14 @@ class ImageAnalysisModel:
         self.saveSegments()
 
         # Step 4: Save results
-        self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+        if self.calibratedAreaBin:
+
+            self.setBins(self.calibratedAreaBin)
+        else:
+            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
         self.savePsdData()
 
-        # Step 4: Perform calibration based on the results
+        # Step 5: Perform calibration with unsegmented area based on the analysis results
         if self.calculated_reminder_area == 1:
             self.loadCalibrator()
             self.calculate_unsegmented_area()
@@ -180,12 +201,18 @@ class ImageAnalysisModel:
             self.saveDistributionPlot()
             self.formatResults(byArea=True)
 
+        if self.calibratedSizeBin:
+
+            self.setBins(self.calibratedSizeBin)
+        else:
+            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
         self.savePsdDataWithDiameter()
         self.formatResults(bySize=True)
         self.saveDistributionPlotForDiameter()
         self.saveResultsForNormalBinsOnly(self.normal_bins)
         self.formatResultsForNormalDistribution(True)
 
+        # Step 6: Perform calibration based on the lab target distribution
         if self.target_distribution:
             if self.calculated_size == 1:
                 print("Calculating bins by size...")
