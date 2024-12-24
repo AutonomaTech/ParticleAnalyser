@@ -25,7 +25,7 @@ class ImageProcessingModel:
         self.image_extension = None
         self.raw_imagePath = None  # Attribute to store the path of the raw image copy
         self.evenLightingImagePath=None
-
+        self.colorCorrection_imagePath = None
         # Loop through extensions and check for existence
         for ext in self.file_extensions:
             self.imageName = f"{self.sampleID}{ext}"
@@ -349,3 +349,186 @@ class ImageProcessingModel:
         # Save the cropped image to the image folder
         cv2.imwrite(self.imagePath, cropped_image)
         print(f"Cropped image picture saved as : {self.imagePath}")
+    def __get_rgb_from_temperature(self,temp):
+        """
+        Calculate the RGB values of the white point based on color temperature (Kelvin)
+        """
+        temp = max(1000, min(temp, 40000)) / 100.0
+
+        # Calculate the Red component
+        if temp <= 66:
+            r = 255
+        else:
+            tmpCalc = temp - 55
+            r = 351.976905668057 + 0.114206453784165 * tmpCalc - 40.2536630933213 * np.log(tmpCalc)
+            r = min(255, max(0, r))
+
+        # Calculate the Green component
+        if temp <= 66:
+            tmpCalc = temp - 2
+            g = -155.254855627092 - 0.445969504695791 * tmpCalc + 104.492161993939 * np.log(tmpCalc)
+            g = min(255, max(0, g))
+        else:
+            tmpCalc = temp - 50
+            g = 325.449412571197 + 0.0794345653666234 * tmpCalc - 28.0852963507957 * np.log(tmpCalc)
+            g = min(255, max(0, g))
+
+        # Calculate the Blue component
+        if temp >= 66:
+            b = 255
+        else:
+            if temp <= 19:
+                b = 0
+            else:
+                tmpCalc = temp - 10
+                b = -254.769351841209 + 0.827409606400739 * tmpCalc + 115.679944010661 * np.log(tmpCalc)
+                b = min(255, max(0, b))
+
+        return np.array([r, g, b], dtype=np.uint8).reshape(1, 1, 3)
+
+    def __color_error(self,rgb1, rgb2):
+        diff = np.array(rgb1) - np.array(rgb2)
+        return math.sqrt(np.sum(diff ** 2))
+    def __get_temperature_from_rgb(self,target_r, target_g, target_b):
+        target_rgb = (target_r, target_g, target_b)
+        start_time = time.time()
+        min_error = float('inf')
+        best_temp = 1000
+
+        # Full range 1K step-by-step search
+        for temp in range(1000, 40001, 1):
+            rgb = self.__get_rgb_from_temperature(temp)
+            err = self.__color_error(rgb, target_rgb)
+            if err < min_error:
+                min_error = err
+                best_temp = temp
+
+        end_time = time.time()
+        print("Searching consumption time: {:.2f}s".format(end_time - start_time))
+        return best_temp, min_error
+
+    def __estimate_temperature_from_image(self):
+        image = Image.open(self.imagePath).convert("RGB")
+        arr = np.array(image)
+        avg_rgb = np.mean(arr.reshape(-1, 3), axis=0)
+        avg_r, avg_g, avg_b = avg_rgb
+
+        # estimated_temp, error = get_temperature_from_rgb(avg_r, avg_g, avg_b)
+        estimated_temp, error =self.__get_temperature_from_rgb(avg_r, avg_g, avg_b)
+        return estimated_temp, error
+
+    def __kelvin_to_rgb(self,temp_kelvin):
+
+        if temp_kelvin < 1000:
+            temp_kelvin = 1000
+        elif temp_kelvin > 40000:
+            temp_kelvin = 40000
+
+        tmp_internal = temp_kelvin / 100.0
+
+        # red
+        if tmp_internal <= 66:
+            red = 255
+        else:
+            tmp_red = 329.698727446 * math.pow(tmp_internal - 60, -0.1332047592)
+            if tmp_red < 0:
+                red = 0
+            elif tmp_red > 255:
+                red = 255
+            else:
+                red = tmp_red
+
+        # green
+        if tmp_internal <= 66:
+            tmp_green = 99.4708025861 * math.log(tmp_internal) - 161.1195681661
+            if tmp_green < 0:
+                green = 0
+            elif tmp_green > 255:
+                green = 255
+            else:
+                green = tmp_green
+        else:
+            tmp_green = 288.1221695283 * math.pow(tmp_internal - 60, -0.0755148492)
+            if tmp_green < 0:
+                green = 0
+            elif tmp_green > 255:
+                green = 255
+            else:
+                green = tmp_green
+
+        # blue
+        if tmp_internal >= 66:
+            blue = 255
+        elif tmp_internal <= 19:
+            blue = 0
+        else:
+            tmp_blue = 138.5177312231 * math.log(tmp_internal - 10) - 305.0447927307
+            if tmp_blue < 0:
+                blue = 0
+            elif tmp_blue > 255:
+                blue = 255
+            else:
+                blue = tmp_blue
+
+       # Create an RGB gain matrix.
+        return np.clip([red, green, blue], 0, 255)
+    def __adjust_temperature(self, image, from_temp, to_temp):
+        # Calculate the RGB gains for the original and target color temperatures
+        from_rgb = self.__kelvin_to_rgb(from_temp)
+        to_rgb = self.__kelvin_to_rgb(to_temp)
+        balance = to_rgb / from_rgb
+        # Apply the gain
+        print(f"from temp {from_temp}")
+        print(f"To temp {to_temp}")
+        adjusted = (image * balance).clip(0, 255).astype(np.uint8)
+
+        return adjusted
+
+    def __color_correction(self,imageTemp,adjustedColorTemp):
+        image = cv2.imread(self.imagePath)
+
+        result_image = self.__adjust_temperature(image, imageTemp,adjustedColorTemp)
+
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
+        # save the result image
+        self.colorCorrection_imagePath = os.path.join(os.path.dirname(self.imagePath),
+                                                      f"{self.sampleID}_color_correction.png")
+        print(f"Saving color corrected image to {self.colorCorrection_imagePath}")
+
+        self.imagePath=self.colorCorrection_imagePath
+        # Save the result image
+        if not cv2.imwrite(self.colorCorrection_imagePath, result_image):
+            print(f"Failed to save the color corrected image. Check file path and permissions.")
+
+    ### for image color correction--hardcoded for now
+    def colorCorrection(self,adjustedColorTemp):
+
+        image_temp, err = self.__estimate_temperature_from_image()
+
+        if image_temp is None:
+            logger.error("Can not get the original color temperature of the sample ID: {}",self.sampleID)
+            return
+        if self.sampleID.startswith('RCB1489190'):
+            image_temp=2648
+        if self.sampleID.startswith('RCB1751016'):
+            image_temp = 2561
+        if self.sampleID.startswith('RCB1763362'):
+            image_temp = 2500
+        if self.sampleID.startswith('RCB1763004'):
+            image_temp = 2444
+        if self.sampleID.startswith('RCB1763013'):
+            image_temp = 2537
+        if self.sampleID.startswith('RCB1754033'):
+            image_temp = 2513
+        if self.sampleID.startswith('RCB1766399'):
+            image_temp = 2513
+        if self.sampleID.startswith('RCB1767022'):
+            image_temp = 2513
+
+        print(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
+        print(f"Target color temperature is {adjustedColorTemp}")
+        self.__color_correction(image_temp,adjustedColorTemp)
+
