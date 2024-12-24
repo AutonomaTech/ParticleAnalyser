@@ -155,13 +155,14 @@ class ImageAnalysisModel:
         # Step 1: Download model
         self.download_model()
 
-        # Step 2: Perform image analysis
+        # Step 2: Perform image processing
+        self.color_correction()
         self.evenLighting()
         self.overlayImage()
         self.analyseParticles(self.checkpoint_folder, False)
         self.saveSegments()
 
-        # Step 4: Save results
+        # Step 3:  Perform Image analysis
         if self.calibratedAreaBin:
 
             self.setBins(self.calibratedAreaBin)
@@ -179,6 +180,7 @@ class ImageAnalysisModel:
         else:
             self.saveDistributionPlot()
             self.formatResults(byArea=True)
+
         if self.calibratedSizeBin:
 
             self.setBins(self.calibratedSizeBin)
@@ -937,3 +939,13 @@ class ImageAnalysisModel:
         self.cb.calibrated_bins_with_unSegementedArea()
     def refactor_psd(self):
         self.cb.refactor_psd()
+
+    def color_correction(self):
+        """
+        Calls the ImageProcessingModel's color correction function to color correct the image
+
+        Input: None
+        Output: color corrected image
+        """
+        self.imageProcessor.colorCorrection(self.temperature)
+        self.imagePath = self.imageProcessor.getImagePath()
