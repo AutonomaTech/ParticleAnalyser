@@ -119,7 +119,9 @@ class ImageAnalysisModel:
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
         bin_key = str(self.UseCalibratedBin)
-
+        # Read byArea and bySize from the calibration file
+        self.calibratedAreaBin = eval(calibration_config.get(bin_key, 'byArea', fallback='[]'))
+        self.calibratedSizeBin = eval(calibration_config.get(bin_key, 'bySize', fallback='[]'))
     def str_to_bool(self, s):
         if s.lower() in ['true', '1', 'yes']:
             return True
@@ -162,7 +164,7 @@ class ImageAnalysisModel:
         self.download_model()
 
         # Step 2: Perform image processing
-        self.color_correction()
+        # self.color_correction()
         self.evenLighting()
         self.overlayImage()
         if self.processImageOnly:
