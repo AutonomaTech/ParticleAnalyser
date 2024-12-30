@@ -164,7 +164,7 @@ class ImageAnalysisModel:
         self.download_model()
 
         # Step 2: Perform image processing
-        # self.color_correction()
+        self.color_correction()
         self.evenLighting()
         self.overlayImage()
         if self.processImageOnly:
