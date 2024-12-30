@@ -53,7 +53,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 class ImageAnalysisModel:
     def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None,config_path=None):
         """
-        Initializes the ImageAnalysisModel with an image folder path and container width.
+        Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
 
         Inputs:
@@ -83,7 +83,6 @@ class ImageAnalysisModel:
         self.p = None
         self.cb=None
         self.csv_filename = ""
-        self.totalSecondes=0
         self.minimumArea=0
         self.totArea=0
         self.meshingSegmentAreas={}
@@ -91,6 +90,8 @@ class ImageAnalysisModel:
         self.particles=[]
         self.csv_filename=""
         self.bins=None
+        self.processImageOnly = False
+        self.temperature = 3000
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.checkpoint_folder = 'checkpoints'
@@ -107,7 +108,8 @@ class ImageAnalysisModel:
         self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
         self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
         self.UseCalibratedBin = int(self.config.get('switch', 'UseCalibratedBin', fallback='0'))
-        # Load industry bins
+        self.processImageOnly = self.str_to_bool(self.config.get('Image', 'processImageOnly', fallback='false'))
+        self.temperature = int(self.config.get('Color', 'temperature', fallback='0'))
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
         if self.UseCalibratedBin != 0:
@@ -117,7 +119,13 @@ class ImageAnalysisModel:
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
         bin_key = str(self.UseCalibratedBin)
-
+        # Read byArea and bySize from the calibration file
+        self.calibratedAreaBin = eval(calibration_config.get(bin_key, 'byArea', fallback='[]'))
+        self.calibratedSizeBin = eval(calibration_config.get(bin_key, 'bySize', fallback='[]'))
+    def str_to_bool(self, s):
+        if s.lower() in ['true', '1', 'yes']:
+            return True
+        return False
     def parse_bins(self, industry_bins_string):
         # Remove non-numeric characters and split by commas
         cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
@@ -159,6 +167,9 @@ class ImageAnalysisModel:
         self.color_correction()
         self.evenLighting()
         self.overlayImage()
+        if self.processImageOnly:
+            logger.info("For this run process image only without analysis")
+            return
         self.analyseParticles(self.checkpoint_folder, False)
         self.saveSegments()
 
@@ -675,7 +686,7 @@ class ImageAnalysisModel:
 
     def overlayImage(self):
         """
-        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
+        Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and 
         reducing the size of the image if it is bigger than 8MB
 
         Input: None
