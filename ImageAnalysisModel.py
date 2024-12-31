@@ -96,8 +96,8 @@ class ImageAnalysisModel:
         self.crop_left = 0
         self.crop_height = 0
         self.crop_width = 0
-        self.default_width = 100
-        self.default_height = 100
+        self.mini_width = 100
+        self.mini_height = 100
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.checkpoint_folder = 'checkpoints'
@@ -125,8 +125,8 @@ class ImageAnalysisModel:
         self.crop_left = int(self.config.get('Crop', 'Left', fallback='0'))
         self.crop_height = int(self.config.get('Crop', 'Height', fallback='0'))
         self.crop_width = int(self.config.get('Crop', 'Width', fallback='0'))
-        self.default_width = int(self.config.get('Crop', 'defaultWidth', fallback='100'))
-        self.default_height = int(self.config.get('Crop', 'defaultHeight', fallback='100'))
+        self.mini_width = int(self.config.get('Crop', 'defaultWidth', fallback='100'))
+        self.mini_height = int(self.config.get('Crop', 'defaultHeight', fallback='100'))
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
@@ -684,7 +684,7 @@ class ImageAnalysisModel:
 
     def crop_image(self):
         self.imageProcessor.cropImage(self.crop_width, self.crop_height, self.crop_left, self.crop_top,
-                                      self.default_height, self.default_width)
+                                      self.mini_height, self.mini_width)
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 
