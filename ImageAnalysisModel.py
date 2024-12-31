@@ -125,8 +125,8 @@ class ImageAnalysisModel:
         self.crop_left = int(self.config.get('Crop', 'Left', fallback='0'))
         self.crop_height = int(self.config.get('Crop', 'Height', fallback='0'))
         self.crop_width = int(self.config.get('Crop', 'Width', fallback='0'))
-        self.mini_width = int(self.config.get('Crop', 'defaultWidth', fallback='100'))
-        self.mini_height = int(self.config.get('Crop', 'defaultHeight', fallback='100'))
+        self.mini_width = int(self.config.get('Crop', 'minimumWidth', fallback='100'))
+        self.mini_height = int(self.config.get('Crop', 'minimumHeight', fallback='100'))
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
