@@ -92,6 +92,12 @@ class ImageAnalysisModel:
         self.bins=None
         self.processImageOnly = False
         self.temperature = 3000
+        self.crop_top = 0
+        self.crop_left = 0
+        self.crop_height = 0
+        self.crop_width = 0
+        self.default_width = 100
+        self.default_height = 100
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.checkpoint_folder = 'checkpoints'
@@ -114,7 +120,13 @@ class ImageAnalysisModel:
         self.industry_bins = self.parse_bins(industry_bins_string)
         if self.UseCalibratedBin != 0:
             self.load_calibrated_bins()
-
+            # Load cropping parameters
+        self.crop_top = int(self.config.get('Crop', 'Top', fallback='0'))
+        self.crop_left = int(self.config.get('Crop', 'Left', fallback='0'))
+        self.crop_height = int(self.config.get('Crop', 'Height', fallback='0'))
+        self.crop_width = int(self.config.get('Crop', 'Width', fallback='0'))
+        self.default_width = int(self.config.get('Crop', 'defaultWidth', fallback='100'))
+        self.default_height = int(self.config.get('Crop', 'defaultHeight', fallback='100'))
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
@@ -164,6 +176,7 @@ class ImageAnalysisModel:
         self.download_model()
 
         # Step 2: Perform image processing
+        self.crop_image()
         self.color_correction()
         self.evenLighting()
         self.overlayImage()
@@ -670,7 +683,8 @@ class ImageAnalysisModel:
                 "Image not initialized. Please ensure that 'imageProcessor' is properly initialized.")
 
     def crop_image(self):
-        self.imageProcessor.cropImage()
+        self.imageProcessor.cropImage(self.crop_width, self.crop_height, self.crop_left, self.crop_top,
+                                      self.default_height, self.default_width)
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 
