@@ -342,22 +342,66 @@ class ImageProcessingModel:
         cv2.imwrite(self.imagePath, final_image)
         print(f"Evened out lighting picture saved as : {self.imagePath}")
 
-    def cropImage(self):
-        """
-        Allows the user to manually select a region of interest (ROI) and crop the image to that region.
+    # def cropImage(self):
+    #     """
+    #     Allows the user to manually select a region of interest (ROI) and crop the image to that region.
+    #
+    #     Inputs:None
+    #
+    #     Outputs:None
+    #     """
+    #     roi_selector = ROI.ROISelector(self.imagePath)
+    #     cropped_image = roi_selector.select_and_move_roi()
+    #     self.imagePath = os.path.join(self.image_folder_path, f"cropped_image_{self.imageName}")
+    #     # Save the cropped image to the image folder
+    #     cv2.imwrite(self.imagePath, cropped_image)
+    #     print(f"Cropped image picture saved as : {self.imagePath}")
 
-        Inputs:None
-
-        Outputs:None
+    def cropImage(self, width=None, height=None, left=None, top=None, defaultHeight=None, defaultWidth=None):
         """
-        roi_selector = ROI.ROISelector(self.imagePath)
-        cropped_image = roi_selector.select_and_move_roi()
-        self.imagePath = os.path.join(self.image_folder_path, f"cropped_image_{self.imageName}")
-        # Save the cropped image to the image folder
+        Crop the image based on specified parameters.
+
+        Inputs:
+        - width: Width of the crop rectangle.
+        - height: Height of the crop rectangle.
+        - left: X coordinate of the top-left corner of the crop rectangle.
+        - top: Y coordinate of the top-left corner of the crop rectangle.
+        - defaultHeight: Minimum acceptable height of the cropped image.
+        - defaultWidth: Minimum acceptable width of the cropped image.
+
+        Outputs: None, updates self.croppedImagePath
+        """
+        # Check if all parameters are zero
+        if width == 0 and height == 0 and left == 0 and top == 0:
+            print("No cropping needed, all parameters are zero.")
+            return
+
+        # Check if only one of width or height is provided
+        if (width == 0 and height != 0) or (width != 0 and height == 0):
+            print("Incomplete size parameters, cropping cannot be performed.")
+            return
+
+        # Load the image
+        image = cv2.imread(self.imagePath)
+        if image is None:
+            raise ValueError("The image cannot be loaded, check the path.")
+
+        # Ensure provided dimensions are within the image's size and meet default size requirements
+        if (left + width > image.shape[1] or top + height > image.shape[0] or
+                (defaultWidth and width < defaultWidth) or
+                (defaultHeight and height < defaultHeight)):
+            print("Requested dimensions exceed the original image size or do not meet minimum size requirements.")
+            return
+
+        # Crop the image
+        cropped_image = image[top:top + height, left:left + width]
+        cropped_image_name = "crop_" + self.sampleID + ".png"
+        # Generate the path to save the cropped image
+        self.imagePath = os.path.join(self.image_folder_path, cropped_image_name)
+
+        # Save the cropped image
         cv2.imwrite(self.imagePath, cropped_image)
-        print(f"Cropped image picture saved as : {self.imagePath}")
-
-
+        print(f"Cropped image saved as: {self.imagePath}")
     def __get_rgb_from_temperature(self,temp):
         """
         Calculate the RGB values of the white point based on color temperature (Kelvin)
