@@ -2,15 +2,15 @@ import ContainerScalerModel as cs
 import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
 import CalibrationModel as cb
-import logger_config
 import ParticleSegmentationModel as psa
-logger = logger_config.get_logger(__name__)
+from logger_config import get_logger
 import os
 import re
 import csv
 import configparser
 import requests
-
+import traceback
+logger = get_logger("ParticleAnalyzer")
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
@@ -79,7 +79,6 @@ class ImageAnalysisModel:
         self.meshingTotalSeconds=0
         self.totalSeconds=0
         self.analysisTime = 0
-        self.numberofBins = 0
         self.p = None
         self.cb=None
         self.csv_filename = ""
@@ -149,82 +148,109 @@ class ImageAnalysisModel:
             return []
 
     def download_model(self):
-        # Check if model exists; if not, download it
-        if not os.path.exists(self.checkpoint_folder):
-            os.makedirs(self.checkpoint_folder, exist_ok=True)
-            print(f"Checkpoints folder created: {self.checkpoint_folder}")
 
-        file_path = os.path.join(self.checkpoint_folder, self.model_name)
-        if not os.path.exists(file_path):
-            try:
-                print(f"Downloading model file: {self.model_name}...")
-                response = requests.get(self.model_url, stream=True)
-                response.raise_for_status()
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-                print("Model downloaded successfully")
-            except Exception as e:
+        try:
+                # Check if model exists; if not, download it
+                if not os.path.exists(self.checkpoint_folder):
+                    os.makedirs(self.checkpoint_folder, exist_ok=True)
+                    print(f"Checkpoints folder created: {self.checkpoint_folder}")
+
+                file_path = os.path.join(self.checkpoint_folder, self.model_name)
+                if not os.path.exists(file_path):
+
+                    response = requests.get(self.model_url, stream=True)
+                    response.raise_for_status()
+                    with open(file_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                else:
+                    logger.info(f"Model already exists, skipping download,sample_id: {self.sampleID}")
+
+
+        except Exception as e:
+                logger.error(f"Error occurred during model downloading: {str(e)},sample_id: {self.sampleID}")
                 print(f"Error occurred during model downloading: {e}")
                 raise
-        else:
-            print("Model already exists, skipping download.")
+
 
     def run_analysis(self):
-        # Step 1: Download model
-        self.download_model()
 
-        # Step 2: Perform image processing
-        self.crop_image()
-        self.color_correction()
-        self.evenLighting()
-        self.overlayImage()
-        if self.processImageOnly:
-            logger.info("For this run process image only without analysis")
-            return
-        self.analyseParticles(self.checkpoint_folder, False)
-        self.saveSegments()
+        try:
+            # Step 1: Download model
+            logger.info(f"Starting model download,sample_id: {self.sampleID}")
+            self.download_model()
+            # Step 2: Perform image processing
+            logger.info(f"Starting image crop,sample_id: {self.sampleID}")
+            self.crop_image()
+            logger.info(f"Starting color correction,sample_id: {self.sampleID}")
+            self.color_correction()
+            logger.info(f"Starting even light,sample_id: {self.sampleID}")
+            self.evenLighting()
+            logger.info(f"Starting over lay,sample_id: {self.sampleID}")
+            self.overlayImage()
+            if self.processImageOnly:
+                logger.info(f"For this run process image only without analysis,sample_id: {self.sampleID}")
+                return
+            logger.info(f"Starting particle analyzing,sample_id: {self.sampleID}")
+            self.analyseParticles(self.checkpoint_folder, False)
+            logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
+            self.saveSegments()
 
-        # Step 3:  Perform Image analysis
-        if self.calibratedAreaBin:
+            # Step 3:  Perform Image analysis
+            if self.calibratedAreaBin:
+                logger.info(f"Calibrated bin used: area_bin{self.calibratedAreaBin},sample_id: {self.sampleID}")
+                self.setBins(self.calibratedAreaBin)
+            else:
+                self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+            logger.info(f"Starting save area PSD data,sample_id: {self.sampleID}")
+            self.savePsdData()
+            if self.calculated_reminder_area == 1:
+                self.loadCalibrator()
+                self.calculate_unsegmented_area()
+                self.calibrated_bins_with_unSegementedArea()
+                self.refactor_psd()
+                distribution_fileName = os.path.join(self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
+                self.formatResults(byArea=True, distribution_filename=distribution_fileName)
+            else:
+                logger.info(f"Starting generating area size xml file,sample_id: {self.sampleID}")
+                self.formatResults(byArea=True)
+                logger.info(f"Starting saving area distribution plot,sample_id: {self.sampleID}")
+                self.saveDistributionPlot()
 
-            self.setBins(self.calibratedAreaBin)
-        else:
-            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
-        self.savePsdData()
 
-        if self.calculated_reminder_area == 1:
-            self.loadCalibrator()
-            self.calculate_unsegmented_area()
-            self.calibrated_bins_with_unSegementedArea()
-            self.refactor_psd()
-            distribution_fileName = os.path.join(self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
-            self.formatResults(byArea=True, distribution_filename=distribution_fileName)
-        else:
-            self.saveDistributionPlot()
-            self.formatResults(byArea=True)
+            if self.calibratedSizeBin:
+                logger.info(f"Calibrated bin used: size_bin{self.calibratedSizeBin},sample_id: {self.sampleID}")
+                self.setBins(self.calibratedSizeBin)
+            else:
+                self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+            logger.info(f"Starting save size PSD data,sample_id: {self.sampleID}")
+            self.savePsdDataWithDiameter()
+            logger.info(f"Starting produce generating size xml file,sample_id: {self.sampleID}")
+            self.formatResults(bySize=True)
+            logger.info(f"Starting saving size distribution plot,sample_id: {self.sampleID}")
+            self.saveDistributionPlotForDiameter()
 
-        if self.calibratedSizeBin:
 
-            self.setBins(self.calibratedSizeBin)
-        else:
-            self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
-        self.savePsdDataWithDiameter()
-        self.formatResults(bySize=True)
-        self.saveDistributionPlotForDiameter()
-        self.saveResultsForNormalBinsOnly(self.normal_bins)
-        self.formatResultsForNormalDistribution(True)
+            logger.info(f"Starting save area PSD data for general bins:{self.normal_bins},sample_id: {self.sampleID}")
+            self.saveResultsForNormalBinsOnly(self.normal_bins)
+            logger.info(f"Starting saving area distribution plot for general bins:{self.normal_bins},sample_id: {self.sampleID}")
+            self.formatResultsForNormalDistribution(True)
 
-        if self.target_distribution:
-            if self.calculated_size == 1:
-                print("Calculating bins by size...")
-                self.calibrate_bin_with_size(self.target_distribution)
-            if self.calculated_area == 1:
-                print("Calculating bins by area...")
-                self.calibrate_bin_with_area(self.target_distribution)
-        else:
-            print("No target distribution provided. Skipping advanced bin calculations.")
+            if self.target_distribution:
+                if self.calculated_size == 1:
+                    print("Calibrating  bins by size...")
+                    self.calibrate_bin_with_size(self.target_distribution)
+                if self.calculated_area == 1:
+                    print("Calibrating bins by area...")
+                    self.calibrate_bin_with_area(self.target_distribution)
+            else:
+                print("No target distribution provided. Skipping advanced bin calculations.")
+        except Exception as e:
+            logger.error(f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
+            logger.error(f"Traceback error of run analysis process for {self.sampleID} : {traceback.format_exc()}")
+            raise
+
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -261,7 +287,6 @@ class ImageAnalysisModel:
         """
         self.bins=bins[:]
         if self.p is not None:
-            self.numberofBins = len(bins)
             self.p.bins = bins[:]
 
     def loadModel(self, checkpoint_folder):
@@ -294,26 +319,32 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        def calculateAnalysisTime(duration):
-            total_seconds = duration.total_seconds()
-            # Total seconds for the first calculation (Entire image)
-            # self.totalSeconds=total_seconds
-            minutes = int(total_seconds // 60)
-            seconds = total_seconds % 60
-            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+        try:
+            def calculateAnalysisTime(duration):
+                total_seconds = duration.total_seconds()
+                # Total seconds for the first calculation (Entire image)
+                # self.totalSeconds=total_seconds
+                minutes = int(total_seconds // 60)
+                seconds = total_seconds % 60
+                self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
 
-        self.loadModel(checkpoint_folder)
-        if testing:
-            self.p.testing_generate_mask()
-        else:
-            self.p.generate_mask()
+            self.loadModel(checkpoint_folder)
+            if testing:
+                self.p.testing_generate_mask()
+            else:
+                self.p.generate_mask()
 
-        calculateAnalysisTime(self.p.getExecutionTime())
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.save_masks_to_csv(self.csv_filename)
-        self.showMasks()
+            calculateAnalysisTime(self.p.getExecutionTime())
+            self.p.setdiameter_threshold(self.diameter_threshold)
+            self.csv_filename = os.path.join(
+                self.folder_path, f"{self.sampleID}.csv")
+            self.p.save_masks_to_csv(self.csv_filename)
+            self.showMasks()
+        except Exception as e :
+            logger.error(f"Error occur during particle analyzing: {str(e)}")
+            logger.error(f"Traceback error of particle analyzing for {self.sampleID} : {traceback.format_exc()}")
+            raise
+
     def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
         """
         Analyzes particles in the image by generating masks using the model, and calculates analysis time.
@@ -628,14 +659,18 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves segment data to JSON file.
         """
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.json_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_segments.txt")
-        self.p.save_segments(self.json_filename)
-        print(f"Saving segments in {self.json_filename}")
+        try:
+            self.p.setdiameter_threshold(self.diameter_threshold)
+            self.json_filename = os.path.join(
+                self.folder_path, f"{self.sampleID}_segments.txt")
+            self.p.save_segments(self.json_filename)
+            print(f"Saving segments in {self.json_filename}")
+        except Exception as e:
+            logger.error(f"Fatal error in segments saving : {str(e)}")
+            logger.error(f"Traceback error of segments saving for {self.sampleID} : {traceback.format_exc()}")
+            raise
 
-
-    def loadSegments(self, checkpoint_folder):
+    def loadSegments(self, checkpoint_folder, bins):
         """
         Loads segments from a JSON file and saves them to CSV and distribution files, useful for non-GPU environments.
 
@@ -660,8 +695,7 @@ class ImageAnalysisModel:
             self.p.setdiameter_threshold(self.diameter_threshold)
             self.p.save_segments_as_csv(
                 self.json_masks_filename, self.csv_filename)
-            # self.savePsdData()
-            # self.savePsdDataWithDiameter()
+
 
         except FileNotFoundError as e:
             raise e
@@ -767,7 +801,7 @@ class ImageAnalysisModel:
             sorted_areas = sorted(areas)
             self.mimumArea = format(max(float(sorted_areas[0] / 1000000), 0), '.8f')
             print(f'Minimu Area(ImageAnalysisModel) of the entire image analysis is :{self.mimumArea}')
-            logger.info("Minimu Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
+            logger.info("Minimum Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
 
         except Exception as e :
                 logger.error("The give csv  file can  not be parsed due to {} error ",e)
