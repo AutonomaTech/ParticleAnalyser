@@ -655,14 +655,12 @@ class ImageAnalysisModel:
                     f"The file {self.json_masks_filename} was not found.")
 
             self.loadModel(checkpoint_folder)
-            self.setBins(bins)
             self.csv_filename = os.path.join(
                 self.folder_path, f"{self.sampleID}.csv")
             self.p.setdiameter_threshold(self.diameter_threshold)
             self.p.save_segments_as_csv(
                 self.json_masks_filename, self.csv_filename)
-            # self.savePsdData()
-            # self.savePsdDataWithDiameter()
+
 
         except FileNotFoundError as e:
             raise e
