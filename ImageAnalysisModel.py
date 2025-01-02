@@ -248,7 +248,7 @@ class ImageAnalysisModel:
                 print("No target distribution provided. Skipping advanced bin calculations.")
         except Exception as e:
             logger.error(f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
-            logger.error(f"Traceback for {self.sampleID} : {traceback.format_exc()}")
+            logger.error(f"Traceback error of run analysis process for {self.sampleID} : {traceback.format_exc()}")
             raise
 
 
