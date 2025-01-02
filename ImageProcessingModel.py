@@ -7,9 +7,9 @@ import ROISelector as ROI
 import io
 import time
 import math
-import logger_config
-
-logger = logger_config.get_logger(__name__)
+import traceback
+from logger_config import get_logger
+logger = get_logger("ImageProcess")
 
 class ImageProcessingModel:
     def __init__(self, image_folder_path, sampleID):
@@ -125,51 +125,56 @@ class ImageProcessingModel:
 
         Outputs:None
         """
-        if not os.path.exists(self.imagePath):
-            print(f"Error: Image {self.imageName} not found at {self.imagePath}")
-            return
+        try:
+            if not os.path.exists(self.imagePath):
+                print(f"Error: Image {self.imageName} not found at {self.imagePath}")
+                return
 
-        image_size_mb = os.path.getsize(self.imagePath) / (1024 * 1024)  # Size in MB
+            image_size_mb = os.path.getsize(self.imagePath) / (1024 * 1024)  # Size in MB
 
-        base_image = Image.open(self.imagePath).convert("RGBA")
+            base_image = Image.open(self.imagePath).convert("RGBA")
 
-        # Resize image if size is greater than 8MB
-        if image_size_mb > 8:
-            scale_factor = (8 / image_size_mb) ** 0.5  # Square root to maintain aspect ratio
+            # Resize image if size is greater than 8MB
+            if image_size_mb > 8:
+                scale_factor = (8 / image_size_mb) ** 0.5  # Square root to maintain aspect ratio
 
-            width, height = base_image.size
-            new_width = int(width * scale_factor)
-            new_height = int(height * scale_factor)
-
-            base_image = base_image.resize((new_width, new_height), Image.LANCZOS)
-            print(f"Image size was over 8MB, resized to {new_width}x{new_height}.")
-            
-            image_size_mb = base_image.tell() / (1024 * 1024)
-
-            # If still too large, reduce it further
-            while image_size_mb > 8:
                 width, height = base_image.size
-                base_image = base_image.resize((width // 2, height // 2), Image.LANCZOS)
+                new_width = int(width * scale_factor)
+                new_height = int(height * scale_factor)
+
+                base_image = base_image.resize((new_width, new_height), Image.LANCZOS)
+                print(f"Image size was over 8MB, resized to {new_width}x{new_height}.")
+
                 image_size_mb = base_image.tell() / (1024 * 1024)
-                print(f"Still too large, further resized to {width // 2}x{height // 2}. Current size: {image_size_mb:.2f}MB")
 
-        final_image = base_image.copy()
+                # If still too large, reduce it further
+                while image_size_mb > 8:
+                    width, height = base_image.size
+                    base_image = base_image.resize((width // 2, height // 2), Image.LANCZOS)
+                    image_size_mb = base_image.tell() / (1024 * 1024)
+                    print(f"Still too large, further resized to {width // 2}x{height // 2}. Current size: {image_size_mb:.2f}MB")
 
-        # Overlay the image on itself 10 times
-        for _ in range(10):
-            final_image = Image.alpha_composite(final_image, base_image)
+            final_image = base_image.copy()
 
-        # Save the base and final overlaid images
-        if not self.imagePath.lower().endswith('.png'):
-            base_image_path = os.path.join(self.image_folder_path, f"base_image_{self.sampleID}.png")
-            base_image.save(base_image_path)
-            print(f"Base image saved as: {base_image_path}")
+            # Overlay the image on itself 10 times
+            for _ in range(10):
+                final_image = Image.alpha_composite(final_image, base_image)
 
-        # Save the final overlaid image with a new name
-        final_image_name = "final_" + self.sampleID + ".png"
-        self.imagePath = os.path.join(self.image_folder_path, final_image_name)
-        final_image.save(self.imagePath)
-        print(f"Final overlaid image saved as: {self.imagePath}")
+            # Save the base and final overlaid images
+            if not self.imagePath.lower().endswith('.png'):
+                base_image_path = os.path.join(self.image_folder_path, f"base_image_{self.sampleID}.png")
+                base_image.save(base_image_path)
+                print(f"Base image saved as: {base_image_path}")
+
+            # Save the final overlaid image with a new name
+            final_image_name = "final_" + self.sampleID + ".png"
+            self.imagePath = os.path.join(self.image_folder_path, final_image_name)
+            final_image.save(self.imagePath)
+            print(f"Final overlaid image saved: {self.sampleID}")
+            print(f"Final overlaid image saved as: {self.imagePath}")
+        except Exception as e:
+            logger.error(f"Error occurred in over lay  : {str(e)},sample_id: {self.sampleID}")
+            logger.error(f"Error for over lay :{self.sampleID} Traceback: {traceback.format_exc()}")
 
     def pureOverlayImage(self, baseImage, flag):
         """
@@ -282,28 +287,32 @@ class ImageProcessingModel:
         Outputs:None
         """
         # Load the image
-        image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
-        lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)# Convert to LAB color space to separate intensity from color information
-        
-        l, a, b = cv2.split(lab_image)# Split the LAB image into its channels
-        
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(16, 16))  # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to the L channel
-        l_clahe = clahe.apply(l)
-        lab_clahe = cv2.merge((l_clahe, a, b))
-        enhanced_image = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
-        
-        # Perform a light normalization to smooth out lighting inconsistencies without over-smoothing
-        enhanced_image = cv2.normalize(enhanced_image, None, 0, 255, cv2.NORM_MINMAX)
-        
-        # Apply a slight Gaussian blur to avoid too much noise while keeping details
-        final_image = cv2.GaussianBlur(enhanced_image, (3, 3), 0)
-        
-        self.imagePath=os.path.join(self.image_folder_path,f"even_lighting_{self.imageName}")
-        ## self.evenLightingImagePath
-        self.evenLightingImagePath=self.imagePath
-        cv2.imwrite(self.imagePath, final_image)
-        print(f"Evened out lighting picture saved as : {self.imagePath}")
+        try:
+            image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
+            lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)# Convert to LAB color space to separate intensity from color information
 
+            l, a, b = cv2.split(lab_image)# Split the LAB image into its channels
+
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(16, 16))  # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to the L channel
+            l_clahe = clahe.apply(l)
+            lab_clahe = cv2.merge((l_clahe, a, b))
+            enhanced_image = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
+
+            # Perform a light normalization to smooth out lighting inconsistencies without over-smoothing
+            enhanced_image = cv2.normalize(enhanced_image, None, 0, 255, cv2.NORM_MINMAX)
+
+            # Apply a slight Gaussian blur to avoid too much noise while keeping details
+            final_image = cv2.GaussianBlur(enhanced_image, (3, 3), 0)
+
+            self.imagePath=os.path.join(self.image_folder_path,f"even_lighting_{self.imageName}")
+            ## self.evenLightingImagePath
+            self.evenLightingImagePath=self.imagePath
+            cv2.imwrite(self.imagePath, final_image)
+            logger.info(f"Evened out lighting picture saved : {self.sampleID}")
+            print(f"Evened out lighting picture saved as : {self.imagePath}")
+        except Exception as e:
+            logger.error(f"Error occurred in even lighting   : {str(e)},sample_id: {self.sampleID}")
+            logger.error(f"Error for even lighting  :{self.sampleID} Traceback: {traceback.format_exc()}")
     def even_out_lighting_validation(self,parameter_folder_path):
         """
         Even out the lighting in the image using CLAHE (Contrast Limited Adaptive Histogram Equalization)
@@ -367,38 +376,44 @@ class ImageProcessingModel:
 
             Outputs: None, updates self.croppedImagePath
             """
-            # Check if all parameters are zero
-            if width == 0 and height == 0 and left == 0 and top == 0:
-                print("No cropping needed, all parameters are zero.")
-                return
+            try:
+                # Check if all parameters are zero
+                if width == 0 and height == 0 and left == 0 and top == 0:
+                    print("No cropping needed, all parameters are zero.")
+                    return
 
-            # Check if only one of width or height is provided
-            if (width == 0 and height != 0) or (width != 0 and height == 0):
-                print("Incomplete size parameters, cropping cannot be performed.")
-                return
+                # Check if only one of width or height is provided
+                if (width == 0 and height != 0) or (width != 0 and height == 0):
+                    print("Incomplete size parameters, cropping cannot be performed.")
+                    return
 
-            # Load the image
-            image = cv2.imread(self.imagePath)
-            if image is None:
-                raise ValueError("The image cannot be loaded, check the path.")
+                # Load the image
+                image = cv2.imread(self.imagePath)
+                if image is None:
+                    raise ValueError("The image cannot be loaded, check the path.")
 
-            # Ensure provided dimensions are within the image's size and meet default size requirements
-            if (left + width > image.shape[1] or top + height > image.shape[0] or
-                    (defaultWidth and width < defaultWidth) or
-                    (defaultHeight and height < defaultHeight)):
-                print("Requested dimensions exceed the original image size or do not meet minimum size requirements.")
-                return
+                # Ensure provided dimensions are within the image's size and meet default size requirements
+                if (left + width > image.shape[1] or top + height > image.shape[0] or
+                        (defaultWidth and width < defaultWidth) or
+                        (defaultHeight and height < defaultHeight)):
+                    print("Requested dimensions exceed the original image size or do not meet minimum size requirements.")
+                    return
 
-            # Crop the image
-            cropped_image = image[top:top + height, left:left + width]
-            cropped_image_name = "crop_" + self.sampleID + ".png"
-            # Generate the path to save the cropped image
-            self.imagePath = os.path.join(self.image_folder_path, cropped_image_name)
+                # Crop the image
+                cropped_image = image[top:top + height, left:left + width]
+                cropped_image_name = "crop_" + self.sampleID + ".png"
+                # Generate the path to save the cropped image
+                self.imagePath = os.path.join(self.image_folder_path, cropped_image_name)
 
-            # Save the cropped image
-            cv2.imwrite(self.imagePath, cropped_image)
-            print(f"Cropped image saved as: {self.imagePath}")
-            print(f"Cropped image picture saved as : {self.imagePath}")
+                # Save the cropped image
+                cv2.imwrite(self.imagePath, cropped_image)
+                logger.info(f"Cropped image saved : {self.sampleID}")
+                print(f"Cropped image saved as: {self.imagePath}")
+            except Exception as e:
+                logger.error(f"Error in image cropping : {str(e)},sample_id: {self.sampleID}")
+                logger.error(f"Error for image crop :{self.sampleID} Traceback: {traceback.format_exc()}")
+
+
     def __get_rgb_from_temperature(self,temp):
         """
         Calculate the RGB values of the white point based on color temperature (Kelvin)
@@ -528,8 +543,6 @@ class ImageProcessingModel:
         to_rgb = self.__kelvin_to_rgb(to_temp)
         balance = to_rgb / from_rgb
         # Apply the gain
-        print(f"from temp {from_temp}")
-        print(f"To temp {to_temp}")
         adjusted = (image * balance).clip(0, 255).astype(np.uint8)
 
         return adjusted
@@ -546,39 +559,46 @@ class ImageProcessingModel:
         # save the result image
         self.colorCorrection_imagePath = os.path.join(os.path.dirname(self.imagePath),
                                                       f"{self.sampleID}_color_correction.png")
-        print(f"Saving color corrected image to {self.colorCorrection_imagePath}")
+
 
         self.imagePath=self.colorCorrection_imagePath
         # Save the result image
         if not cv2.imwrite(self.colorCorrection_imagePath, result_image):
-            print(f"Failed to save the color corrected image. Check file path and permissions.")
+            logger.error(f"Failed to save the color corrected image:{self.sampleID}. Check file path and permissions.")
+        else:
+            logger.info(f"Color corrected image saved: sample Id :{self.sampleID}")
+
 
     ### for image color correction--hardcoded for now
     def colorCorrection(self,adjustedColorTemp):
 
-        image_temp, err = self.__estimate_temperature_from_image()
+        try:
 
-        if image_temp is None:
-            logger.error("Can not get the original color temperature of the sample ID: {}",self.sampleID)
-            return
-        if self.sampleID.startswith('RCB1489190'):
-            image_temp=2648
-        if self.sampleID.startswith('RCB1751016'):
-            image_temp = 2561
-        if self.sampleID.startswith('RCB1763362'):
-            image_temp = 2500
-        if self.sampleID.startswith('RCB1763004'):
-            image_temp = 2444
-        if self.sampleID.startswith('RCB1763013'):
-            image_temp = 2537
-        if self.sampleID.startswith('RCB1754033'):
-            image_temp = 2513
-        if self.sampleID.startswith('RCB1766399'):
-            image_temp = 2513
-        if self.sampleID.startswith('RCB1767022'):
-            image_temp = 2513
+            image_temp, err = self.__estimate_temperature_from_image()
 
-        print(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
-        print(f"Target color temperature is {adjustedColorTemp}")
-        self.__color_correction(image_temp,adjustedColorTemp)
+            if image_temp is None:
+                logger.error("Can not get the original color temperature of the sample ID: {}",self.sampleID)
+                return
+            if self.sampleID.startswith('RCB1489190'):
+                image_temp=2648
+            if self.sampleID.startswith('RCB1751016'):
+                image_temp = 2561
+            if self.sampleID.startswith('RCB1763362'):
+                image_temp = 2500
+            if self.sampleID.startswith('RCB1763004'):
+                image_temp = 2444
+            if self.sampleID.startswith('RCB1763013'):
+                image_temp = 2537
+            if self.sampleID.startswith('RCB1754033'):
+                image_temp = 2513
+            if self.sampleID.startswith('RCB1766399'):
+                image_temp = 2513
+            if self.sampleID.startswith('RCB1767022'):
+                image_temp = 2513
+            logger.error(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
+            print(f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
 
+            self.__color_correction(image_temp,adjustedColorTemp)
+        except Exception as e:
+            logger.error(f"Error occurred in color correction  : {str(e)},sample_id: {self.sampleID}")
+            logger.error(f"Error for color correction :{self.sampleID} Traceback: {traceback.format_exc()}")

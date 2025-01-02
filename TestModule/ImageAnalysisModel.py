@@ -79,7 +79,6 @@ class ImageAnalysisModel:
         self.meshingTotalSeconds=0
         self.totalSeconds=0
         self.analysisTime = 0
-        self.numberofBins = 0
         self.p = None
         self.cb=None
         self.csv_filename = ""
@@ -272,7 +271,6 @@ class ImageAnalysisModel:
         """
         self.bins=bins[:]
         if self.p is not None:
-            self.numberofBins = len(bins)
             self.p.bins = bins[:]
 
     def loadModel(self, checkpoint_folder):
