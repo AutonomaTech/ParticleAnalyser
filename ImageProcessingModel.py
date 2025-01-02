@@ -175,6 +175,7 @@ class ImageProcessingModel:
         except Exception as e:
             logger.error(f"Error occurred in over lay  : {str(e)},sample_id: {self.sampleID}")
             logger.error(f"Error for over lay :{self.sampleID} Traceback: {traceback.format_exc()}")
+            raise
 
     def pureOverlayImage(self, baseImage, flag):
         """
@@ -313,6 +314,7 @@ class ImageProcessingModel:
         except Exception as e:
             logger.error(f"Error occurred in even lighting   : {str(e)},sample_id: {self.sampleID}")
             logger.error(f"Error for even lighting  :{self.sampleID} Traceback: {traceback.format_exc()}")
+            raise
     def even_out_lighting_validation(self,parameter_folder_path):
         """
         Even out the lighting in the image using CLAHE (Contrast Limited Adaptive Histogram Equalization)
@@ -412,6 +414,7 @@ class ImageProcessingModel:
             except Exception as e:
                 logger.error(f"Error in image cropping : {str(e)},sample_id: {self.sampleID}")
                 logger.error(f"Error for image crop :{self.sampleID} Traceback: {traceback.format_exc()}")
+                raise
 
 
     def __get_rgb_from_temperature(self,temp):
@@ -602,3 +605,4 @@ class ImageProcessingModel:
         except Exception as e:
             logger.error(f"Error occurred in color correction  : {str(e)},sample_id: {self.sampleID}")
             logger.error(f"Error for color correction :{self.sampleID} Traceback: {traceback.format_exc()}")
+            raise

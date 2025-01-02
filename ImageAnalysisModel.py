@@ -199,12 +199,12 @@ class ImageAnalysisModel:
 
             # Step 3:  Perform Image analysis
             if self.calibratedAreaBin:
-
+                logger.info(f"Calibrated bin used: area_bin{self.calibratedAreaBin},sample_id: {self.sampleID}")
                 self.setBins(self.calibratedAreaBin)
             else:
                 self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+            logger.info(f"Starting save area PSD data,sample_id: {self.sampleID}")
             self.savePsdData()
-
             if self.calculated_reminder_area == 1:
                 self.loadCalibrator()
                 self.calculate_unsegmented_area()
@@ -213,32 +213,42 @@ class ImageAnalysisModel:
                 distribution_fileName = os.path.join(self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
                 self.formatResults(byArea=True, distribution_filename=distribution_fileName)
             else:
-                self.saveDistributionPlot()
+                logger.info(f"Starting generating area size xml file,sample_id: {self.sampleID}")
                 self.formatResults(byArea=True)
+                logger.info(f"Starting saving area distribution plot,sample_id: {self.sampleID}")
+                self.saveDistributionPlot()
+
 
             if self.calibratedSizeBin:
-
+                logger.info(f"Calibrated bin used: size_bin{self.calibratedSizeBin},sample_id: {self.sampleID}")
                 self.setBins(self.calibratedSizeBin)
             else:
                 self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
+            logger.info(f"Starting save size PSD data,sample_id: {self.sampleID}")
             self.savePsdDataWithDiameter()
+            logger.info(f"Starting produce generating size xml file,sample_id: {self.sampleID}")
             self.formatResults(bySize=True)
+            logger.info(f"Starting saving size distribution plot,sample_id: {self.sampleID}")
             self.saveDistributionPlotForDiameter()
+
+
+            logger.info(f"Starting save area PSD data for general bins:{self.normal_bins},sample_id: {self.sampleID}")
             self.saveResultsForNormalBinsOnly(self.normal_bins)
+            logger.info(f"Starting saving area distribution plot for general bins:{self.normal_bins},sample_id: {self.sampleID}")
             self.formatResultsForNormalDistribution(True)
 
             if self.target_distribution:
                 if self.calculated_size == 1:
-                    print("Calculating bins by size...")
+                    print("Calibrating  bins by size...")
                     self.calibrate_bin_with_size(self.target_distribution)
                 if self.calculated_area == 1:
-                    print("Calculating bins by area...")
+                    print("Calibrating bins by area...")
                     self.calibrate_bin_with_area(self.target_distribution)
             else:
                 print("No target distribution provided. Skipping advanced bin calculations.")
         except Exception as e:
-            logger.error(f"Fatal error in run_analysis: {str(e)}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
+            logger.error(f"Traceback for {self.sampleID} : {traceback.format_exc()}")
             raise
 
 
@@ -309,26 +319,32 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        def calculateAnalysisTime(duration):
-            total_seconds = duration.total_seconds()
-            # Total seconds for the first calculation (Entire image)
-            # self.totalSeconds=total_seconds
-            minutes = int(total_seconds // 60)
-            seconds = total_seconds % 60
-            self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+        try:
+            def calculateAnalysisTime(duration):
+                total_seconds = duration.total_seconds()
+                # Total seconds for the first calculation (Entire image)
+                # self.totalSeconds=total_seconds
+                minutes = int(total_seconds // 60)
+                seconds = total_seconds % 60
+                self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
 
-        self.loadModel(checkpoint_folder)
-        if testing:
-            self.p.testing_generate_mask()
-        else:
-            self.p.generate_mask()
+            self.loadModel(checkpoint_folder)
+            if testing:
+                self.p.testing_generate_mask()
+            else:
+                self.p.generate_mask()
 
-        calculateAnalysisTime(self.p.getExecutionTime())
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.csv_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}.csv")
-        self.p.save_masks_to_csv(self.csv_filename)
-        self.showMasks()
+            calculateAnalysisTime(self.p.getExecutionTime())
+            self.p.setdiameter_threshold(self.diameter_threshold)
+            self.csv_filename = os.path.join(
+                self.folder_path, f"{self.sampleID}.csv")
+            self.p.save_masks_to_csv(self.csv_filename)
+            self.showMasks()
+        except Exception as e :
+            logger.error(f"Error occur during particle analyzing: {str(e)}")
+            logger.error(f"Traceback error of particle analyzing for {self.sampleID} : {traceback.format_exc()}")
+            raise
+
     def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
         """
         Analyzes particles in the image by generating masks using the model, and calculates analysis time.
@@ -643,12 +659,16 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves segment data to JSON file.
         """
-        self.p.setdiameter_threshold(self.diameter_threshold)
-        self.json_filename = os.path.join(
-            self.folder_path, f"{self.sampleID}_segments.txt")
-        self.p.save_segments(self.json_filename)
-        print(f"Saving segments in {self.json_filename}")
-
+        try:
+            self.p.setdiameter_threshold(self.diameter_threshold)
+            self.json_filename = os.path.join(
+                self.folder_path, f"{self.sampleID}_segments.txt")
+            self.p.save_segments(self.json_filename)
+            print(f"Saving segments in {self.json_filename}")
+        except Exception as e:
+            logger.error(f"Fatal error in segments saving : {str(e)}")
+            logger.error(f"Traceback error of segments saving for {self.sampleID} : {traceback.format_exc()}")
+            raise
 
     def loadSegments(self, checkpoint_folder, bins):
         """
