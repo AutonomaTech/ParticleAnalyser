@@ -2,6 +2,7 @@ from loguru import logger
 import sys
 
 # Configure logger
+LOG_FORMAT = "{name}: {time:YYYY-MM-DD HH:mm:ss} | {level} | {file}:{line} | {process} >>> {message}"
 logger.remove()  # Remove default logger
 logger.add(sys.stdout, level="DEBUG")  # Add a new logger to stdout with DEBUG level
 logger.add("file.log",
