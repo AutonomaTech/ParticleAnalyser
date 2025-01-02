@@ -1,12 +1,13 @@
 import xml.etree.ElementTree as ET
-import logger_config
+from logger_config import get_logger
 import os
 from xml.dom import minidom
 from datetime import datetime
 import configparser
-logger = logger_config.get_logger(__name__)
+import traceback
 
-##Every value will be in milimeter
+logger = get_logger("SizeAnalyze")
+#Every value will be in millimeter unit
 class sizeAnalysisModel:
     def __init__(self, sampleId,sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
                  analysis_time=None,diameter_threshold=None,circularity_threshold=None):
@@ -88,7 +89,9 @@ class sizeAnalysisModel:
             self.__getToArea()
 
         except Exception as e:
-                logger.error("Segments csv file can  not be parsed due to {} error",e)
+            logger.error(f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleId}")
+            logger.error(f"Traceback for {self.sampleId} : {traceback.format_exc()}")
+            raise
 
     def __countOverSValue(self):
         """
@@ -98,7 +101,7 @@ class sizeAnalysisModel:
         overSValue = 0
         overSValuePercentage = 0
         if len(self.particles) == 0:
-            logger.error("There are no particles for OverS (8) [%] value to be processed")
+            logger.error(f"There are no particles for OverS (8) [%] value to be processed,sample_id: {self.sampleId}")
             return
 
         # Filter particles by diameter and circularity thresholds---to be reviewd
@@ -125,7 +128,7 @@ class sizeAnalysisModel:
         # Format the percentage value
         overSValuePercentage = format(max(float(overSValuePercentage), 0), format_string)
 
-        logger.info("OverS (8) [%]: {}", overSValuePercentage)
+        logger.info(f"OverS (8) [%]: { overSValuePercentage},sample_id: {self.sampleId}",)
 
         self.over_s_value = overSValuePercentage
 
@@ -136,7 +139,7 @@ class sizeAnalysisModel:
         area < 0.15.
         """
         if len(self.particles) == 0:
-            logger.error("There are no particles for UnderS (0.15) [%] value to be processed")
+            logger.error(f"There are no particles for UnderS (0.15) [%] value to be processed,sample_id: {self.sampleId}")
             return
 
         underSValue = 0
@@ -167,7 +170,7 @@ class sizeAnalysisModel:
         # Format the percentage value
         underSValuePercentage = format(max(float(underSValuePercentage), 0),  format_string)
 
-        logger.info("UnderS (0.15) [%]: {}", underSValuePercentage)
+        logger.info(f"UnderS (0.15) [%]: {underSValuePercentage},sample_id: {self.sampleId}")
 
         self.under_s_value = underSValuePercentage
 
@@ -176,7 +179,7 @@ class sizeAnalysisModel:
         This function counts the mean size of all the particles,based on diameter first
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for mean size to be processed")
+            logger.error(f"There is no particles for mean size to be processed,sample_id: {self.sampleId}")
             return
 
         totalSize = 0
@@ -188,7 +191,7 @@ class sizeAnalysisModel:
 
         meanSize = format(max(float( totalSize / len(self.particles)/1000), 0), '.8f' )
 
-        logger.info("Mean Size : {}", meanSize)
+        logger.info(f"Mean Size : {meanSize},sample_id: {self.sampleId}", )
 
         self.mean_size = meanSize
 
@@ -197,20 +200,20 @@ class sizeAnalysisModel:
                 This function counts minimumDiameter of the particles
                 """
         if len(self.particles) == 0:
-            logger.error("There is no particles for minimumArea to be processed")
+            logger.error(f"There is no particles for minimumArea to be processed,sample_id: {self.sampleId}")
             return
 
         diameters = [particle['diameter'] for particle in self.particles]
         sorted_diameters = sorted(diameters)
         self.minimum_diameter = format(max(float(sorted_diameters[0] / 1000), 0),'.8f' )
 
-        logger.info("Minimum Diameter : {}", self.minimum_diameter)
+        logger.info(f"Minimum Diameter : {self.minimum_diameter},sample_id: {self.sampleId}", )
     def __countD10(self):
         """
         This function counts D10 indicates that 10% of all particles have a diameter that is less than or equal to this value
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for D0 to be processed")
+            logger.error(f"There is no particles for D10 to be processed,sample_id: {self.sampleId}")
             return
 
         count_10_per = int(len(self.particles) * 0.1)
@@ -219,14 +222,14 @@ class sizeAnalysisModel:
         sorted_diameters = sorted(diameters)
         self.d_10 =format(max(float(sorted_diameters[count_10_per]/1000), 0), '.8f' )
 
-        logger.info("D10mm : {}", self.d_10)
+        logger.info(f"D10mm : {self.d_10},sample_id: {self.sampleId}" )
 
     def __countD50(self):
         """
         This function counts D10 indicates that 10% of all particles have a diameter that is less than or equal to this value
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for D50 to be processed")
+            logger.error(f"There is no particles for D50 to be processed,sample_id: {self.sampleId}")
             return
 
         count_50_per = int(len(self.particles) * 0.5)
@@ -236,14 +239,14 @@ class sizeAnalysisModel:
 
         self.d_50 =format(max(float(sorted_diameters[count_50_per]/1000), 0), '.8f' )
 
-        logger.info("D50mm : {}", self.d_50)
+        logger.info(f"D50mm : {self.d_50},sample_id: {self.sampleId}" )
 
     def __countD90(self):
         """
         This function counts D10 indicates that 10% of all particles have a diameter that is less than or equal to this value
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for D90 to be processed")
+            logger.error(f"There is no particles for D90 to be processed,sample_id: {self.sampleId}")
             return
 
         count_90_per = int(len(self.particles) * 0.9)
@@ -252,23 +255,21 @@ class sizeAnalysisModel:
         sorted_diameters = sorted(diameters)
         self.d_90 =format(max(float(sorted_diameters[count_90_per]/1000), 0), '.8f' )
 
-        logger.info("D90mm : {}", self.d_90)
+        logger.info(f"D90mm : {self.d_90},sample_id: {self.sampleId}" )
 
     def __countMinimumArea(self):
         """
         This function counts minimumArea of the particles
         """
         if len(self.particles) == 0:
-            logger.error("There is no particles for minimumArea to be processed")
+            logger.error(f"There is no particles for minimumArea to be processed,sample_id: {self.sampleId}")
             return
-
-
 
         areas = [particle['area'] for particle in self.particles]
         sorted_areas = sorted(areas)
         self.minimum_area = format(max(float( sorted_areas[0]/1000000), 0), '.8f')
 
-        logger.info("Minimum Area : {}", self.minimum_area)
+        logger.info(f"Minimum Area : {self.minimum_area},sample_id: {self.sampleId}")
 
 
     def __filterDistribution(self):
@@ -327,7 +328,10 @@ class sizeAnalysisModel:
 
 
         except Exception as e:
-            logger.error("Distribution file can not be parsed:{} ",e)
+            logger.error(f"Distribution file can not be parsed: {str(e)} sample_id: {self.sampleId} ")
+
+            logger.error(f"Traceback error of filer distribution for {self.sampleId} : {traceback.format_exc()}")
+            raise
 
     def __generate_iso_datetime(self):
 
