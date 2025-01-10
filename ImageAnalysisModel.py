@@ -981,7 +981,7 @@ class ImageAnalysisModel:
         - sampleId: Sample ID.
         Output: None
         """
-
+        self.totArea = self.p.get_totalArea()
         self.cb = cb.CalibrationModel(
             totArea=self.totArea,csv_filename=self.csv_filename,folder_path=self.folder_path,sampleId=self.sampleID,bins=self.bins)
     def calibrate_bin_with_size(self, target_distribution=None):

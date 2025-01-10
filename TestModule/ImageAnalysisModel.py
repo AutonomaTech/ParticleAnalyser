@@ -105,7 +105,7 @@ class ImageAnalysisModel:
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
         self.load_config()
-
+        self.target_distribution=[]
 
     def load_config(self):
         # Load configuration file
@@ -966,7 +966,7 @@ class ImageAnalysisModel:
         - sampleId: Sample ID.
         Output: None
         """
-
+        self.totArea = self.p.get_totalArea()
         self.cb = cb.CalibrationModel(
             totArea=self.totArea,csv_filename=self.csv_filename,folder_path=self.folder_path,sampleId=self.sampleID,bins=self.bins)
     def calibrate_bin_with_size(self, target_distribution=None):
@@ -975,6 +975,8 @@ class ImageAnalysisModel:
     def calibrate_bin_with_area(self, target_distribution=None):
         self.cb.calibrate_bin_with_area(target_distribution)
 
+    def calibrate_bin_with_area_updated(self, target_distribution=None):
+        self.cb.calibrate_bin_with_area_updated(target_distribution)
     def calculate_unsegmented_area(self):
         self.cb.calculate_unsegmented_area()
 
