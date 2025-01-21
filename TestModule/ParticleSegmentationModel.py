@@ -289,6 +289,8 @@ class ParticleSegmentationModel:
         # print(self.psd_data)
 
         return self.psd_data
+
+    ## With the scale factor
     def get_psd_data_1(self):
         if self.segments is None:
             self.segments = dp.get_segments(

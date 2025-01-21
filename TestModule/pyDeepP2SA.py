@@ -1125,7 +1125,7 @@ def custom_psd_data2(diameter_threshold, circularity_threshold, bins, segments, 
     else:
         return bin_edges, counts, cumulative_area
 
-
+## With the scale factor
 def custom_psd_data2_2(diameter_threshold, circularity_threshold, bins, segments,
                      reverse_cumulative=True):
     # sort the bins first
