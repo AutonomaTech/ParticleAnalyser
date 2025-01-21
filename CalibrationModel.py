@@ -23,7 +23,7 @@ class CalibrationModel:
         self.calibrated_bins_with_size = []
         self.particles=[]
         self.bins=bins
-        self.ini_file_path = os.path.join(self.folder_path, "calibration.ini")
+        self.ini_file_path = os.path.join(self.folder_path, "calibration_bin.ini")
         self.config = configparser.ConfigParser()
         self.load_config()
 

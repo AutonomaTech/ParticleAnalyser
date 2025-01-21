@@ -289,7 +289,18 @@ class ParticleSegmentationModel:
         # print(self.psd_data)
 
         return self.psd_data
+    def get_psd_data_1(self):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+        extended_bins = self.bins + [float('inf')]
+        psd_data = dp.custom_psd_data2_2(
+            self.diameter_threshold, self.circularity_threshold, extended_bins, self.segments, reverse_cumulative=True)
+        self.psd_data = {'differential': list(zip(tuple([0]+self.bins), tuple(
+            psd_data[1]))), 'cumulative': list(zip(tuple([0]+self.bins), tuple(psd_data[2][::-1])))}
+        # print(self.psd_data)
 
+        return self.psd_data
     def get_psd_data_with_diameter(self):
         if self.segments is None:
             self.segments = dp.get_segments(

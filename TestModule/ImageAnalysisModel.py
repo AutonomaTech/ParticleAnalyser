@@ -62,7 +62,7 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        self.calibration_file_path ="calibration.ini"
+        self.calibration_file_path = "calibration_bin.ini"
         self.calibratedSizeBin = None
         self.calibratedAreaBin = None
         self.sampleID = sampleID if sampleID else os.path.basename(
@@ -365,7 +365,8 @@ class ImageAnalysisModel:
         Input: None
         Output: Saves PSD data to a TXT file.
         """
-        self.p.get_psd_data()
+        #self.p.get_psd_data()
+        self.p.get_psd_data_1()
         self.distributions_filename = os.path.join(
             self.folder_path, f"{self.sampleID}_byArea_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.distributions_filename)
@@ -978,7 +979,7 @@ class ImageAnalysisModel:
     def calibrate_bin_with_area_updated(self, target_distribution=None):
         self.cb.calibrate_bin_with_area_updated(target_distribution)
     def calculate_unsegmented_area(self):
-        self.cb.calculate_unsegmented_area()
+       return self.cb.calculate_unsegmented_area()
 
     def calibrated_bins_with_unSegementedArea(self):
         self.cb.calibrated_bins_with_unSegementedArea()

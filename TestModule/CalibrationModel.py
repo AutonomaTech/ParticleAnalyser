@@ -23,7 +23,7 @@ class CalibrationModel:
         self.calibrated_bins_with_size = []
         self.particles=[]
         self.bins=bins
-        self.ini_file_path = os.path.join(self.folder_path, "calibration.ini")
+        self.ini_file_path = "calibration_bin.ini"
         self.config = configparser.ConfigParser()
         self.load_config()
 
@@ -128,9 +128,61 @@ class CalibrationModel:
         for particle in particles_sorted:
             cumulative_sum += particle['area']
             if cumulative_sum >= target_area:
+
                 return round(particle['diameter'])
 
         return None
+
+    def find_cumulative_area_diameter_new(self, particles, identified_area, unsegmented_area, target_percentage):
+        """
+        考虑 unsegmented_area 占比较大的情况下的新算法
+        """
+        print("\n" + "=" * 50)
+        print("开始新的bin计算")
+
+        total_area = identified_area + unsegmented_area
+        print(f"\n基础面积信息:")
+        print(f"Identified area: {identified_area}")
+        print(f"Unsegmented area: {unsegmented_area}")
+        print(f"Total area: {total_area}")
+
+        # 计算已识别区域占总面积的比例
+        identified_ratio = identified_area / total_area
+        print(f"\n面积比例:")
+        print(f"Identified area ratio: {identified_ratio * 100:.2f}%")
+        print(f"Unsegmented area ratio: {((unsegmented_area / total_area) * 100):.2f}%")
+
+        # 调整目标百分比
+        adjusted_target_percentage = (target_percentage * identified_area) / total_area
+        print(f"\n目标百分比调整:")
+        print(f"Original target percentage: {target_percentage:.2f}%")
+        print(f"Adjusted target percentage: {adjusted_target_percentage:.2f}%")
+
+        particles_sorted = sorted(particles, key=lambda x: x['diameter'], reverse=True)
+        print(f"\n粒子直径范围:")
+        print(f"Largest diameter: {particles_sorted[0]['diameter']:.2f}")
+        print(f"Smallest diameter: {particles_sorted[-1]['diameter']:.2f}")
+
+        cumulative_sum = 0.0
+        target_area = identified_area * (adjusted_target_percentage / 100)
+        print(f"\n目标面积:")
+        print(f"Target area to reach: {target_area:.2f}")
+
+        # 跟踪计算过程
+        for particle in particles_sorted:
+            cumulative_sum += particle['area']
+            current_percentage = (cumulative_sum / identified_area) * 100
+            print(f"\n当前累积:")
+            print(f"Current diameter: {particle['diameter']:.2f}")
+            print(f"Current cumulative area: {cumulative_sum:.2f}")
+            print(f"Current percentage of identified area: {current_percentage:.2f}%")
+
+            if cumulative_sum >= target_area:
+                print(f"\n找到目标直径: {particle['diameter']:.2f}")
+                return round(particle['diameter'])
+
+        print("\n未找到满足条件的直径，使用最小直径作为返回值")
+        return round(particles_sorted[-1]['diameter']) if particles_sorted else None
 
     def calculate_unsegmented_area(self):
         config = configparser.ConfigParser()
@@ -146,14 +198,65 @@ class CalibrationModel:
             if self.totArea < self.container_area_um2:
                 self.unSegmentedArea = self.container_area_um2 - self.totArea
 
-        else:
-            print("Total area (self.totArea) is not set.")
+
+        print(f"Total area is {self.totArea}.")
         print(f"Container Width (um): {container_width_um}")
         print(f"Container Area (um²): {self.container_area_um2}")
         print(f"Unsegmented Area (um²): {self.unSegmentedArea}")
         return self.unSegmentedArea
 
 
+    def calibrate_bin_with_area_updated(self, target_distribution=None):
+
+        """
+          Calibrate bins based on area distribution, including unsegmented areas.
+          """
+
+        if len(self.particles) == 0:
+
+            if not os.path.exists(self.csv_filename):
+                return
+
+            with open(self.csv_filename, 'r') as file:
+                next(file)
+                for line in file:
+                    if line.strip():  # remove white space
+                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        item = {
+                            "area": area,
+                            "perimeter": perimeter,
+                            "diameter": diameter,
+                            "circularity": circularity
+                        }
+                        self.particles.append(item)
+        if not self.particles:
+            return
+
+        # Calculate total area including unsegmented area
+        identified_area = sum(particle['area'] for particle in self.particles)
+        total_area = identified_area + self.unSegmentedArea
+
+        cumulative_percentage = 0.0
+        self.calibrated_bins_with_area = []
+
+        for percentage in target_distribution[:-1]:  # Exclude the last percentage
+            cumulative_percentage += percentage
+            diameter = self.find_cumulative_area_diameter_new(
+                self.particles,
+                identified_area,
+                self.unSegmentedArea,
+                cumulative_percentage
+            )
+            if diameter is not None:
+                self.calibrated_bins_with_area.append(diameter)
+
+        # Save configuration
+        print(f"calibrated_bins_with_area:{self.calibrated_bins_with_area}")
+        self.config[str(self.new_bin_number)] = {}
+        self.config[str(self.new_bin_number)]['byArea'] = f"[{', '.join(map(str, self.calibrated_bins_with_area))}]"
+        self.save_config()
+
+        return self.calibrated_bins_with_area
 
     def calibrated_bins_with_unSegementedArea(self):
 

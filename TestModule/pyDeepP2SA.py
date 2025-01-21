@@ -1017,6 +1017,167 @@ def custom_psd_data1(diameter_threshold, circularity_threshold, bins, segments, 
         return bins, count_percent, cumulative_percent
     else:
         return bins, count_percent, cumulative_percent
+
+
+def calculate_ideal_unsegmented_distribution(lab_distribution, current_distribution, unsegmented_area, total_area):
+    """
+    基于lab数据计算未识别区域应该如何分配
+
+    Args:
+        lab_distribution: 实验室数据 [12.17, 50.09, 24.24, 3.83, 9.67]
+        current_distribution: 当前已识别粒子的分布百分比
+        unsegmented_area: 未识别区域面积
+        total_area: 总面积
+    """
+    print("\n计算理想分布:")
+    print(f"Lab distribution: {lab_distribution}")
+    print(f"Current distribution: {current_distribution}")
+
+    # 计算每个bin中未识别区域应该分配的面积
+    unsegmented_distribution = []
+    for lab_percent, current_percent in zip(lab_distribution, current_distribution):
+        # 目标百分比与当前百分比的差值
+        difference = lab_percent - current_percent
+        # 转换为面积
+        area_needed = (difference / 100) * total_area
+        unsegmented_distribution.append(area_needed)
+
+    print(f"Calculated unsegmented distribution: {unsegmented_distribution}")
+
+    return unsegmented_distribution
+
+
+def custom_psd_data2(diameter_threshold, circularity_threshold, bins, segments, unsegmented_area, lab_distribution,
+                     reverse_cumulative=True):
+    """
+    根据lab数据分配unsegmented area的新版PSD计算
+    """
+    # 处理bins
+    plot_bins = [0] + bins[:]
+
+    # 转换segments到DataFrame并进行过滤
+    stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
+
+    # 应用阈值过滤
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) &
+                             (stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        filtered_stat = stat
+
+    # 计算identified area的总面积
+    identified_area = filtered_stat['area'].sum()
+    total_area = identified_area + unsegmented_area
+
+    print("\nArea Information:")
+    print(f"Identified area: {identified_area}")
+    print(f"Unsegmented area: {unsegmented_area}")
+    print(f"Total area: {total_area}")
+
+    # 计算已识别粒子的直径分布直方图
+    counts, bin_edges = np.histogram(
+        filtered_stat['diameter'],
+        bins=plot_bins,
+        weights=filtered_stat['area']
+    )
+
+    # 转换为百分比
+    counts = counts / total_area * 100
+
+    # 获取当前分布
+    current_distribution = counts.tolist()
+
+    print("\nInitial Distribution:")
+    print(f"Current distribution: {current_distribution}")
+    print(f"Lab distribution: {lab_distribution}")
+
+    # 计算理想的未识别区域分布
+    unsegmented_distribution = calculate_ideal_unsegmented_distribution(
+        lab_distribution,
+        current_distribution,
+        unsegmented_area,
+        total_area
+    )
+
+    # 根据计算出的分布调整每个bin的counts
+    for i, additional_area in enumerate(unsegmented_distribution):
+        counts[i] += (additional_area / total_area * 100)
+
+    print("\nFinal Distribution:")
+    print(f"Adjusted distribution: {counts.tolist()}")
+
+    # 计算累积分布 - 修改后的部分
+    cumulative_area = []
+    for i, count in enumerate(counts):
+        if i == 0:
+            cumulative_area.append(100 - count)
+        else:
+            cumulative_area.append(cumulative_area[i - 1] - count)
+
+    counts = counts[::-1]
+    if reverse_cumulative:
+        return bin_edges, counts, cumulative_area
+    else:
+        return bin_edges, counts, cumulative_area
+
+
+def custom_psd_data2_2(diameter_threshold, circularity_threshold, bins, segments,
+                     reverse_cumulative=True):
+    # sort the bins first
+    # because we are calculating bins we need to add a 0 at the front
+    plot_bins = [0] + bins[:]
+
+    stat = pd.DataFrame(segments)
+    stat = adjustSegments(stat)
+
+    # Apply diameter and circularity thresholds
+    if diameter_threshold > 0 and circularity_threshold > 0:
+        filtered_stat = stat[(stat['diameter'] < diameter_threshold) & (
+                stat['circularity'] < circularity_threshold)]
+    elif diameter_threshold > 0:
+        filtered_stat = stat[stat['diameter'] < diameter_threshold]
+    elif circularity_threshold > 0:
+        filtered_stat = stat[stat['circularity'] < circularity_threshold]
+    else:
+        # If both thresholds are 0, no filtering is applied
+        filtered_stat = stat
+
+    # Calculate the total area
+    total_area = filtered_stat['area'].sum()
+
+    # Calculate the histogram of areas
+    counts, bin_edges = np.histogram(
+        filtered_stat['diameter'], bins=plot_bins, weights=filtered_stat['area'])
+
+    counts = counts / total_area * 100  # Convert counts to percentages of total area
+    print(f"counts:{counts}")
+    scale_factor = [1.79, 2.32, 2.08, 2.75, 0.17]
+    counts = counts[::-1]
+    for i in range(len(counts)):
+        counts[i] = counts[i] * scale_factor[i]
+    print(f"counts:{counts}")
+    # Populate cumulative passing
+    cumulative_area = []
+
+    counts_reversed = counts[::-1]
+    for i, count in enumerate(counts_reversed):
+        if i == 0:
+            cumulative_area.append(100 - count)
+        else:
+            cumulative_area.append(cumulative_area[i - 1] - count)
+    counts = counts[::-1]
+    if reverse_cumulative == True:
+        return bin_edges, counts, cumulative_area
+    else:
+        return bin_edges, counts, cumulative_area
+
+
+
 def plot_psd_bins3(diameter_threshold, circularity_threshold, bins, segments):
     stat = pd.DataFrame(segments)
     stat = adjustSegments(stat)
