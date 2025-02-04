@@ -25,7 +25,7 @@ class ImageProcessingModel:
         """
         self.sampleID = sampleID
         self.image_folder_path = image_folder_path
-        self.file_extensions = ['.png', '.bmp']
+        self.file_extensions = ['.png', '.bmp','.jpg']
         self.imagePath = None
         self.image_extension = None
         self.raw_imagePath = None  # Attribute to store the path of the raw image copy
