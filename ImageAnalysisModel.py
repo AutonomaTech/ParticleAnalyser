@@ -182,9 +182,9 @@ class ImageAnalysisModel:
             self.download_model()
             # Step 2: Perform image processing
             logger.info(f"Starting image crop,sample_id: {self.sampleID}")
-            self.crop_image()
+           # self.crop_image()
             logger.info(f"Starting color correction,sample_id: {self.sampleID}")
-            self.color_correction()
+          #  self.color_correction()
             logger.info(f"Starting even light,sample_id: {self.sampleID}")
             self.evenLighting()
             logger.info(f"Starting over lay,sample_id: {self.sampleID}")
