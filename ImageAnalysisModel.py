@@ -51,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None,containerWidth=None, sampleID=None,config_path=None):
+    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -65,30 +65,29 @@ class ImageAnalysisModel:
         self.calibration_file_path = "calibration.ini"
         self.calibratedSizeBin = None
         self.calibratedAreaBin = None
-        self.sampleID = sampleID if sampleID else os.path.basename(
-            image_folder_path)
+        self.sampleID = sampleID
         self.imageProcessor = ip.ImageProcessingModel(
             image_folder_path, self.sampleID)
         self.imagePath = self.imageProcessor.getImagePath()
-        self.meshingImageFolderPath=None
+        self.meshingImageFolderPath = None
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
-            imageWidth=self.imageProcessor.getWidth(),scalingNumber=scalingNumber, containerWidth=containerWidth)
+            imageWidth=self.imageProcessor.getWidth(), scalingNumber=scalingNumber, containerWidth=containerWidth)
         self.diameter_threshold = 100000  # 10cm
         self.folder_path = image_folder_path
-        self.meshingTotalSeconds=0
-        self.totalSeconds=0
+        self.meshingTotalSeconds = 0
+        self.totalSeconds = 0
         self.analysisTime = 0
         self.p = None
-        self.cb=None
+        self.cb = None
         self.csv_filename = ""
-        self.minimumArea=0
-        self.totArea=0
-        self.meshingSegmentAreas={}
-        self.miniParticles=[]
-        self.particles=[]
-        self.csv_filename=""
-        self.bins=None
+        self.minimumArea = 0
+        self.totArea = 0
+        self.meshingSegmentAreas = {}
+        self.miniParticles = []
+        self.particles = []
+        self.csv_filename = ""
+        self.bins = None
         self.processImageOnly = False
         self.temperature = 3000
         self.crop_top = 0
@@ -100,7 +99,8 @@ class ImageAnalysisModel:
         self.config_path = config_path
         self.config = configparser.ConfigParser()
         self.checkpoint_folder = 'checkpoints'
-        self.normal_bins = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+        self.normal_bins = [1000, 2000, 3000, 4000,
+                            5000, 6000, 7000, 8000, 9000, 10000]
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
         self.load_config()
@@ -108,13 +108,20 @@ class ImageAnalysisModel:
     def load_config(self):
         # Load configuration file
         self.config.read(self.config_path)
-        self.calculated_reminder_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
-        self.calculated_size = int(self.config.get('switch', 'CalculatedAdjustedBins_Size', fallback='0'))
-        self.calculated_area = int(self.config.get('switch', 'CalculatedAdjustedBins_Area', fallback='0'))
-        self.target_distribution = eval(self.config.get('PSD', 'lab', fallback='[]'))
-        self.UseCalibratedBin = int(self.config.get('switch', 'UseCalibratedBin', fallback='0'))
-        self.processImageOnly = self.str_to_bool(self.config.get('Image', 'processImageOnly', fallback='false'))
-        self.temperature = int(self.config.get('Color', 'temperature', fallback='0'))
+        self.calculated_reminder_area = int(self.config.get(
+            'switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+        self.calculated_size = int(self.config.get(
+            'switch', 'CalculatedAdjustedBins_Size', fallback='0'))
+        self.calculated_area = int(self.config.get(
+            'switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+        self.target_distribution = eval(
+            self.config.get('PSD', 'lab', fallback='[]'))
+        self.UseCalibratedBin = int(self.config.get(
+            'switch', 'UseCalibratedBin', fallback='0'))
+        self.processImageOnly = self.str_to_bool(
+            self.config.get('Image', 'processImageOnly', fallback='false'))
+        self.temperature = int(self.config.get(
+            'Color', 'temperature', fallback='0'))
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
         if self.UseCalibratedBin != 0:
@@ -124,19 +131,26 @@ class ImageAnalysisModel:
         self.crop_left = int(self.config.get('Crop', 'Left', fallback='0'))
         self.crop_height = int(self.config.get('Crop', 'Height', fallback='0'))
         self.crop_width = int(self.config.get('Crop', 'Width', fallback='0'))
-        self.mini_width = int(self.config.get('Crop', 'minimumWidth', fallback='100'))
-        self.mini_height = int(self.config.get('Crop', 'minimumHeight', fallback='100'))
+        self.mini_width = int(self.config.get(
+            'Crop', 'minimumWidth', fallback='100'))
+        self.mini_height = int(self.config.get(
+            'Crop', 'minimumHeight', fallback='100'))
+
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
         bin_key = str(self.UseCalibratedBin)
         # Read byArea and bySize from the calibration file
-        self.calibratedAreaBin = eval(calibration_config.get(bin_key, 'byArea', fallback='[]'))
-        self.calibratedSizeBin = eval(calibration_config.get(bin_key, 'bySize', fallback='[]'))
+        self.calibratedAreaBin = eval(
+            calibration_config.get(bin_key, 'byArea', fallback='[]'))
+        self.calibratedSizeBin = eval(
+            calibration_config.get(bin_key, 'bySize', fallback='[]'))
+
     def str_to_bool(self, s):
         if s.lower() in ['true', '1', 'yes']:
             return True
         return False
+
     def parse_bins(self, industry_bins_string):
         # Remove non-numeric characters and split by commas
         cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
@@ -150,29 +164,29 @@ class ImageAnalysisModel:
     def download_model(self):
 
         try:
-                # Check if model exists; if not, download it
-                if not os.path.exists(self.checkpoint_folder):
-                    os.makedirs(self.checkpoint_folder, exist_ok=True)
-                    print(f"Checkpoints folder created: {self.checkpoint_folder}")
+            # Check if model exists; if not, download it
+            if not os.path.exists(self.checkpoint_folder):
+                os.makedirs(self.checkpoint_folder, exist_ok=True)
+                print(f"Checkpoints folder created: {self.checkpoint_folder}")
 
-                file_path = os.path.join(self.checkpoint_folder, self.model_name)
-                if not os.path.exists(file_path):
+            file_path = os.path.join(self.checkpoint_folder, self.model_name)
+            if not os.path.exists(file_path):
 
-                    response = requests.get(self.model_url, stream=True)
-                    response.raise_for_status()
-                    with open(file_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
-                else:
-                    logger.info(f"Model already exists, skipping download,sample_id: {self.sampleID}")
-
+                response = requests.get(self.model_url, stream=True)
+                response.raise_for_status()
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+            else:
+                logger.info(
+                    f"Model already exists, skipping download,sample_id: {self.sampleID}")
 
         except Exception as e:
-                logger.error(f"Error occurred during model downloading: {str(e)},sample_id: {self.sampleID}")
-                print(f"Error occurred during model downloading: {e}")
-                raise
-
+            logger.error(
+                f"Error occurred during model downloading: {str(e)},sample_id: {self.sampleID}")
+            print(f"Error occurred during model downloading: {e}")
+            raise
 
     def run_analysis(self):
 
@@ -183,58 +197,73 @@ class ImageAnalysisModel:
             # Step 2: Perform image processing
             logger.info(f"Starting image crop,sample_id: {self.sampleID}")
            # self.crop_image()
-            logger.info(f"Starting color correction,sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting color correction,sample_id: {self.sampleID}")
           #  self.color_correction()
             logger.info(f"Starting even light,sample_id: {self.sampleID}")
             self.evenLighting()
             logger.info(f"Starting over lay,sample_id: {self.sampleID}")
             self.overlayImage()
             if self.processImageOnly:
-                logger.info(f"For this run process image only without analysis,sample_id: {self.sampleID}")
+                logger.info(
+                    f"For this run process image only without analysis,sample_id: {self.sampleID}")
                 return
-            logger.info(f"Starting particle analyzing,sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting particle analyzing,sample_id: {self.sampleID}")
             self.analyseParticles(self.checkpoint_folder, False)
             logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
             self.saveSegments()
 
             # Step 3:  Perform Image analysis
             if self.calibratedAreaBin:
-                logger.info(f"Calibrated bin used: area_bin{self.calibratedAreaBin},sample_id: {self.sampleID}")
+                logger.info(
+                    f"Calibrated bin used: area_bin{self.calibratedAreaBin},sample_id: {self.sampleID}")
                 self.setBins(self.calibratedAreaBin)
             else:
-                self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
-            logger.info(f"Starting save area PSD data,sample_id: {self.sampleID}")
+                self.setBins(self.industry_bins if self.industry_bins else [
+                             38, 106, 1000, 8000])
+            logger.info(
+                f"Starting save area PSD data,sample_id: {self.sampleID}")
             self.savePsdData()
             if self.calculated_reminder_area == 1:
                 self.loadCalibrator()
                 self.calculate_unsegmented_area()
                 self.calibrated_bins_with_unSegementedArea()
                 self.refactor_psd()
-                distribution_fileName = os.path.join(self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
-                self.formatResults(byArea=True, distribution_filename=distribution_fileName)
+                distribution_fileName = os.path.join(
+                    self.folder_path, f'{self.sampleID}_refactored_distribution.txt')
+                self.formatResults(
+                    byArea=True, distribution_filename=distribution_fileName)
             else:
-                logger.info(f"Starting generating area size xml file,sample_id: {self.sampleID}")
+                logger.info(
+                    f"Starting generating area size xml file,sample_id: {self.sampleID}")
                 self.formatResults(byArea=True)
-                logger.info(f"Starting saving area distribution plot,sample_id: {self.sampleID}")
+                logger.info(
+                    f"Starting saving area distribution plot,sample_id: {self.sampleID}")
                 self.saveDistributionPlot()
 
-
             if self.calibratedSizeBin:
-                logger.info(f"Calibrated bin used: size_bin{self.calibratedSizeBin},sample_id: {self.sampleID}")
+                logger.info(
+                    f"Calibrated bin used: size_bin{self.calibratedSizeBin},sample_id: {self.sampleID}")
                 self.setBins(self.calibratedSizeBin)
             else:
-                self.setBins(self.industry_bins if self.industry_bins else [38, 106, 1000, 8000])
-            logger.info(f"Starting save size PSD data,sample_id: {self.sampleID}")
+                self.setBins(self.industry_bins if self.industry_bins else [
+                             38, 106, 1000, 8000])
+            logger.info(
+                f"Starting save size PSD data,sample_id: {self.sampleID}")
             self.savePsdDataWithDiameter()
-            logger.info(f"Starting produce generating size xml file,sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting produce generating size xml file,sample_id: {self.sampleID}")
             self.formatResults(bySize=True)
-            logger.info(f"Starting saving size distribution plot,sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting saving size distribution plot,sample_id: {self.sampleID}")
             self.saveDistributionPlotForDiameter()
 
-
-            logger.info(f"Starting save area PSD data for general bins:{self.normal_bins},sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting save area PSD data for general bins:{self.normal_bins},sample_id: {self.sampleID}")
             self.saveResultsForNormalBinsOnly(self.normal_bins)
-            logger.info(f"Starting saving area distribution plot for general bins:{self.normal_bins},sample_id: {self.sampleID}")
+            logger.info(
+                f"Starting saving area distribution plot for general bins:{self.normal_bins},sample_id: {self.sampleID}")
             self.formatResultsForNormalDistribution(True)
 
             if self.target_distribution:
@@ -245,12 +274,14 @@ class ImageAnalysisModel:
                     print("Calibrating bins by area...")
                     self.calibrate_bin_with_area(self.target_distribution)
             else:
-                print("No target distribution provided. Skipping advanced bin calculations.")
+                print(
+                    "No target distribution provided. Skipping advanced bin calculations.")
         except Exception as e:
-            logger.error(f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
-            logger.error(f"Traceback error of run analysis process for {self.sampleID} : {traceback.format_exc()}")
+            logger.error(
+                f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
+            logger.error(
+                f"Traceback error of run analysis process for {self.sampleID} : {traceback.format_exc()}")
             raise
-
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -285,7 +316,7 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        self.bins=bins[:]
+        self.bins = bins[:]
         if self.p is not None:
             self.p.bins = bins[:]
 
@@ -340,12 +371,13 @@ class ImageAnalysisModel:
                 self.folder_path, f"{self.sampleID}.csv")
             self.p.save_masks_to_csv(self.csv_filename)
             self.showMasks()
-        except Exception as e :
+        except Exception as e:
             logger.error(f"Error occur during particle analyzing: {str(e)}")
-            logger.error(f"Traceback error of particle analyzing for {self.sampleID} : {traceback.format_exc()}")
+            logger.error(
+                f"Traceback error of particle analyzing for {self.sampleID} : {traceback.format_exc()}")
             raise
 
-    def analyseValidationParticles(self, checkpoint_folder,parameter_folder_name, testing_parameters=None):
+    def analyseValidationParticles(self, checkpoint_folder, parameter_folder_name, testing_parameters=None):
         """
         Analyzes particles in the image by generating masks using the model, and calculates analysis time.
 
@@ -367,13 +399,13 @@ class ImageAnalysisModel:
 
         self.p.testing_generate_mask_1(**testing_parameters)
 
-
         calculateAnalysisTime(self.p.getExecutionTime())
         self.p.setdiameter_threshold(self.diameter_threshold)
         # Get Image folder Path
         original_folder_path = self.imageProcessor.getImageFolder()
         # Create subfolder for the current parameter set
-        self.folder_path = os.path.join(original_folder_path, parameter_folder_name)
+        self.folder_path = os.path.join(
+            original_folder_path, parameter_folder_name)
         os.makedirs(self.folder_path, exist_ok=True)
         self.csv_filename = os.path.join(
             self.folder_path, f"{self.sampleID}.csv")
@@ -392,6 +424,7 @@ class ImageAnalysisModel:
             self.folder_path, f"{self.sampleID}_byArea_distribution.txt")
         self.p.save_psd_as_txt(self.sampleID, self.distributions_filename)
         print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+
     def savePsdDataWithDiameter(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -417,6 +450,7 @@ class ImageAnalysisModel:
         #     self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
         self.p.save_psd_as_txt_normal(self.sampleID, self.folder_path)
         # print(f"--> PSD data saved as TXT file: {self.distributions_filename}")
+
     def saveDistributionPlot(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -425,7 +459,7 @@ class ImageAnalysisModel:
         Output: Saves PSD data to a TXT file.
         """
 
-        self.p.plotBins(self.folder_path,self.sampleID)
+        self.p.plotBins(self.folder_path, self.sampleID)
 
     def saveDistributionPlotForDiameter(self):
         """
@@ -436,6 +470,7 @@ class ImageAnalysisModel:
         """
 
         self.p.plotBinsForDiameter(self.folder_path, self.sampleID)
+
     def saveDistributionPlotForNormalBins(self):
         """
         Saves particle size distribution (PSD) data to a text file.
@@ -444,8 +479,6 @@ class ImageAnalysisModel:
         Output: Saves PSD data to a TXT file.
         """
         self.p.plotNormalBins(self.folder_path, self.sampleID)
-
-
 
     def saveResults(self, bins):
         """
@@ -484,16 +517,16 @@ class ImageAnalysisModel:
         if self.imageProcessor is None:
             raise ValueError("Image is not initialised")
 
-
-
         # Generate new csv
-        self.csv_filename = os.path.join(self.folder_path, f"{self.sampleID}.csv")
+        self.csv_filename = os.path.join(
+            self.folder_path, f"{self.sampleID}.csv")
         self.p.setdiameter_threshold(self.diameter_threshold)
         self.p.save_masks_to_csv(self.csv_filename)
         print(f"--> Masks saved to CSV file: {self.csv_filename}")
 
         self.savePsdData()
         self.saveDistributionPlot()
+
     def saveResultsForNormalBinsOnly(self, bins):
         """
         Saves particle segmentation results to CSV and distribution files after setting bins.
@@ -506,6 +539,7 @@ class ImageAnalysisModel:
         self.setBins(bins)
         self.savePsdDataForNormalBins()
         self.saveDistributionPlotForNormalBins()
+
     def generateMasksForMeshing(self, testing):
         """
         Analyzes particles in the image by generating masks using the model for each segmented image
@@ -523,18 +557,21 @@ class ImageAnalysisModel:
 
         # Step 1: Assign `self.meshingImageFolderPath`
         meshing_folder_name = "meshingImage"
-        self.meshingImageFolderPath = os.path.join(self.folder_path, meshing_folder_name)
+        self.meshingImageFolderPath = os.path.join(
+            self.folder_path, meshing_folder_name)
 
         # Step 2: Check if `meshingImage` folder exists
         if not os.path.exists(self.meshingImageFolderPath):
-            print(f"Error: Folder '{meshing_folder_name}' not found at {self.folder_path}")
+            print(
+                f"Error: Folder '{meshing_folder_name}' not found at {self.folder_path}")
             return
 
         print(f"Meshing image folder path: {self.meshingImageFolderPath}")
 
         # Step 3: Assign `self.meshingSegmentsFolder`
         meshing_segment_folder_name = "meshingSegments"
-        self.meshingSegmentsFolder = os.path.join(self.folder_path, meshing_segment_folder_name)
+        self.meshingSegmentsFolder = os.path.join(
+            self.folder_path, meshing_segment_folder_name)
 
         # Create `meshingSegments` folder if it doesn't exist
         os.makedirs(self.meshingSegmentsFolder, exist_ok=True)
@@ -547,7 +584,7 @@ class ImageAnalysisModel:
 
         image_files = [
             os.path.join(self.meshingImageFolderPath, file)
-            for file in sorted(os.listdir(self.meshingImageFolderPath),key=natural_key)
+            for file in sorted(os.listdir(self.meshingImageFolderPath), key=natural_key)
             if file.endswith(".png")  # Filter for PNG images
         ]
 
@@ -555,7 +592,8 @@ class ImageAnalysisModel:
             print(f"No images found in {self.meshingImageFolderPath}")
             return
 
-        print(f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
+        print(
+            f"Found {len(image_files)} images in {self.meshingImageFolderPath}")
 
         # Step 5: Loop through each image and process using the model
         for index, image_path in enumerate(image_files, start=1):
@@ -572,7 +610,8 @@ class ImageAnalysisModel:
 
             # Step 6: Save masks to a corresponding CSV file
             self.p.setdiameter_threshold(self.diameter_threshold)
-            csv_filename = os.path.join(self.meshingSegmentsFolder, f"meshing_{index}.csv")
+            csv_filename = os.path.join(
+                self.meshingSegmentsFolder, f"meshing_{index}.csv")
             self.p.save_masks_to_csv(csv_filename)
             print(f"Segment file saved as: {csv_filename}")
             self.showMasks()
@@ -585,7 +624,7 @@ class ImageAnalysisModel:
     def setScalingFactor(self, scalingFactor):
         self.Scaler.setScalingFactor(scalingFactor)
 
-    def formatResults(self,byArea=False,bySize=False,distribution_filename=None):
+    def formatResults(self, byArea=False, bySize=False, distribution_filename=None):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
@@ -619,9 +658,9 @@ class ImageAnalysisModel:
                                              self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                              self.intensity, self.analysisTime, self.p.diameter_threshold,
                                              self.p.circularity_threshold)
-        formatter.save_xml(byArea=byArea,bySize=bySize)
+        formatter.save_xml(byArea=byArea, bySize=bySize)
 
-    def formatResultsForNormalDistribution(self,normalFlag):
+    def formatResultsForNormalDistribution(self, normalFlag):
         """
         Formats and displays analysis results, and saves formatted results as XML.
 
@@ -667,7 +706,8 @@ class ImageAnalysisModel:
             print(f"Saving segments in {self.json_filename}")
         except Exception as e:
             logger.error(f"Fatal error in segments saving : {str(e)}")
-            logger.error(f"Traceback error of segments saving for {self.sampleID} : {traceback.format_exc()}")
+            logger.error(
+                f"Traceback error of segments saving for {self.sampleID} : {traceback.format_exc()}")
             raise
 
     def loadSegments(self, checkpoint_folder, bins):
@@ -695,7 +735,6 @@ class ImageAnalysisModel:
             self.p.setdiameter_threshold(self.diameter_threshold)
             self.p.save_segments_as_csv(
                 self.json_masks_filename, self.csv_filename)
-
 
         except FileNotFoundError as e:
             raise e
@@ -726,10 +765,9 @@ class ImageAnalysisModel:
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 
-    def evenLightingWithValidation(self,parameter_folder_path):
+    def evenLightingWithValidation(self, parameter_folder_path):
         self.imageProcessor.even_out_lighting_validation(parameter_folder_path)
         # self.imagePath = self.imageProcessor.getImagePath()
-
 
     def overlayImage(self):
         """
@@ -742,6 +780,7 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
+
     def overlayImageWithValidation(self):
         """
         Calls the ImageProcessingModel's overlayImage function to overlay the same picture 10 times and
@@ -753,11 +792,8 @@ class ImageAnalysisModel:
         self.imageProcessor.overlayImage()
         self.imagePath = self.imageProcessor.getImagePath()
 
-
-
-    def  meshingImage(self):
+    def meshingImage(self):
         self.imageProcessor.processImageWithMeshing()
-
 
     def plotBins(self):
         self.p.plotBins()
@@ -769,6 +805,7 @@ class ImageAnalysisModel:
         seconds = total_seconds % 60
         self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
         print(f"""The final analysing time is {self.analysisTime}""")
+
     def getSmallestAreaForFinalImage(self):
         """
         This function counts the number of data rows in a given file, ignoring the header row.
@@ -779,13 +816,14 @@ class ImageAnalysisModel:
         Returns:
         int: The number of data rows in the file.
         """
-        particles=[]
+        particles = []
         try:
             with open(self.csv_filename, 'r') as file:
                 next(file)
                 for line in file:
                     if line.strip():  # remove white space
-                        area, perimeter, diameter, circularity = map(float, line.strip().split(','))
+                        area, perimeter, diameter, circularity = map(
+                            float, line.strip().split(','))
                         item = {
                             "area": area,
                             "perimeter": perimeter,
@@ -794,17 +832,22 @@ class ImageAnalysisModel:
                         }
                         particles.append(item)
             if len(particles) == 0:
-                logger.error("There is no particles for minimumArea(ImageAnalysisModel) to be processed")
+                logger.error(
+                    "There is no particles for minimumArea(ImageAnalysisModel) to be processed")
                 return
 
             areas = [particle['area'] for particle in particles]
             sorted_areas = sorted(areas)
-            self.mimumArea = format(max(float(sorted_areas[0] / 1000000), 0), '.8f')
-            print(f'Minimu Area(ImageAnalysisModel) of the entire image analysis is :{self.mimumArea}')
-            logger.info("Minimum Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
+            self.mimumArea = format(
+                max(float(sorted_areas[0] / 1000000), 0), '.8f')
+            print(
+                f'Minimu Area(ImageAnalysisModel) of the entire image analysis is :{self.mimumArea}')
+            logger.info(
+                "Minimum Area(ImageAnalysisModel) of the entire image analysis is : {}", self.mimumArea)
 
-        except Exception as e :
-                logger.error("The give csv  file can  not be parsed due to {} error ",e)
+        except Exception as e:
+            logger.error(
+                "The give csv  file can  not be parsed due to {} error ", e)
 
     def getMeshingSegmentByCompareAreas(self):
         """
@@ -819,12 +862,13 @@ class ImageAnalysisModel:
         """
         # Ensure self.minimumArea is initialized
         if not hasattr(self, 'minimumArea'):
-            self.minimumArea = float('inf')  # Set a large initial value if not set
-
+            # Set a large initial value if not set
+            self.minimumArea = float('inf')
 
         # Check if the folder exists
         if not os.path.exists(self.meshingSegmentsFolder):
-            logger.error(f"Meshing segments folder {self.meshingSegmentsFolder} does not exist.")
+            logger.error(
+                f"Meshing segments folder {self.meshingSegmentsFolder} does not exist.")
             return
 
         # Get all CSV files in the folder
@@ -847,8 +891,10 @@ class ImageAnalysisModel:
                     for line in file:
                         if line.strip():  # Remove white space
                             # Parse the row
-                            area, perimeter, diameter, circularity = map(float, line.strip().split(','))
-                            formatted_area = format(max(float(area / 1000000), 0), '.8f')
+                            area, perimeter, diameter, circularity = map(
+                                float, line.strip().split(','))
+                            formatted_area = format(
+                                max(float(area / 1000000), 0), '.8f')
                             item = {
                                 "area": area,  # Store the original area
                                 "perimeter": perimeter,
@@ -861,19 +907,24 @@ class ImageAnalysisModel:
                             particles.append(item)
 
                 if not particles:
-                    logger.warning(f"No particles found in file {segment_file}")
+                    logger.warning(
+                        f"No particles found in file {segment_file}")
                     continue
 
-                print(f"Processed file {segment_file}: {len(particles)} particles")
-                logger.info(f"Processed file {segment_file}: {len(particles)} particles")
+                print(
+                    f"Processed file {segment_file}: {len(particles)} particles")
+                logger.info(
+                    f"Processed file {segment_file}: {len(particles)} particles")
 
             except Exception as e:
-                logger.error(f"Failed to process file {segment_file} due to error: {e}")
+                logger.error(
+                    f"Failed to process file {segment_file} due to error: {e}")
 
         if not self.miniParticles:
             logger.warning("No particles smaller than minimumArea were found.")
         else:
-            logger.info(f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
+            logger.info(
+                f"Found {len(self.miniParticles)} particles smaller than minimumArea.")
 
     def processingMiniParticles(self):
         """
@@ -886,8 +937,10 @@ class ImageAnalysisModel:
         None
         """
 
-        final_csv_path = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
-        original_csv_path = os.path.join(self.folder_path, f"{self.sampleID}.csv")
+        final_csv_path = os.path.join(
+            self.folder_path, f"final_{self.sampleID}.csv")
+        original_csv_path = os.path.join(
+            self.folder_path, f"{self.sampleID}.csv")
 
         # Check if miniParticles is not empty
         if self.miniParticles:
@@ -909,20 +962,23 @@ class ImageAnalysisModel:
                         for row in reader:
                             writer.writerow(row)
                 else:
-                    print(f"Original CSV file {original_csv_path} does not exist.")
+                    print(
+                        f"Original CSV file {original_csv_path} does not exist.")
         else:
             print("No mini particles to process.")
 
-    def save_final_results(self,bins):
+    def save_final_results(self, bins):
         self.setBins(bins)
         self.p.setdiameter_threshold(self.diameter_threshold)
-        final_csv = os.path.join(self.folder_path, f"final_{self.sampleID}.csv")
+        final_csv = os.path.join(
+            self.folder_path, f"final_{self.sampleID}.csv")
         regular_csv = os.path.join(self.folder_path, f"{self.sampleID}.csv")
 
         # Determine which file exists and set the appropriate output txt filename
         if os.path.exists(final_csv):
             input_file = final_csv
-            output_txt = os.path.join(self.folder_path, "final_mesh_segments.txt")
+            output_txt = os.path.join(
+                self.folder_path, "final_mesh_segments.txt")
         elif os.path.exists(regular_csv):
             input_file = regular_csv
             output_txt = os.path.join(self.folder_path, "final_segment.txt")
@@ -956,7 +1012,8 @@ class ImageAnalysisModel:
                 reader = csv.DictReader(file)
                 for row in reader:
                     # build String
-                    line = "{\n" + ",\n".join(f"    {k}: {v}" for k, v in row.items()) + "\n},"
+                    line = "{\n" + ",\n".join(f"    {k}: {v}" for k,
+                                              v in row.items()) + "\n},"
                     data_list.append(line)
 
             with open(json_txt_output_path, 'w') as output_file:
@@ -966,7 +1023,6 @@ class ImageAnalysisModel:
 
         except Exception as e:
             print(f"An error occurred while converting CSV to TXT: {e}")
-
 
     "--------------------Calibration Logic-------------------------------------------------------------------------------------------------"
 
@@ -983,7 +1039,8 @@ class ImageAnalysisModel:
         """
         self.totArea = self.p.get_totalArea()
         self.cb = cb.CalibrationModel(
-            totArea=self.totArea,csv_filename=self.csv_filename,folder_path=self.folder_path,sampleId=self.sampleID,bins=self.bins)
+            totArea=self.totArea, csv_filename=self.csv_filename, folder_path=self.folder_path, sampleId=self.sampleID, bins=self.bins)
+
     def calibrate_bin_with_size(self, target_distribution=None):
         self.cb.calibrate_bin_with_size(target_distribution)
 
@@ -995,6 +1052,7 @@ class ImageAnalysisModel:
 
     def calibrated_bins_with_unSegementedArea(self):
         self.cb.calibrated_bins_with_unSegementedArea()
+
     def refactor_psd(self):
         self.cb.refactor_psd()
 

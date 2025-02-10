@@ -1,0 +1,175 @@
+
+import os
+import json
+import shutil
+import time
+import traceback
+import re
+from logger_config import get_logger
+import ImageAnalysisModel as pa
+
+# Constants
+BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "capturedImages"))
+SAMPLEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "Samples"))
+defaultOutputfolder = "defaultProgram"
+defaultConfigPath = 'config.ini'
+defaultContainerWidth = 180000
+
+# Logger setup
+logger = get_logger("StartUp")
+
+
+def extract_sample_id_and_timestamp(sample_id):
+    """ Extracts the base sample ID and timestamp from the filename. """
+    if len(sample_id) > 15 and (sample_id.endswith('.bmp') or sample_id.endswith('.json')):
+        print(sample_id)
+        no_extension_sample_id = sample_id.rsplit('.', 1)[0]
+        print(no_extension_sample_id)
+        base_sample_id = no_extension_sample_id[:-16]
+        print(base_sample_id)
+        timestamp = no_extension_sample_id[-15:]
+        print(timestamp)
+        return base_sample_id, timestamp, no_extension_sample_id
+    return sample_id, None
+
+
+def rename_file(old_path, new_name):
+    """Renames a file while keeping it in the same directory."""
+    dir_path = os.path.dirname(old_path)
+    new_path = os.path.join(dir_path, new_name)
+
+    try:
+        os.rename(old_path, new_path)
+        print(f"File renamed: {old_path} -> {new_path}")
+        return new_path
+    except FileNotFoundError:
+        print(f"Error: File {old_path} not found.")
+    except Exception as e:
+        print(f"Error renaming file: {e}")
+
+
+class ProcessStartModel:
+
+    def __init__(self, picturePath=None, sampleID=None, programNumber=None, weight=None, CustomField1=None, CustomField2=None, timestamp=None):
+        # Extract sample ID and timestamp
+        base_sample_id, extracted_timestamp, sampleID = extract_sample_id_and_timestamp(
+            sampleID)
+        timestamp = timestamp or extracted_timestamp
+
+        # Create folder path
+        folder_path = os.path.join(
+            SAMPLEFOLDER, programNumber or "defaultOutputfolder", base_sample_id)
+        os.makedirs(folder_path, exist_ok=True)
+
+        # Construct paths for source files and new filenames
+        source_picture_path = os.path.join(picturePath, sampleID)
+        source_json_path = os.path.join(
+            picturePath, sampleID.replace('.bmp', '.json'))
+
+        new_picture_name = f"{base_sample_id}.bmp"
+        new_json_name = f"{base_sample_id}.json"
+        new_picture_path = os.path.join(folder_path, new_picture_name)
+        new_json_path = os.path.join(folder_path, new_json_name)
+
+        # Move .bmp and .json files to the new folder
+        for ext in ['.bmp', '.json']:
+            old_file_path = os.path.join(picturePath, f"{sampleID}{ext}")
+            new_file_path = os.path.join(folder_path, f"{base_sample_id}{ext}")
+            try:
+                if os.path.exists(old_file_path):
+                    shutil.move(old_file_path, new_file_path)
+                else:
+                    logger.error(
+                        f"File {sampleID}{ext} not found at {picturePath}")
+                    raise FileNotFoundError(f"File {sampleID}{ext} not found.")
+            except Exception as e:
+                logger.error(
+                    f"Error while moving file {sampleID}{ext}: {str(e)}")
+                raise
+
+        # Update the JSON file with the extracted timestamp
+        try:
+            with open(new_json_path, 'r') as f:
+                json_data = json.load(f)
+
+            json_data['timestamp'] = timestamp  # Add timestamp to JSON
+
+            with open(new_json_path, 'w') as f:
+                json.dump(json_data, f, indent=4)
+        except FileNotFoundError:
+            logger.error(
+                f"File {sampleID} or its JSON counterpart not found at {picturePath}")
+            raise
+        except Exception as e:
+            logger.error(
+                f"Error while updating JSON file for {sampleID}: {str(e)}")
+            raise
+
+        # Update instance variables
+        self.picturePath = folder_path  # Set the new folder path
+        self.sampleID = base_sample_id
+        self.programNumber = programNumber
+        self.weight = weight
+        self.CustomField1 = CustomField1
+        self.CustomField2 = CustomField2
+        self.timestamp = timestamp
+
+    def analyse(self, container_width=defaultContainerWidth, config_path=defaultConfigPath):
+        """ Main function to execute the image analysis process. """
+        try:
+            logger.info(
+                f"Starting analysis with folder: {self.picturePath}, container width: {container_width}")
+            analyser = pa.ImageAnalysisModel(
+                image_folder_path=self.picturePath, containerWidth=container_width, sampleID=self.sampleID, config_path=config_path)
+            analyser.run_analysis()
+        except Exception as e:
+            logger.error(f"Fatal error in main execution: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise
+
+
+def analyze_folder(folder_path):
+    """ Continuously analyze files in the folder for BMP and corresponding JSON files. """
+    while True:
+        print("Monitoring folder...")
+        for filename in os.listdir(folder_path):
+            if filename.endswith('.bmp'):
+                bmp_file = os.path.join(folder_path, filename)
+                json_file = bmp_file.replace('.bmp', '.json')
+
+                if os.path.exists(json_file):
+                    try:
+                        with open(json_file, 'r') as f:
+                            json_data = json.load(f)
+
+                        newImage = ProcessStartModel(
+                            picturePath=folder_path,
+                            sampleID=filename,
+                            programNumber=json_data.get('programNumber'),
+                            weight=json_data.get('weight'),
+                            CustomField1=json_data.get('CustomField1'),
+                            CustomField2=json_data.get('CustomField2'),
+                            timestamp=None
+                        )
+                        logger.info(
+                            f"Initialized ProcessStartModel for {bmp_file}")
+
+                        newImage.analyse()
+                    except Exception as e:
+                        logger.error(
+                            f"Error processing {bmp_file} and {json_file}: {str(e)}")
+                        logger.error(f"Traceback: {traceback.format_exc()}")
+                else:
+                    logger.error(f"Missing JSON file for {bmp_file}")
+
+        time.sleep(1)
+
+
+if __name__ == '__main__':
+    for folder in [BASEFOLDER, SAMPLEFOLDER]:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+            print(f"Folder {folder} created.")
+        else:
+            print(f"Folder {folder} already exists.")
+    analyze_folder(BASEFOLDER)
