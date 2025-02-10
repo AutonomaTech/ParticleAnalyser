@@ -33,21 +33,6 @@ def extract_sample_id_and_timestamp(sample_id):
     return sample_id, None
 
 
-def rename_file(old_path, new_name):
-    """Renames a file while keeping it in the same directory."""
-    dir_path = os.path.dirname(old_path)
-    new_path = os.path.join(dir_path, new_name)
-
-    try:
-        os.rename(old_path, new_path)
-        print(f"File renamed: {old_path} -> {new_path}")
-        return new_path
-    except FileNotFoundError:
-        print(f"Error: File {old_path} not found.")
-    except Exception as e:
-        print(f"Error renaming file: {e}")
-
-
 class ProcessStartModel:
 
     def __init__(self, picturePath=None, sampleID=None, programNumber=None, weight=None, CustomField1=None, CustomField2=None, timestamp=None):
