@@ -4,12 +4,11 @@ import json
 import shutil
 import time
 import traceback
-import re
 from logger_config import get_logger
 import ImageAnalysisModel as pa
 
 # Constants
-BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "capturedImages"))
+BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "CapturedImages"))
 SAMPLEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "Samples"))
 defaultOutputfolder = "defaultProgram"
 defaultConfigPath = 'config.ini'
@@ -43,17 +42,10 @@ class ProcessStartModel:
 
         # Create folder path
         folder_path = os.path.join(
-            SAMPLEFOLDER, programNumber or "defaultOutputfolder", base_sample_id)
+            SAMPLEFOLDER, programNumber or "defaultProgram", base_sample_id)
         os.makedirs(folder_path, exist_ok=True)
 
-        # Construct paths for source files and new filenames
-        source_picture_path = os.path.join(picturePath, sampleID)
-        source_json_path = os.path.join(
-            picturePath, sampleID.replace('.bmp', '.json'))
-
-        new_picture_name = f"{base_sample_id}.bmp"
         new_json_name = f"{base_sample_id}.json"
-        new_picture_path = os.path.join(folder_path, new_picture_name)
         new_json_path = os.path.join(folder_path, new_json_name)
 
         # Move .bmp and .json files to the new folder
@@ -76,8 +68,14 @@ class ProcessStartModel:
         try:
             with open(new_json_path, 'r') as f:
                 json_data = json.load(f)
-
+            json_data['sampleID'] = base_sample_id  # Update sampleID
             json_data['timestamp'] = timestamp  # Add timestamp to JSON
+
+            # Dynamically add CustomField attributes based on the JSON keys
+            custom_fields = {key: value for key, value in json_data.items(
+            ) if key.startswith('CustomField')}
+            for idx, (key, value) in enumerate(custom_fields.items(), start=1):
+                setattr(self, f"CustomField{idx}", value)
 
             with open(new_json_path, 'w') as f:
                 json.dump(json_data, f, indent=4)
@@ -95,8 +93,6 @@ class ProcessStartModel:
         self.sampleID = base_sample_id
         self.programNumber = programNumber
         self.weight = weight
-        self.CustomField1 = CustomField1
-        self.CustomField2 = CustomField2
         self.timestamp = timestamp
 
     def analyse(self, container_width=defaultContainerWidth, config_path=defaultConfigPath):
@@ -128,14 +124,7 @@ def analyze_folder(folder_path):
                             json_data = json.load(f)
 
                         newImage = ProcessStartModel(
-                            picturePath=folder_path,
-                            sampleID=filename,
-                            programNumber=json_data.get('programNumber'),
-                            weight=json_data.get('weight'),
-                            CustomField1=json_data.get('CustomField1'),
-                            CustomField2=json_data.get('CustomField2'),
-                            timestamp=None
-                        )
+                            picturePath=folder_path, sampleID=filename, programNumber=json_data.get('programNumber'))
                         logger.info(
                             f"Initialized ProcessStartModel for {bmp_file}")
 
