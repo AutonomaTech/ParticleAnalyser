@@ -212,7 +212,7 @@ class ImageAnalysisModel:
                 return
             logger.info(
                 f"Starting particle analyzing,sample_id: {self.sampleID}")
-            self.analyseParticles(self.checkpoint_folder, True)
+            self.analyseParticles(self.checkpoint_folder, False)
             logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
             self.saveSegments()
 
