@@ -3,6 +3,7 @@ import os
 import json
 import shutil
 import time
+import configparser
 import traceback
 from logger_config import get_logger
 import ImageAnalysisModel as pa
@@ -10,9 +11,23 @@ import ImageAnalysisModel as pa
 # Constants
 BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "CapturedImages"))
 SAMPLEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "Samples"))
-defaultOutputfolder = "defaultProgram"
 defaultConfigPath = 'config.ini'
-defaultContainerWidth = 180000
+try:
+    # Load configuration file
+    config = configparser.ConfigParser()
+    config.read(defaultConfigPath)
+
+    # Read values from config.ini
+    defaultContainerWidth = int(config.get(
+        'analysis', 'containerWidth', fallback=180000))
+    defaultOutputfolder = config.get(
+        'analysis', 'defaultOutputfolder', fallback="defaultProgram")
+
+except Exception as e:
+    print(f"Unexpected error: {e}")
+    defaultContainerWidth = 180000
+    defaultOutputfolder = "defaultProgram"
+
 
 # Logger setup
 logger = get_logger("StartUp")
@@ -42,7 +57,9 @@ class ProcessStartModel:
 
         # Create folder path
         folder_path = os.path.join(
-            SAMPLEFOLDER, programNumber or "defaultProgram", base_sample_id)
+            SAMPLEFOLDER, programNumber if programNumber not in [
+                None, 0] else "defaultProgram", sampleID
+        )
         os.makedirs(folder_path, exist_ok=True)
 
         new_json_name = f"{base_sample_id}.json"
@@ -89,7 +106,7 @@ class ProcessStartModel:
             raise
 
         # Update instance variables
-        self.picturePath = folder_path  # Set the new folder path
+        self.picturePath = folder_path
         self.sampleID = base_sample_id
         self.programNumber = programNumber
         self.weight = weight
@@ -99,9 +116,22 @@ class ProcessStartModel:
         """ Main function to execute the image analysis process. """
         try:
             logger.info(
-                f"Starting analysis with folder: {self.picturePath}, container width: {container_width}")
+                f"Starting analysis with folder: {self.picturePath}, container width: {container_width}"
+            )
+
+            # Collect dynamically added custom fields
+            custom_fields = {attr: getattr(self, attr) for attr in dir(
+                self) if attr.startswith("CustomField")}
+
+            # Pass all attributes, including dynamically added ones, to the model
             analyser = pa.ImageAnalysisModel(
-                image_folder_path=self.picturePath, containerWidth=container_width, sampleID=self.sampleID, config_path=config_path)
+                image_folder_path=self.picturePath,
+                containerWidth=container_width,
+                sampleID=self.sampleID,
+                config_path=config_path,
+                **custom_fields
+            )
+
             analyser.run_analysis()
         except Exception as e:
             logger.error(f"Fatal error in main execution: {str(e)}")

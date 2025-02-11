@@ -51,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None):
+    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None, **customerFields):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -103,6 +103,8 @@ class ImageAnalysisModel:
                             5000, 6000, 7000, 8000, 9000, 10000]
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
+        for key, value in customerFields.items():
+            setattr(self, key, value)
         self.load_config()
 
     def load_config(self):
@@ -646,18 +648,22 @@ class ImageAnalysisModel:
         print(f"Circularity Threshold: {self.p.circularity_threshold} um")
         print("-----------------------------------------------")
         print(f"CSV file: {self.csv_filename}")
+
+        custom_values = [getattr(self, attr) for attr in dir(
+            self) if attr.startswith("CustomField")]
+
         if distribution_filename:
             formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, distribution_filename,
                                              self.totArea, self.Scaler.scalingNumber,
                                              self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                              self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                             self.p.circularity_threshold)
+                                             self.p.circularity_threshold, *custom_values)
         else:
             formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
                                              self.totArea, self.Scaler.scalingNumber,
                                              self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                              self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                             self.p.circularity_threshold)
+                                             self.p.circularity_threshold, *custom_values)
         formatter.save_xml(byArea=byArea, bySize=bySize)
 
     def formatResultsForNormalDistribution(self, normalFlag):
@@ -684,11 +690,14 @@ class ImageAnalysisModel:
         print(f"CSV file: {self.csv_filename}")
         normalBins_distributions_filename = os.path.join(
             self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
+
+        custom_values = [getattr(self, attr) for attr in dir(
+            self) if attr.startswith("CustomField")]
         formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, normalBins_distributions_filename,
                                          self.totArea, self.Scaler.scalingNumber,
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold)
+                                         self.p.circularity_threshold, custom_values)
         formatter.save_xml(normalFlag=normalFlag)
 
     def saveSegments(self):
