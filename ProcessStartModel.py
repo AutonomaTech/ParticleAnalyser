@@ -154,7 +154,7 @@ def analyze_folder(folder_path):
                             json_data = json.load(f)
 
                         newImage = ProcessStartModel(
-                            picturePath=folder_path, sampleID=filename, programNumber=json_data.get('programNumber'))
+                            picturePath=folder_path, sampleID=filename, programNumber=int(json_data.get('programNumber')))
                         logger.info(
                             f"Initialized ProcessStartModel for {bmp_file}")
 

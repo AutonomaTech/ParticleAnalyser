@@ -64,7 +64,7 @@ class ParticleSegmentationModel:
         self.box_nms_tresh = 0.2
         self.use_m2m = True
 
-        self.openedImage =Image.open(image_path)
+        self.openedImage = Image.open(image_path)
         self.image = np.array(self.openedImage.convert("RGB"))
 
         self.psd_bins_data = None  # this is data for plotting
@@ -91,10 +91,10 @@ class ParticleSegmentationModel:
         self.openedImage = Image.open(image_path)
         self.image = np.array(self.openedImage.convert("RGB"))
 
-
     def update_image_path(self, new_image_path):
         """Update image path and reload the image."""
         self.load_image(new_image_path)
+
     @property
     def bins(self):
         return self._bins
@@ -157,17 +157,17 @@ class ParticleSegmentationModel:
         return masks
 
     def testing_generate_mask_1(self, pred_iou_thresh=None, stability_score_thresh=None, stability_score_offset=None,
-                              crop_n_layers=None, crop_n_points_downscale_factor=None, min_mask_region_area=None,
-                              box_nms_tresh=None, use_m2m=False):
+                                crop_n_layers=None, crop_n_points_downscale_factor=None, min_mask_region_area=None,
+                                box_nms_tresh=None, use_m2m=False):
         # For validation
         logger.info(
             "Generating masks for validation - image: {}, scaling factor: {} um/px,  points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
             stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
-            self.image_path,self.scaling_factor,  self.points_per_side, self.points_per_batch,
+            self.image_path, self.scaling_factor,  self.points_per_side, self.points_per_batch,
             pred_iou_thresh,
-          stability_score_thresh,stability_score_offset, crop_n_layers,
-          crop_n_points_downscale_factor,
-         min_mask_region_area, box_nms_tresh, use_m2m)
+            stability_score_thresh, stability_score_offset, crop_n_layers,
+            crop_n_points_downscale_factor,
+            min_mask_region_area, box_nms_tresh, use_m2m)
         start_time = datetime.now()
         masks = dp.generate_masks(
             self.image,
@@ -188,11 +188,12 @@ class ParticleSegmentationModel:
         self.execution_time = end_time - start_time
         logger.info("Generating masks: {}", self.execution_time)
         return masks
-    def visualise_masks(self,mask_file_name):
+
+    def visualise_masks(self, mask_file_name):
         if self.masks is None:
             self.generate_mask()
 
-        dp.visualise_masks(self.image, self.masks,mask_file_name)
+        dp.visualise_masks(self.image, self.masks, mask_file_name)
 
     def opposite_masks(self):
         if self.masks is None:
@@ -276,7 +277,8 @@ class ParticleSegmentationModel:
 
     def setcircularity_threshold(self, circularity_threshold):
         self.circularity_threshold = circularity_threshold
-    ####Based on Particles
+    # Based on Particles
+
     def get_psd_data(self):
         if self.segments is None:
             self.segments = dp.get_segments(
@@ -295,11 +297,12 @@ class ParticleSegmentationModel:
             self.segments = dp.get_segments(
                 self.masks, self.scaling_factor, self.diameter_threshold)
 
-        psd_data=dp.custom_psd_data1(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,
-                            reverse_cumulative=True)
+        psd_data = dp.custom_psd_data1(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,
+                                       reverse_cumulative=True)
         self.psd_data = {'differential': list(zip(tuple([0] + self.bins), tuple(
             psd_data[1]))), 'cumulative': list(zip(tuple([0] + self.bins), tuple(psd_data[2][::-1])))}
         return self.psd_data
+
     def get_totalArea(self):  # , withOverlappingArea):
         if self.segments is None:
             self.segments = dp.get_segments(
@@ -366,7 +369,9 @@ class ParticleSegmentationModel:
         cumulative = [i[1] for i in self.psd_data['cumulative']]
         differential = [i[1] for i in self.psd_data['differential']]
 
-        dp.save_psd_as_txt_normal(id, self.bins, cumulative, differential, directory)
+        dp.save_psd_as_txt_normal(
+            id, self.bins, cumulative, differential, directory)
+
     def save_segments_as_csv(self, txt_filename, csv_filename):
         self.segments = dp.save_segments_as_csv(
             txt_filename, csv_filename, self.diameter_threshold)
@@ -379,15 +384,20 @@ class ParticleSegmentationModel:
         print(min_area_found)
         dp.detect_rocks_withCV2(self.image, float(min_area_found))
 
-    def plotBins(self,folder_path,sampleId):
+    def plotBins(self, folder_path, sampleId):
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
-        fileName= f"{folder_path}/{sampleId}_area_plot.png"
-        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName)
-    def plotBinsForDiameter(self,folder_path,sampleId):
+        fileName = f"{folder_path}/{sampleId}_area_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
+
+    def plotBinsForDiameter(self, folder_path, sampleId):
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
-        fileName= f"{folder_path}/{sampleId}_size_plot.png"
-        dp.plot_psd_bins4(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName)
-    def plotNormalBins(self,folder_path,sampleId):
+        fileName = f"{folder_path}/{sampleId}_size_plot.png"
+        dp.plot_psd_bins4(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
+
+    def plotNormalBins(self, folder_path, sampleId):
         # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
         fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
-        dp.plot_psd_bins2(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,fileName)
+        dp.plot_psd_bins2(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
