@@ -58,14 +58,14 @@ class ParticleSegmentationModel:
         self.pred_iou_thresh = 0.8
         self.stability_score_thresh = 0.92
         self.stability_score_offset = 0.8
-        self.crop_n_layers = 2
-        self.crop_n_points_downscale_factor = 2
+        self.crop_n_layers = 1
+        self.crop_n_points_downscale_factor = 3
         self.min_mask_region_area = 0.0
-        self.box_nms_tresh = 0.9
-        self.use_m2m = True,
+        self.box_nms_tresh = 0.2
+        self.use_m2m = True
 
-        openedImage = Image.open(self.image_path)
-        self.image = np.array(openedImage.convert("RGB"))
+        self.openedImage = Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
 
         self.psd_bins_data = None  # this is data for plotting
         self.psd_data = None
@@ -82,6 +82,18 @@ class ParticleSegmentationModel:
             raise Exception('Image path does not exist')
         if not os.path.exists(self.sam_checkpoint_path):
             raise Exception('Sam checkpoint path does not exist')
+
+    def load_image(self, image_path):
+        """Load image from the specified path and update the image attribute."""
+        if not os.path.exists(image_path):
+            raise Exception('Image path does not exist')
+
+        self.openedImage = Image.open(image_path)
+        self.image = np.array(self.openedImage.convert("RGB"))
+
+    def update_image_path(self, new_image_path):
+        """Update image path and reload the image."""
+        self.load_image(new_image_path)
 
     @property
     def bins(self):
@@ -123,7 +135,7 @@ class ParticleSegmentationModel:
         return masks
 
     def testing_generate_mask(self):
-        # function to to test opn Colab to speed up process of ttesting. The results are not accurate
+        # function TO Do test opn Colab to speed up process of testing. The results are not accurate
         start_time = datetime.now()
         masks = dp.generate_masks(self.image,
                                   self.sam_checkpoint_path,
@@ -144,10 +156,44 @@ class ParticleSegmentationModel:
         logger.info("Generating masks took: {}", self.execution_time)
         return masks
 
-    def visualise_masks(self):
+    def testing_generate_mask_1(self, pred_iou_thresh=None, stability_score_thresh=None, stability_score_offset=None,
+                                crop_n_layers=None, crop_n_points_downscale_factor=None, min_mask_region_area=None,
+                                box_nms_tresh=None, use_m2m=False):
+        # For validation
+        logger.info(
+            "Generating masks for validation - image: {}, scaling factor: {} um/px,  points_per_side: {},points_per_batch: {}, pred_iou_thresh: {}, stability_score_thresh: {}, \
+            stability_score_offset:{}, crop_n_layers: {}, crop_n_points_downscale_factor: {}, min_mask_region_area: {}, box_nms_tresh: {}, use_m2m: {}",
+            self.image_path, self.scaling_factor,  self.points_per_side, self.points_per_batch,
+            pred_iou_thresh,
+            stability_score_thresh, stability_score_offset, crop_n_layers,
+            crop_n_points_downscale_factor,
+            min_mask_region_area, box_nms_tresh, use_m2m)
+        start_time = datetime.now()
+        masks = dp.generate_masks(
+            self.image,
+            self.sam_checkpoint_path,
+            points_per_side=150,
+            points_per_batch=128,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crop_n_layers=crop_n_layers,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            min_mask_region_area=min_mask_region_area,
+            box_nms_tresh=box_nms_tresh,
+            use_m2m=use_m2m
+        )
+        self.masks = masks
+        end_time = datetime.now()
+        self.execution_time = end_time - start_time
+        logger.info("Generating masks: {}", self.execution_time)
+        return masks
+
+    def visualise_masks(self, mask_file_name):
         if self.masks is None:
             self.generate_mask()
-        dp.visualise_masks(self.image, self.masks)
+
+        dp.visualise_masks(self.image, self.masks, mask_file_name)
 
     def opposite_masks(self):
         if self.masks is None:
@@ -231,16 +277,30 @@ class ParticleSegmentationModel:
 
     def setcircularity_threshold(self, circularity_threshold):
         self.circularity_threshold = circularity_threshold
+    # Based on Particles
 
     def get_psd_data(self):
         if self.segments is None:
             self.segments = dp.get_segments(
                 self.masks, self.scaling_factor, self.diameter_threshold)
+        extended_bins = self.bins + [float('inf')]
         psd_data = dp.get_psd_data(
-            self.diameter_threshold, self.circularity_threshold, self.bins, self.segments, False)
+            self.diameter_threshold, self.circularity_threshold, extended_bins, self.segments, False)
         self.psd_data = {'differential': list(zip(tuple([0]+self.bins), tuple(
             psd_data[1]))), 'cumulative': list(zip(tuple([0]+self.bins), tuple(psd_data[2][::-1])))}
         # print(self.psd_data)
+
+        return self.psd_data
+
+    def get_psd_data_with_diameter(self):
+        if self.segments is None:
+            self.segments = dp.get_segments(
+                self.masks, self.scaling_factor, self.diameter_threshold)
+
+        psd_data = dp.custom_psd_data1(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments,
+                                       reverse_cumulative=True)
+        self.psd_data = {'differential': list(zip(tuple([0] + self.bins), tuple(
+            psd_data[1]))), 'cumulative': list(zip(tuple([0] + self.bins), tuple(psd_data[2][::-1])))}
         return self.psd_data
 
     def get_totalArea(self):  # , withOverlappingArea):
@@ -301,6 +361,17 @@ class ParticleSegmentationModel:
 
         dp.save_psd_as_txt(id, self.bins, cumulative, differential, directory)
 
+    def save_psd_as_txt_normal(self, id, directory):
+        if self.psd_data is None:
+            logger.error("No PSD data to export!")
+            return
+        # get values of the distrubutions
+        cumulative = [i[1] for i in self.psd_data['cumulative']]
+        differential = [i[1] for i in self.psd_data['differential']]
+
+        dp.save_psd_as_txt_normal(
+            id, self.bins, cumulative, differential, directory)
+
     def save_segments_as_csv(self, txt_filename, csv_filename):
         self.segments = dp.save_segments_as_csv(
             txt_filename, csv_filename, self.diameter_threshold)
@@ -313,6 +384,20 @@ class ParticleSegmentationModel:
         print(min_area_found)
         dp.detect_rocks_withCV2(self.image, float(min_area_found))
 
-    def plotBins(self):
-        dp.plot_psd_bins3(self.diameter_threshold,
-                          self.circularity_threshold, self.bins, self.segments)
+    def plotBins(self, folder_path, sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_area_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
+
+    def plotBinsForDiameter(self, folder_path, sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_size_plot.png"
+        dp.plot_psd_bins4(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
+
+    def plotNormalBins(self, folder_path, sampleId):
+        # dp.plot_psd_bins(self.diameter_threshold, self.circularity_threshold, self.bins, self.segments)
+        fileName = f"{folder_path}/{sampleId}_normalBin_plot.png"
+        dp.plot_psd_bins2(self.diameter_threshold,
+                          self.circularity_threshold, self.bins, self.segments, fileName)
