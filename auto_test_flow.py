@@ -10,6 +10,7 @@ import logging
 # Importing the ImageAnalysisModel from the analyser_module package
 import ImageAnalysisModel as pa
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -19,6 +20,7 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 def download_model(checkpoint_folder, file_url, file_name):
     """
@@ -36,7 +38,7 @@ def download_model(checkpoint_folder, file_url, file_name):
     file_path = os.path.join(checkpoint_folder, file_name)
     if not os.path.exists(file_path):
         try:
-            logging.info(f"Downloading model file: {file_name}...")
+            logging.info(f"Downloading model file named: {file_name}...")
             response = requests.get(file_url, stream=True)
             response.raise_for_status()  # Check if the request was successful
             with open(file_path, 'wb') as f:
@@ -50,7 +52,8 @@ def download_model(checkpoint_folder, file_url, file_name):
     else:
         logging.info("Checkpoint already exists, skipping download.")
 
-def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output_csv_path):
+
+def size_validate(generated_csv_path, manual_xlsx_path, distribution_path, output_csv_path):
     # Load CSV and Excel files
 
     generated_df = pd.read_csv(generated_csv_path)
@@ -63,7 +66,8 @@ def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output
     manual_df.columns = manual_df.columns.str.strip()
     # Calculate the total area difference and its percentage
     area_difference = abs(total_area_generated - total_area_manual)
-    area_percentage_difference = (area_difference / total_area_manual) * 100 if total_area_manual != 0 else 0
+    area_percentage_difference = (
+        area_difference / total_area_manual) * 100 if total_area_manual != 0 else 0
 
     # Sort the generated data by diameter in descending order
     generated_df.sort_values(by='diameter', ascending=False, inplace=True)
@@ -78,7 +82,8 @@ def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output
     percentages = (differences / manual_df['diameter']) * 100
 
     # Assign the percentage differences to the dataframe
-    generated_df['diameter_difference'] = percentages.round(4).astype(str) + '%'
+    generated_df['diameter_difference'] = percentages.round(
+        4).astype(str) + '%'
 
     # Append total area information to the DataFrame as new rows
     area_row = pd.DataFrame({
@@ -91,13 +96,14 @@ def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output
 
     error_row = pd.DataFrame({
         'area': ['Error %'],
-        'perimeter':[f"{area_percentage_difference:.2f}%"],
+        'perimeter': [f"{area_percentage_difference:.2f}%"],
         'diameter': [None],
         'circularity': [None],
         'diameter_difference': [None]
     })
 
-    generated_df = pd.concat([generated_df, area_row, error_row], ignore_index=True)
+    generated_df = pd.concat(
+        [generated_df, area_row, error_row], ignore_index=True)
 
     input_string = ''
     try:
@@ -123,17 +129,21 @@ def size_validate(generated_csv_path, manual_xlsx_path, distribution_path,output
         passing_data = elements[passing_start:passing_end]
         retaining_data = elements[retaining_start:]
         format_string = '.{}f'.format(4)
-        passing = [format(max(float(num), 0), format_string) for num in passing_data]
-        retaining = [format(max(float(num), 0), format_string) for num in retaining_data]
+        passing = [format(max(float(num), 0), format_string)
+                   for num in passing_data]
+        retaining = [format(max(float(num), 0), format_string)
+                     for num in retaining_data]
         generated_df['PSD'] = pd.Series(retaining[:len(generated_df)])
-        generated_df['Cumulative Passing'] = pd.Series(passing[:len(generated_df)])
+        generated_df['Cumulative Passing'] = pd.Series(
+            passing[:len(generated_df)])
     except Exception as e:
         print("Distribution file can not be parsed:{} ", e)
-
 
     # Save the modified dataframe to a new CSV file
     generated_df.to_csv(output_csv_path, index=False)
     print(f"Validation CSV saved to: {output_csv_path}")
+
+
 def load_config(config_path):
     """
     Loads the parameters configuration JSON file.
@@ -152,7 +162,7 @@ def load_config(config_path):
     return config
 
 
-def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber,preCalculate_file_path,start):
+def main(image_folder_path, config_path, checkpoint_folder, model_url, model_name, containerWidth, scalingNumber, preCalculate_file_path, start):
     """
     Main function to execute the automated testing flow.
 
@@ -188,7 +198,8 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
         try:
             # Create a unique folder name for the current parameter set
             parameter_folder_name = f"parameter_{idx + 1}"
-            parameter_folder_path = os.path.join(image_folder_path, parameter_folder_name)
+            parameter_folder_path = os.path.join(
+                image_folder_path, parameter_folder_name)
             if not start:
                 if os.path.exists(parameter_folder_path):
                     logging.info(
@@ -197,10 +208,11 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
             else:
                 logging.info(
                     f"Start is True. Processing parameter set '{parameter_folder_name}' regardless of existing folders.")
-            logging.info(f"\n=== Processing Parameter Set {idx + 1}/{len(parameter_sets)} ===")
+            logging.info(
+                f"\n=== Processing Parameter Set {idx + 1}/{len(parameter_sets)} ===")
 
             # Instantiate ImageAnalysisModel with the provided image folder path
-            analyser =pa. ImageAnalysisModel(
+            analyser = pa. ImageAnalysisModel(
                 image_folder_path=image_folder_path,
                 scalingNumber=scalingNumber,
                 containerWidth=containerWidth,
@@ -212,7 +224,8 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
 
             # Record the start time
             start_time = datetime.now()
-            logging.info(f"Analyzing particles {idx + 1}/{len(parameter_sets)}, Start Time: {start_time}")
+            logging.info(
+                f"Analyzing particles {idx + 1}/{len(parameter_sets)}, Start Time: {start_time}")
 
             # Analyze particles using the current parameter set
             analyser.analyseValidationParticles(
@@ -225,13 +238,18 @@ def main(image_folder_path, config_path, checkpoint_folder, model_url, model_nam
             analyser.saveSegments()
             analyser.saveResultsForValidation(bins, parameter_folder_name)
             analyser.formatResults()
-            output_csv = os.path.join(analyser.folder_path, f"{analyser.sampleID}_validating_report.csv")
-            generated_csv = os.path.join(analyser.folder_path, f"{analyser.sampleID}.csv")
-            distribution_path = os.path.join(analyser.folder_path, f"{analyser.sampleID}_distribution.txt")
-            size_validate(generated_csv,preCalculate_file_path,distribution_path,output_csv)
+            output_csv = os.path.join(
+                analyser.folder_path, f"{analyser.sampleID}_validating_report.csv")
+            generated_csv = os.path.join(
+                analyser.folder_path, f"{analyser.sampleID}.csv")
+            distribution_path = os.path.join(
+                analyser.folder_path, f"{analyser.sampleID}_distribution.txt")
+            size_validate(generated_csv, preCalculate_file_path,
+                          distribution_path, output_csv)
             # Record the end time
             end_time = datetime.now()
-            logging.info(f"Completed particle analysis: {idx + 1}/{len(parameter_sets)}, End Time: {end_time}")
+            logging.info(
+                f"Completed particle analysis: {idx + 1}/{len(parameter_sets)}, End Time: {end_time}")
             logging.info(f"Total Time: {end_time - start_time}")
 
         except Exception as e:
@@ -251,7 +269,8 @@ if __name__ == "__main__":
     )
 
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Automated Testing Flow for Image Analysis")
+    parser = argparse.ArgumentParser(
+        description="Automated Testing Flow for Image Analysis")
     parser.add_argument(
         '--image_folder_path',
         type=str,

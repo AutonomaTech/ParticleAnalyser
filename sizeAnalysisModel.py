@@ -12,7 +12,7 @@ logger = get_logger("SizeAnalyze")
 
 class sizeAnalysisModel:
     def __init__(self, sampleId, sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
-                 analysis_time=None, diameter_threshold=None, circularity_threshold=None, **custom_fields):
+                 analysis_time=None, diameter_threshold=None, circularity_threshold=None, **customFields):
         config = configparser.ConfigParser()
         config.read('config.ini')
         if 'output' in config and 'rounding' in config['output']:
@@ -44,8 +44,7 @@ class sizeAnalysisModel:
         self.passing = []
         self.retaining = []
         self.xmlstring = ""
-        for key, value in custom_fields.items():
-            setattr(self, key, value)
+        self.customFields = customFields
 
     def __getToArea(self):
         if self.tot_area is not None:
@@ -383,7 +382,7 @@ class sizeAnalysisModel:
         # ET.SubElement(root, 'CustomField4')
         # ET.SubElement(root, 'CustomField5')
 
-        for key, value in self.__dict__.items():
+        for key, value in self.customFields.items():
             if key.startswith("CustomField"):  # Ensure only custom fields are added
                 ET.SubElement(root, key).text = str(value)
 

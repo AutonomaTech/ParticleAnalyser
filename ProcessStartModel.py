@@ -36,13 +36,9 @@ logger = get_logger("StartUp")
 def extract_sample_id_and_timestamp(sample_id):
     """ Extracts the base sample ID and timestamp from the filename. """
     if len(sample_id) > 15 and (sample_id.endswith('.bmp') or sample_id.endswith('.json')):
-        print(sample_id)
         no_extension_sample_id = sample_id.rsplit('.', 1)[0]
-        print(no_extension_sample_id)
         base_sample_id = no_extension_sample_id[:-16]
-        print(base_sample_id)
         timestamp = no_extension_sample_id[-15:]
-        print(timestamp)
         return base_sample_id, timestamp, no_extension_sample_id
     return sample_id, None
 
@@ -112,7 +108,7 @@ class ProcessStartModel:
         self.weight = weight
         self.timestamp = timestamp
 
-    def analyse(self, container_width=defaultContainerWidth, config_path=defaultConfigPath):
+    def analyse(self, container_width=defaultContainerWidth, config_path=defaultConfigPath, testing=False):
         """ Main function to execute the image analysis process. """
         try:
             logger.info(
@@ -131,8 +127,7 @@ class ProcessStartModel:
                 config_path=config_path,
                 **custom_fields
             )
-
-            analyser.run_analysis()
+            analyser.run_analysis(testing)
         except Exception as e:
             logger.error(f"Fatal error in main execution: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
@@ -158,7 +153,7 @@ def analyze_folder(folder_path):
                         logger.info(
                             f"Initialized ProcessStartModel for {bmp_file}")
 
-                        newImage.analyse()
+                        newImage.analyse(testing=False)
                     except Exception as e:
                         logger.error(
                             f"Error processing {bmp_file} and {json_file}: {str(e)}")

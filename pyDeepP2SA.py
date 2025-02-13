@@ -79,10 +79,10 @@ def generate_masks(image, sam2_checkpoint,
     # sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     # sam.to(device=device)
 
-    model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
+    current_model_cfg = "sam2\configs\sam2.1\sam2.1_hiera_l.yaml"
+    model_cfg = os.path.abspath(current_model_cfg)
     sam2 = build_sam2(model_cfg, sam2_checkpoint,
                       device=device, apply_postprocessing=False)
-
     mask_generator_2 = SAM2AutomaticMaskGenerator(
         model=sam2,
         points_per_side=points_per_side,

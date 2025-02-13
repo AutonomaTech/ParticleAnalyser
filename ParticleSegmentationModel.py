@@ -115,6 +115,7 @@ class ParticleSegmentationModel:
             self.stability_score_thresh, self.stability_score_offset, self.crop_n_layers, self.crop_n_points_downscale_factor,
             self.min_mask_region_area, self.box_nms_tresh, self.use_m2m)
         start_time = datetime.now()
+
         masks = dp.generate_masks(self.image, self.sam_checkpoint_path,
                                   points_per_side=self.points_per_side,
                                   points_per_batch=self.points_per_batch,
@@ -137,6 +138,7 @@ class ParticleSegmentationModel:
     def testing_generate_mask(self):
         # function TO Do test opn Colab to speed up process of testing. The results are not accurate
         start_time = datetime.now()
+
         masks = dp.generate_masks(self.image,
                                   self.sam_checkpoint_path,
                                   points_per_side=4,

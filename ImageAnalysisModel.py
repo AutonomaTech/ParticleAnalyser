@@ -51,7 +51,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None, **customerFields):
+    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None, **customFields):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -98,13 +98,12 @@ class ImageAnalysisModel:
         self.mini_height = 100
         self.config_path = config_path
         self.config = configparser.ConfigParser()
-        self.checkpoint_folder = 'checkpoints'
+        self.checkpoint_folder = os.path.join(os.getcwd(), 'sam2\checkpoints')
         self.normal_bins = [1000, 2000, 3000, 4000,
                             5000, 6000, 7000, 8000, 9000, 10000]
         self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
         self.model_name = 'sam2.1_hiera_large.pt'
-        for key, value in customerFields.items():
-            setattr(self, key, value)
+        self.customFields = customFields
         self.load_config()
 
     def load_config(self):
@@ -190,7 +189,7 @@ class ImageAnalysisModel:
             print(f"Error occurred during model downloading: {e}")
             raise
 
-    def run_analysis(self):
+    def run_analysis(self, testing=False):
 
         try:
             # Step 1: Download model
@@ -212,7 +211,7 @@ class ImageAnalysisModel:
                 return
             logger.info(
                 f"Starting particle analyzing,sample_id: {self.sampleID}")
-            self.analyseParticles(self.checkpoint_folder, False)
+            self.analyseParticles(self.checkpoint_folder, testing)
             logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
             self.saveSegments()
 
@@ -649,21 +648,14 @@ class ImageAnalysisModel:
         print("-----------------------------------------------")
         print(f"CSV file: {self.csv_filename}")
 
-        custom_values = [getattr(self, attr) for attr in dir(
-            self) if attr.startswith("CustomField")]
+        self.distributions_filename = distribution_filename if distribution_filename else self.distributions_filename
 
-        if distribution_filename:
-            formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, distribution_filename,
-                                             self.totArea, self.Scaler.scalingNumber,
-                                             self.Scaler.scalingFactor, self.Scaler.scalingStamp,
-                                             self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                             self.p.circularity_threshold, *custom_values)
-        else:
-            formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
-                                             self.totArea, self.Scaler.scalingNumber,
-                                             self.Scaler.scalingFactor, self.Scaler.scalingStamp,
-                                             self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                             self.p.circularity_threshold, *custom_values)
+        formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, self.distributions_filename,
+                                         self.totArea, self.Scaler.scalingNumber,
+                                         self.Scaler.scalingFactor, self.Scaler.scalingStamp,
+                                         self.intensity, self.analysisTime, self.p.diameter_threshold,
+                                         self.p.circularity_threshold, **self.customFields)
+
         formatter.save_xml(byArea=byArea, bySize=bySize)
 
     def formatResultsForNormalDistribution(self, normalFlag):
@@ -691,13 +683,14 @@ class ImageAnalysisModel:
         normalBins_distributions_filename = os.path.join(
             self.folder_path, f"{self.sampleID}_normalBin_distribution.txt")
 
-        custom_values = [getattr(self, attr) for attr in dir(
-            self) if attr.startswith("CustomField")]
+        print(self.customFields)
+        print("hello")
+
         formatter = sa.sizeAnalysisModel(self.sampleID, self.csv_filename, normalBins_distributions_filename,
                                          self.totArea, self.Scaler.scalingNumber,
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold, custom_values)
+                                         self.p.circularity_threshold, **self.customFields)
         formatter.save_xml(normalFlag=normalFlag)
 
     def saveSegments(self):
