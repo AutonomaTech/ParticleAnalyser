@@ -153,7 +153,7 @@ def analyze_folder(folder_path):
                         logger.info(
                             f"Initialized ProcessStartModel for {bmp_file}")
 
-                        newImage.analyse(testing=False)
+                        newImage.analyse(testing=True)
                     except Exception as e:
                         logger.error(
                             f"Error processing {bmp_file} and {json_file}: {str(e)}")
