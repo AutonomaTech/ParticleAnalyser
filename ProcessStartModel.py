@@ -1,4 +1,5 @@
 
+import sys
 import os
 import json
 import shutil
@@ -6,7 +7,10 @@ import time
 import configparser
 import traceback
 from logger_config import get_logger
-import ImageAnalysisModel as pa
+print(os.path.join(os.getcwd(), "imageAnalysis"))
+sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
+pa = __import__("ImageAnalysisModel")
+
 
 # Constants
 BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "CapturedImages"))
