@@ -1,11 +1,18 @@
 from loguru import logger
+import os
 import sys
 
 # Configure logger
 LOG_FORMAT = "{name}: {time:YYYY-MM-DD HH:mm:ss} | {level} | {file}:{line} | {process} >>> {message}"
 logger.remove()  # Remove default logger
 logger.add(sys.stdout, level="DEBUG")  # Add a new logger to stdout with DEBUG level
-logger.add("file.log",
+script_dir = os.path.dirname(sys.argv[0])
+os.chdir(script_dir)
+
+# Now use the script directory for the log file
+log_file_path = os.path.join(script_dir, "file.log")
+
+logger.add(log_file_path,
            rotation="1 week",  # Rotate logs every week
            retention="10 days",  # Keep logs for 10 days
            compression="zip",  # Compress logs with zip

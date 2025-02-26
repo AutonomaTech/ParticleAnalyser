@@ -1,6 +1,4 @@
-import ImagePreprocessing.ContainerScalerModel as cs
-import sizeAnalysisModel as sa
-import ImageProcessingModel as ip
+
 
 import ParticleSegmentationModel as psa
 from logger_config import get_logger
@@ -18,6 +16,10 @@ parent_dir = os.path.dirname(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "imagePreprocessing"))
 cb = __import__("CalibrationModel")
 logger = get_logger("ParticleAnalyzer")
+
+import ImagePreprocessing.ContainerScalerModel as cs
+import sizeAnalysisModel as sa
+import ImageProcessingModel as ip
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
