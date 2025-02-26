@@ -12,13 +12,11 @@ logger = get_logger("SizeAnalyze")
 
 class sizeAnalysisModel:
     def __init__(self, sampleId, sampleIdFilePath=None, psdFilePath=None, tot_area=None, scaling_num=None, scaling_fact=None, scaling_stamp=None, intensity=None,
-                 analysis_time=None, diameter_threshold=None, circularity_threshold=None, **customFields):
+                 analysis_time=None, diameter_threshold=None, circularity_threshold=None, rounding=4,**customFields):
         config = configparser.ConfigParser()
         config.read('config.ini')
-        if 'output' in config and 'rounding' in config['output']:
-            self.rounding = int(config['output']['rounding'])
-        else:
-            self.rounding = 4
+
+        self.rounding = 4 if rounding == 0 else rounding
         self.tot_area = tot_area
         self.segments_file_path = sampleIdFilePath
         self.psd_file_path = psdFilePath

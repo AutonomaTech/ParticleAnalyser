@@ -5,12 +5,13 @@ import cv2
 import logger_config
 import json
 import numpy as np
+import configparser
 from PIL import Image
 from datetime import datetime
 
 logger = logger_config.get_logger(__name__)
 
-
+parameterPath = os.path.abspath(os.path.join(os.getcwd(), "imageAnalysis","samParameters.ini"))
 class ParticleSegmentationModel:
 
     """
@@ -52,17 +53,7 @@ class ParticleSegmentationModel:
         self.masks = None
         self.scaling_factor = pixel_to_micron
         self.segments = None
-        # best SAM2 model parameters
-        self.points_per_side = 150
-        self.points_per_batch = 128
-        self.pred_iou_thresh = 0.8
-        self.stability_score_thresh = 0.92
-        self.stability_score_offset = 0.8
-        self.crop_n_layers = 1
-        self.crop_n_points_downscale_factor = 3
-        self.min_mask_region_area = 0.0
-        self.box_nms_tresh = 0.2
-        self.use_m2m = True
+        self.load_config(parameterPath)
 
         self.openedImage = Image.open(image_path)
         self.image = np.array(self.openedImage.convert("RGB"))
@@ -82,6 +73,41 @@ class ParticleSegmentationModel:
             raise Exception('Image path does not exist')
         if not os.path.exists(self.sam_checkpoint_path):
             raise Exception('Sam checkpoint path does not exist')
+    
+    def load_config(self, config_path):
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        
+        if 'samParameters' in config:
+            params = config['samParameters']
+            
+            # Default values and constraints
+            defaults = {
+                "points_per_side": (150, 32, 256),
+                "points_per_batch": (128, 32, 256),
+                "pred_iou_thresh": (0.8, 0.5, 0.95),
+                "stability_score_thresh": (0.92, 0.85, 0.98),
+                "stability_score_offset": (0.8, 0.5, 1.0),
+                "crop_n_layers": (1, 0, 3),
+                "crop_n_points_downscale_factor": (3, 1, 5),
+                "min_mask_region_area": (0.0, 0.0, 1000.0),
+                "box_nms_tresh": (0.2, 0.1, 0.5),
+            }
+            
+            for key, (default, min_val, max_val) in defaults.items():
+                value = params.get(key, default)
+                value = type(default)(value)  
+                
+                if not (min_val <= value <= max_val):
+                    logger.warning(f"Invalid {key}: {value}. Setting to {default}.")
+                    value = default
+                
+                setattr(self, key, value)
+
+            self.use_m2m = params.get('use_m2m', 'True').lower() in ('true', '1', 'yes')
+        else:
+            logger.error("Sam Parameters could not be obtained from samParameters.ini")
+
 
     def load_image(self, image_path):
         """Load image from the specified path and update the image attribute."""

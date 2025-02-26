@@ -33,7 +33,9 @@ class ContainerScalerModel:
 
         if containerWidth is not None:
             self.containerWidth = containerWidth
-        if scalingNumber is not None:
+        if containerWidth == 0:
+            raise ValueError("The value of containerWidth cannot be zero.")
+        if scalingNumber is not None and scalingNumber > 0:
             self.scalingNumber = scalingNumber
         else:
             self.scalingNumber=imageWidth

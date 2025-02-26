@@ -7,9 +7,12 @@ from logger_config import get_logger
 import os
 import re
 import sys
+import multiprocessing
+import threading
+import time
 import csv
 import configparser
-import requests
+
 import traceback
 parent_dir = os.path.dirname(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "imagePreprocessing"))
@@ -55,7 +58,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None, containerWidth=None, sampleID=None, config_path=None, **customFields):
+    def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, config_path=None, **customFields):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -92,8 +95,7 @@ class ImageAnalysisModel:
         self.particles = []
         self.csv_filename = ""
         self.bins = None
-        self.processImageOnly = False
-        self.temperature = 3000
+        self.processNotCompleted=False
         self.crop_top = 0
         self.crop_left = 0
         self.crop_height = 0
@@ -102,11 +104,10 @@ class ImageAnalysisModel:
         self.mini_height = 100
         self.config_path = config_path
         self.config = configparser.ConfigParser()
-        self.checkpoint_folder = os.path.join(os.getcwd(), 'sam2\checkpoints')
+        self.process_completed_on_time = False
         self.normal_bins = [1000, 2000, 3000, 4000,
                             5000, 6000, 7000, 8000, 9000, 10000]
-        self.model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
-        self.model_name = 'sam2.1_hiera_large.pt'
+        self.checkpoint_folder=checkpoint_folder
         self.customFields = customFields
         self.load_config()
 
@@ -114,32 +115,34 @@ class ImageAnalysisModel:
         # Load configuration file
         self.config.read(self.config_path)
         self.calculated_reminder_area = int(self.config.get(
-            'switch', 'CalculatedAdjustedBins_Area', fallback='0'))
+            'switch', 'CalculateRemainderArea', fallback='0'))
         self.calculated_size = int(self.config.get(
             'switch', 'CalculatedAdjustedBins_Size', fallback='0'))
         self.calculated_area = int(self.config.get(
             'switch', 'CalculatedAdjustedBins_Area', fallback='0'))
-        self.target_distribution = eval(
-            self.config.get('PSD', 'lab', fallback='[]'))
         self.UseCalibratedBin = int(self.config.get(
             'switch', 'UseCalibratedBin', fallback='0'))
+        self.target_distribution = eval(
+            self.config.get('PSD', 'lab', fallback='[]'))
         self.processImageOnly = self.str_to_bool(
-            self.config.get('Image', 'processImageOnly', fallback='false'))
-        self.temperature = int(self.config.get(
-            'Color', 'temperature', fallback='0'))
+            self.config.get('Image', 'processImageOnly', fallback='False'))
+        self.temperature = abs(int(self.config.get(
+            'Color', 'temperature', fallback='3000')))
         industry_bins_string = self.config['analysis']['industryBin']
         self.industry_bins = self.parse_bins(industry_bins_string)
         if self.UseCalibratedBin != 0:
             self.load_calibrated_bins()
             # Load cropping parameters
-        self.crop_top = int(self.config.get('Crop', 'Top', fallback='0'))
-        self.crop_left = int(self.config.get('Crop', 'Left', fallback='0'))
-        self.crop_height = int(self.config.get('Crop', 'Height', fallback='0'))
-        self.crop_width = int(self.config.get('Crop', 'Width', fallback='0'))
-        self.mini_width = int(self.config.get(
-            'Crop', 'minimumWidth', fallback='100'))
-        self.mini_height = int(self.config.get(
-            'Crop', 'minimumHeight', fallback='100'))
+        self.crop_top = abs(int(self.config.get('Crop', 'Top', fallback='0')))
+        self.crop_left = abs(int(self.config.get('Crop', 'Left', fallback='0')))
+        self.crop_height = abs(int(self.config.get('Crop', 'Height', fallback='0')))
+        self.crop_width = abs(int(self.config.get('Crop', 'Width', fallback='0')))
+        self.mini_width = abs(int(self.config.get('Crop', 'minimumWidth', fallback='100')))
+        self.mini_height = abs(int(self.config.get('Crop', 'minimumHeight', fallback='100')))
+
+        self.maxTimer=abs(int(self.config.get(
+            'analysis', 'maximumTime', fallback='1200')))
+        self.rounding= abs(int(self.config.get('output', 'rounding', fallback=4)))
 
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
@@ -160,48 +163,44 @@ class ImageAnalysisModel:
         # Remove non-numeric characters and split by commas
         cleaned_string = re.sub(r'[\[\] ]', '', industry_bins_string)
         bins_list = cleaned_string.split(',')
+        
         try:
-            return [int(x) for x in bins_list]
-        except ValueError as e:
-            print("Error converting to integer:", e)
+            # Verify that bins_list is a list
+            if not isinstance(bins_list, list):
+                raise TypeError("bins_list is not a valid list.")
+            
+            # Convert to integers
+            bins_list = [int(x) for x in bins_list]
+            
+            # Ensure all values are different (no duplicates)
+            if len(bins_list) != len(set(bins_list)):
+                raise ValueError("Bins list contains duplicate values.")
+            
+            return bins_list
+        
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error: {e}")
             return []
 
-    def download_model(self):
-
+    def non_analyzed_sample_function(self):
+        non_analysed_file_path = os.path.join(os.path.dirname(os.path.dirname(self.folder_path)),"nonAnalysedSamplesList.txt")
         try:
-            # Check if model exists; if not, download it
-            if not os.path.exists(self.checkpoint_folder):
-                os.makedirs(self.checkpoint_folder, exist_ok=True)
-                print(f"Checkpoints folder created: {self.checkpoint_folder}")
-
-            file_path = os.path.join(self.checkpoint_folder, self.model_name)
-            if not os.path.exists(file_path):
-
-                response = requests.get(self.model_url, stream=True)
-                response.raise_for_status()
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-            else:
-                logger.info(
-                    f"Model already exists, skipping download,sample_id: {self.sampleID}")
-
+            if not os.path.exists(non_analysed_file_path):
+                with open(non_analysed_file_path, "w") as file:
+                    file.write("")  
+            
+            with open(non_analysed_file_path, "a") as file:
+                file.write(f"{self.folder_path}\n")
+            logger.warning(f"Sample {self.sampleID} was added to the list of non analysed samples in {non_analysed_file_path}")
         except Exception as e:
-            logger.error(
-                f"Error occurred during model downloading: {str(e)},sample_id: {self.sampleID}")
-            print(f"Error occurred during model downloading: {e}")
-            raise
+            logger.error(f"Failed to write to {non_analysed_file_path}: {str(e)}")
 
     def run_analysis(self, testing=False):
 
         try:
-            # Step 1: Download model
-            logger.info(f"Starting model download,sample_id: {self.sampleID}")
-            self.download_model()
-            # Step 2: Perform image processing
+            # Step 1: Perform image processing
             logger.info(f"Starting image crop,sample_id: {self.sampleID}")
-           # self.crop_image()
+            self.crop_image()
             logger.info(
                 f"Starting color correction,sample_id: {self.sampleID}")
           #  self.color_correction()
@@ -215,11 +214,17 @@ class ImageAnalysisModel:
                 return
             logger.info(
                 f"Starting particle analyzing,sample_id: {self.sampleID}")
-            self.analyseParticles(self.checkpoint_folder, testing)
+
+            self.startAnalyiswithTimer(self.checkpoint_folder, testing)
+            if not self.process_completed_on_time or self.processNotCompleted:
+                logger.error(f"Analysis process has not concluded appropriately, sample_id: {self.sampleID}")
+                self.non_analyzed_sample_function()
+                return
+
             logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
             self.saveSegments()
 
-            # Step 3:  Perform Image analysis
+            # Step 2:  Perform Image analysis
             if self.calibratedAreaBin:
                 logger.info(
                     f"Calibrated bin used: area_bin{self.calibratedAreaBin},sample_id: {self.sampleID}")
@@ -229,6 +234,7 @@ class ImageAnalysisModel:
                              38, 106, 1000, 8000])
             logger.info(
                 f"Starting save area PSD data,sample_id: {self.sampleID}")
+            #Step 3 Save data
             self.savePsdData()
             if self.calculated_reminder_area == 1:
                 self.loadCalibrator()
@@ -286,7 +292,31 @@ class ImageAnalysisModel:
                 f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
             logger.error(
                 f"Traceback error of run analysis process for {self.sampleID} : {traceback.format_exc()}")
+            self.non_analyzed_sample_function()
             raise
+    
+    def timeout_handler(self):
+        if self.process and self.process.is_alive():
+            print("Particle analysis timed out! Terminating process...")
+            self.process.terminate()  # Force stop the process
+            self.process_completed_on_time = False
+
+    def startAnalyiswithTimer(self, checkpoint_folder, testing):
+        # Create a multiprocessing.Process that runs the method in the class
+        self.process = multiprocessing.Process(target=self.analyseParticles, args=(checkpoint_folder, testing))
+        self.process.start()
+
+        # Set a 20-minute timer for the timeout handler
+        timer = threading.Timer(self.maxTimer, self.timeout_handler)  # 1200 seconds = 20 minutes
+        timer.start()
+
+        # Wait for the analysis to finish
+        self.process.join()
+
+        # Cancel the timer if the analysis finishes on time
+        if self.process.is_alive():
+            timer.cancel()
+            self.process_completed_on_time = True
 
     def analysewithCV2(self):
         self.csv_filename = os.path.join(
@@ -321,6 +351,9 @@ class ImageAnalysisModel:
 
         Output: None
         """
+        if any(b <= 0 for b in bins):
+            raise ValueError("All bin values must be greater than 0.")
+        
         self.bins = bins[:]
         if self.p is not None:
             self.p.bins = bins[:]
@@ -380,6 +413,7 @@ class ImageAnalysisModel:
             logger.error(f"Error occur during particle analyzing: {str(e)}")
             logger.error(
                 f"Traceback error of particle analyzing for {self.sampleID} : {traceback.format_exc()}")
+            self.processNotCompleted=True
             raise
 
     def analyseValidationParticles(self, checkpoint_folder, parameter_folder_name, testing_parameters=None):
@@ -658,7 +692,7 @@ class ImageAnalysisModel:
                                          self.totArea, self.Scaler.scalingNumber,
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold, **self.customFields)
+                                         self.p.circularity_threshold,self.rounding, **self.customFields)
 
         formatter.save_xml(byArea=byArea, bySize=bySize)
 
@@ -694,7 +728,7 @@ class ImageAnalysisModel:
                                          self.totArea, self.Scaler.scalingNumber,
                                          self.Scaler.scalingFactor, self.Scaler.scalingStamp,
                                          self.intensity, self.analysisTime, self.p.diameter_threshold,
-                                         self.p.circularity_threshold, **self.customFields)
+                                         self.p.circularity_threshold,self.rounding,**self.customFields)
         formatter.save_xml(normalFlag=normalFlag)
 
     def saveSegments(self):
