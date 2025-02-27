@@ -449,81 +449,6 @@ class ImageProcessingModel:
                 f"Error for image crop :{self.sampleID} Traceback: {traceback.format_exc()}")
             raise
 
-    def __get_rgb_from_temperature(self, temp):
-        """
-        Calculate the RGB values of the white point based on color temperature (Kelvin)
-        """
-        temp = max(1000, min(temp, 40000)) / 100.0
-
-        # Calculate the Red component
-        if temp <= 66:
-            r = 255
-        else:
-            tmpCalc = temp - 55
-            r = 351.976905668057 + 0.114206453784165 * \
-                tmpCalc - 40.2536630933213 * np.log(tmpCalc)
-            r = min(255, max(0, r))
-
-        # Calculate the Green component
-        if temp <= 66:
-            tmpCalc = temp - 2
-            g = -155.254855627092 - 0.445969504695791 * \
-                tmpCalc + 104.492161993939 * np.log(tmpCalc)
-            g = min(255, max(0, g))
-        else:
-            tmpCalc = temp - 50
-            g = 325.449412571197 + 0.0794345653666234 * \
-                tmpCalc - 28.0852963507957 * np.log(tmpCalc)
-            g = min(255, max(0, g))
-
-        # Calculate the Blue component
-        if temp >= 66:
-            b = 255
-        else:
-            if temp <= 19:
-                b = 0
-            else:
-                tmpCalc = temp - 10
-                b = -254.769351841209 + 0.827409606400739 * \
-                    tmpCalc + 115.679944010661 * np.log(tmpCalc)
-                b = min(255, max(0, b))
-
-        return np.array([r, g, b], dtype=np.uint8).reshape(1, 1, 3)
-
-    def __color_error(self, rgb1, rgb2):
-        diff = np.array(rgb1) - np.array(rgb2)
-        return math.sqrt(np.sum(diff ** 2))
-
-    def __get_temperature_from_rgb(self, target_r, target_g, target_b):
-        target_rgb = (target_r, target_g, target_b)
-        start_time = time.time()
-        min_error = float('inf')
-        best_temp = 1000
-
-        # Full range 1K step-by-step search
-        for temp in range(1000, 40001, 1):
-            rgb = self.__get_rgb_from_temperature(temp)
-            err = self.__color_error(rgb, target_rgb)
-            if err < min_error:
-                min_error = err
-                best_temp = temp
-
-        end_time = time.time()
-        print("Searching consumption time: {:.2f}s".format(
-            end_time - start_time))
-        return best_temp, min_error
-
-    def __estimate_temperature_from_image(self):
-        image = Image.open(self.imagePath).convert("RGB")
-        arr = np.array(image)
-        avg_rgb = np.mean(arr.reshape(-1, 3), axis=0)
-        avg_r, avg_g, avg_b = avg_rgb
-
-        # estimated_temp, error = get_temperature_from_rgb(avg_r, avg_g, avg_b)
-        estimated_temp, error = self.__get_temperature_from_rgb(
-            avg_r, avg_g, avg_b)
-        return estimated_temp, error
-
     def __kelvin_to_rgb(self, temp_kelvin):
 
         if temp_kelvin < 1000:
@@ -616,41 +541,13 @@ class ImageProcessingModel:
                 f"Color corrected image saved: sample Id :{self.sampleID}")
 
     # for image color correction--hardcoded for now
-    def colorCorrection(self, adjustedColorTemp):
+    def colorCorrection(self,temperature, ori_temperature):
 
         try:
-
-            image_temp, err = self.__estimate_temperature_from_image()
-
-            if image_temp is None:
-                logger.error(
-                    "Can not get the original color temperature of the sample ID: {}", self.sampleID)
-                return
-            if self.sampleID.startswith('RCB1489190'):
-                image_temp = 2648
-            if self.sampleID.startswith('RCB1751016'):
-                image_temp = 2561
-            if self.sampleID.startswith('RCB1763362'):
-                image_temp = 2500
-            if self.sampleID.startswith('RCB1763004'):
-                image_temp = 2444
-            if self.sampleID.startswith('RCB1763013'):
-                image_temp = 2537
-            if self.sampleID.startswith('RCB1754033'):
-                image_temp = 2513
-            if self.sampleID.startswith('RCB1766399'):
-                image_temp = 2513
-            if self.sampleID.startswith('RCB1767022'):
-                image_temp = 2513
-            logger.error(
-                f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
-            print(
-                f"The original color temperature of the sample ID: {self.sampleID} is {image_temp}")
-
-            self.__color_correction(image_temp, adjustedColorTemp)
+            logger.info(
+                f"The original color temperature of the sample ID: {self.sampleID} is {ori_temperature} and the new color lv is {temperature}")
+            self.__color_correction(ori_temperature, temperature)
         except Exception as e:
             logger.error(
                 f"Error occurred in color correction  : {str(e)},sample_id: {self.sampleID}")
-            logger.error(
-                f"Error for color correction :{self.sampleID} Traceback: {traceback.format_exc()}")
             raise

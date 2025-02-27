@@ -60,7 +60,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, config_path=None, **customFields):
+    def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, ori_temperature=None, temperature=None, config_path=None, **customFields):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -109,6 +109,8 @@ class ImageAnalysisModel:
         self.process_completed_on_time = False
         self.normal_bins = [1000, 2000, 3000, 4000,
                             5000, 6000, 7000, 8000, 9000, 10000]
+        self.ori_temperature=ori_temperature
+        self.temperature=temperature
         self.checkpoint_folder=checkpoint_folder
         self.customFields = customFields
         self.load_config()
@@ -1105,5 +1107,5 @@ class ImageAnalysisModel:
         Input: None
         Output: color corrected image
         """
-        self.imageProcessor.colorCorrection(self.temperature)
+        self.imageProcessor.colorCorrection(self.temperature, self.ori_temperature)
         self.imagePath = self.imageProcessor.getImagePath()

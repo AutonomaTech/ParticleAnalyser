@@ -19,6 +19,9 @@ try:
     # Define the SMB server and share
     SMB_SERVER = str(config.get('SMBServer', 'SMB_SERVER', fallback="AT-SERVER"))
     SMB_SHARE = str(config.get('SMBServer', 'SMB_SHARE', fallback="ImageDataShare"))
+    
+    defaultTemperature = int(config.get('analysis', 'temperature', fallback=3000))
+    defaultOriTemperature = int(config.get('analysis', 'ori_temperature', fallback=2500))
 
 except Exception as e:
     print(f"Unexpected error: {e}")
@@ -51,8 +54,6 @@ class ProcessStartModel:
             remote_file_path = f"\\\\{SMB_SERVER}\\{SMB_SHARE}\\{sampleID}{ext}"
             new_file_path = os.path.join(folder_path, f"{base_sample_id}{ext}")
             try:
-                print(remote_file_path)
-                print(new_file_path)
                 shutil.move(remote_file_path, new_file_path)
             except Exception as e:
                 logger.error(f"Error while copying {sampleID}{ext} from SMB: {str(e)}")
@@ -63,10 +64,16 @@ class ProcessStartModel:
             with open(new_json_path, 'r') as f:
                 json_data = json.load(f)
 
+            temperature = defaultTemperature if json_data.get('Temperature', 0) <= 0 else json_data['Temperature']
+            ori_temperature = defaultOriTemperature if json_data.get('OriTemperature', 0) <= 0 else json_data['OriTemperature']
+
+
             json_data['programId'] = programNumber
             json_data['sampleID'] = base_sample_id if sampleID else None
             json_data['timestamp'] = timestamp if timestamp else None
             json_data['weight'] = weight if weight else None
+
+
 
             # Add CustomField attributes dynamically
             custom_fields = {key: value for key, value in json_data.items() if key.startswith('CustomField')}
@@ -88,6 +95,8 @@ class ProcessStartModel:
         self.sampleID = base_sample_id
         self.programNumber = programNumber
         self.weight = weight
+        self.ori_temperature=ori_temperature
+        self.temperature=temperature
         self.timestamp = timestamp
         self.checkpoint_folder = checkpoint_folder
 
@@ -118,6 +127,8 @@ class ProcessStartModel:
                 scalingNumber=defaultScalingNumber,  
                 containerWidth=container_width,
                 checkpoint_folder=self.checkpoint_folder,
+                ori_temperature=self.ori_temperature,
+                temperature=self.temperature,
                 sampleID=self.sampleID,
                 config_path=config_path,
                 **custom_fields
