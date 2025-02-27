@@ -6,11 +6,6 @@ from logger_config import get_logger
 import ImageAnalysisModel as pa
 import os
 import shutil 
-import cv2
-
-# Define the SMB server and share
-SMB_SERVER = "AT-SERVER"
-SMB_SHARE = "ImageDataShare"
 
 defaultConfigPath = 'config.ini'
 
@@ -21,6 +16,9 @@ try:
     defaultContainerWidth = abs(int(config.get('analysis', 'containerWidth', fallback=180000)))
     defaultOutputfolder = config.get('analysis', 'defaultOutputfolder', fallback="defaultProgram")
     defaultScalingNumber = int(config.get('analysis', 'scalingNumber', fallback=0))
+    # Define the SMB server and share
+    SMB_SERVER = str(config.get('SMBServer', 'SMB_SERVER', fallback="AT-SERVER"))
+    SMB_SHARE = str(config.get('SMBServer', 'SMB_SHARE', fallback="ImageDataShare"))
 
 except Exception as e:
     print(f"Unexpected error: {e}")

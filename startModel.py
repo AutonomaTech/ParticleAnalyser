@@ -9,9 +9,6 @@ from logger_config import get_logger
 sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
 ProcessStartModel = __import__("ProcessStartModel")
 
-# Constants
-BASEFOLDER = r'\\AT-SERVER\ImageDataShare'
-SAMPLEFOLDER = os.path.abspath(os.path.join(BASEFOLDER, "Samples"))
 defaultConfigPath = 'config.ini'
 try:
     # Load configuration file
@@ -23,6 +20,9 @@ try:
         'analysis', 'containerWidth', fallback=180000))
     defaultOutputfolder = config.get(
         'analysis', 'defaultOutputfolder', fallback="defaultProgram")
+    # Define the SMB server and share
+    SMB_SERVER = str(config.get('SMBServer', 'SMB_SERVER', fallback="AT-SERVER"))
+    SMB_SHARE = str(config.get('SMBServer', 'SMB_SHARE', fallback="ImageDataShare"))
 
 except Exception as e:
     print(f"Unexpected error: {e}")
@@ -33,6 +33,10 @@ except Exception as e:
 checkpoint_folder = os.path.join(os.getcwd(), "sam2\\checkpoints")
 model_name = 'sam2.1_hiera_large.pt'
 model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
+
+# SMBServer
+BASEFOLDER = f"\\\\{SMB_SERVER}\\{SMB_SHARE}"
+SAMPLEFOLDER = os.path.abspath(os.path.join(BASEFOLDER, "Samples"))
 
 
 # Logger setup

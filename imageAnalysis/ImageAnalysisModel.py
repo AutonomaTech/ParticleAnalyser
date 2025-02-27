@@ -205,7 +205,7 @@ class ImageAnalysisModel:
             self.crop_image()
             logger.info(
                 f"Starting color correction,sample_id: {self.sampleID}")
-          #  self.color_correction()
+            self.color_correction()
             logger.info(f"Starting even light,sample_id: {self.sampleID}")
             self.evenLighting()
             logger.info(f"Starting over lay,sample_id: {self.sampleID}")
