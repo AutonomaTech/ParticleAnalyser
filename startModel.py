@@ -130,12 +130,52 @@ def download_model():
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
 
-if __name__ == '__main__':
-    for folder in [BASEFOLDER, SAMPLEFOLDER]:
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-            print(f"Folder {folder} created.")
+def check_remote_folder_available(remote_folder):
+    """Check if the remote folder is accessible and openable."""
+    try:
+        # First, check if the folder exists
+        if os.path.exists(remote_folder):
+            # Try to list the contents of the folder to ensure it is accessible
+            if os.path.isdir(remote_folder):
+                # Try to open a file within the folder or list files
+                try:
+                    # Attempt to open a file or list files
+                    files = os.listdir(remote_folder)  # Listing the contents verifies accessibility
+                    return True
+                except PermissionError:
+                    print(f"PermissionError: Unable to access the folder {remote_folder}. Check permissions.")
+                    return False
+                except OSError as e:
+                    print(f"OSError: Unable to access the folder {remote_folder}. Error: {e}")
+                    return False
+            else:
+                print(f"The path {remote_folder} is not a directory.")
+                return False
         else:
-            print(f"Folder {folder} already exists.")
+            print(f"Remote folder {remote_folder} does not exist.")
+            return False
+    except Exception as e:
+        print(f"Error accessing remote folder {remote_folder}: {e}")
+        return False
+
+def create_remote_folder(remote_folder):
+    """Checks if remote folder is available, retries until it is accessible."""
+    print(f"Checking if remote folder {remote_folder} is available...")
+    retries = 0
+    while not check_remote_folder_available(remote_folder):  # Retry indefinitely
+        retries += 1
+        print(f"Remote folder {remote_folder} not available. Retrying... Attempt {retries}")
+        time.sleep(5)  # Retry after 5 seconds
+    print(f"Remote folder {remote_folder} is now available.")
+
+if __name__ == '__main__':    
+    create_remote_folder(BASEFOLDER)
+
+    if not os.path.exists(SAMPLEFOLDER):
+        os.makedirs(SAMPLEFOLDER)
+        print(f"Local folder {SAMPLEFOLDER} created.")
+    else:
+        print(f"Local folder {SAMPLEFOLDER} already exists.")
+
     download_model()
     analyze_folder(BASEFOLDER)
