@@ -10,8 +10,8 @@ sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
 ProcessStartModel = __import__("ProcessStartModel")
 
 # Constants
-BASEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "CapturedImages"))
-SAMPLEFOLDER = os.path.abspath(os.path.join(os.getcwd(), "Samples"))
+BASEFOLDER = r'\\AT-SERVER\ImageDataShare'
+SAMPLEFOLDER = os.path.abspath(os.path.join(BASEFOLDER, "Samples"))
 defaultConfigPath = 'config.ini'
 try:
     # Load configuration file
@@ -37,32 +37,42 @@ model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hie
 
 # Logger setup
 logger = get_logger("StartUp")
+
 def analyze_folder(folder_path):
     """ Continuously analyze files in the folder for BMP and corresponding JSON files. """
     while True:
         print("Monitoring folder...")
         for filename in os.listdir(folder_path):
-            if filename.endswith('.bmp'):
-                bmp_file = os.path.join(folder_path, filename)
-                json_file = bmp_file.replace('.bmp', '.json')
+            file_path = os.path.join(folder_path, filename)
 
-                if os.path.exists(json_file):
-                    try:
-                        with open(json_file, 'r') as f:
-                            json_data = json.load(f)
+            # Ensure it's a file, not a directory
+            if os.path.isfile(file_path):
+                if filename.endswith('.bmp'):
+                    bmp_file = file_path
+                    json_file = bmp_file.replace('.bmp', '.json')
 
-                        newImage = ProcessStartModel.ProcessStartModel(
-                            picturePath=folder_path, sampleID=filename, programNumber=int(json_data.get('programNumber')), checkpoint_folder=checkpoint_folder)
-                        logger.info(
-                            f"Initialized ProcessStartModel for {bmp_file}")
+                    if os.path.exists(json_file):
+                        try:
+                            with open(json_file, 'r') as f:
+                                json_data = json.load(f)
 
-                        newImage.analyse(testing=True)
-                    except Exception as e:
-                        logger.error(
-                            f"Error processing {bmp_file} and {json_file}: {str(e)}")
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-                else:
-                    logger.error(f"Missing JSON file for {bmp_file}")
+                            program_id = int(json_data.get("programId", 0))
+                            # Assuming ProcessStartModel and logger are defined elsewhere
+                            newImage = ProcessStartModel.ProcessStartModel(
+                                picturePath=folder_path, 
+                                sampleID=filename, 
+                                programNumber=program_id, 
+                                checkpoint_folder=checkpoint_folder, 
+                                SAMPLEFOLDER=SAMPLEFOLDER
+                            )
+                            logger.info(f"Initialized ProcessStartModel for {bmp_file}")
+
+                            newImage.analyse(testing=True)
+                        except Exception as e:
+                            logger.error(f"Error processing {bmp_file} and {json_file}: {str(e)}")
+                            logger.error(f"Traceback: {traceback.format_exc()}")
+                    else:
+                        logger.error(f"Missing JSON file for {bmp_file}")
 
         time.sleep(1)
 
