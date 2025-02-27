@@ -64,7 +64,12 @@ class ProcessStartModel:
             with open(new_json_path, 'r') as f:
                 json_data = json.load(f)
 
+            if 'Temperature' not in json_data:
+                logger.info("Warning: 'Temperature' key is missing. Using defaultTemperature.")
             temperature = defaultTemperature if json_data.get('Temperature', 0) <= 0 else json_data['Temperature']
+
+            if 'OriTemperature' not in json_data:
+                logger.info("Warning: 'OriTemperature' key is missing. Using defaultOriTemperature.")
             ori_temperature = defaultOriTemperature if json_data.get('OriTemperature', 0) <= 0 else json_data['OriTemperature']
 
 
