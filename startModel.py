@@ -72,6 +72,7 @@ def analyze_folder(folder_path):
                             logger.info(f"Initialized ProcessStartModel for {bmp_file}")
 
                             newImage.analyse(testing=True)
+                            updateStatusJson()
                         except Exception as e:
                             logger.error(f"Error processing {bmp_file} and {json_file}: {str(e)}")
                             logger.error(f"Traceback: {traceback.format_exc()}")
@@ -79,6 +80,28 @@ def analyze_folder(folder_path):
                         logger.error(f"Missing JSON file for {bmp_file}")
 
         time.sleep(1)
+def updateStatusJson():
+    machineStatusJson=os.path.abspath(os.path.join(BASEFOLDER, "machineStatus.json"))
+
+    try:
+        with open(machineStatusJson, 'r') as f:
+            data = json.load(f)
+
+        # Check if 'ProcessCount' key exists
+        if 'ProcessCount' in data:
+            # Decrease the ProcessCount by 1
+            data['ProcessCount'] = max(0, data['ProcessCount'] - 1)
+
+            print(f"Updated ProcessCount in {machineStatusJson}: {data['ProcessCount']}")
+
+        else:
+            data['ProcessCount'] = 0
+            
+        with open(machineStatusJson, 'w') as f:
+            json.dump(data, f, indent=4)
+
+    except Exception as e:
+        print(f"Error updating status file {machineStatusJson}: {e}")
 
 def get_remote_file_size(url):
     """Get the file size from the server (Content-Length)."""
