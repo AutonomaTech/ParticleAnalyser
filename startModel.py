@@ -78,6 +78,7 @@ def analyze_folder(folder_path):
                             logger.error(f"Traceback: {traceback.format_exc()}")
                     else:
                         logger.error(f"Missing JSON file for {bmp_file}")
+                        continue
 
         time.sleep(1)
 def updateStatusJson():
