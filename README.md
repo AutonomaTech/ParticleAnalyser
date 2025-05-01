@@ -37,6 +37,72 @@ At the core of the system is the SAM2 (Segment Anything Model 2), which powers t
   - Segmented images, analyzed data, and related metadata are saved to specified folders.
 
   - Facilitates seamless data transfer to external systems for further processing.
+
+# Particle Analyzer Process Start Model
+
+## Overview
+This system monitors for image files, processes them using image analysis, and manages the workflow between different servers.
+
+## Configuration
+
+### Setting up config.ini
+
+The system uses `config.ini` for configuration. Key settings include:
+
+```ini
+[SMBServer]
+SMB_SERVER = AT-SERVER        # The GPU server hostname
+SMB_SHARE = ImageDataShare    # The network share name on the GPU server
+
+[CPUWorkstation]
+CPU_SERVER = CP-88ED3A        # The CPU workstation hostname
+CPU_FOLDER = ImageDataShare_17424009  # The folder to monitor on the CPU workstation
+```
+
+### Required Settings
+
+1. **GPU Server (Required)**
+   - `SMB_SERVER`: Hostname of the GPU server
+   - `SMB_SHARE`: Network share name on the GPU server
+
+2. **CPU Workstation (Optional)**
+   - `CPU_SERVER`: Hostname of the CPU workstation
+   - `CPU_FOLDER`: Folder path to monitor on the CPU workstation
+
+## How It Works
+
+1. The system monitors two locations:
+   - CPU workstation: `\\CPU_SERVER\CPU_FOLDER`
+   - GPU server: `\\SMB_SERVER\SMB_SHARE`
+
+2. When image files (.bmp) and corresponding metadata files (.json) appear on the CPU workstation, they are:
+   - Copied to the GPU server
+   - Deleted from the CPU workstation after successful transfer
+
+3. The GPU server continuously monitors its folder for image and JSON file pairs and processes them using the image analysis model.
+
+## Starting the System
+
+```
+python startModel.py
+```
+
+## Logs and Troubleshooting
+
+Check the logs for any issues. The system logs:
+- File transfers between servers
+- Analysis operations
+- Error conditions
+
+If the CPU workstation is not accessible, the system will retry connecting periodically.
+
+## Requirements
+
+- Windows environment with network access
+- Python 3.6+
+- Network share access to both CPU and GPU servers
+- Proper permissions to read/write on network shares
+
 # Installation
 Provide clear instructions on how to install the necessary software, dependencies, or setup required for this project.
 
