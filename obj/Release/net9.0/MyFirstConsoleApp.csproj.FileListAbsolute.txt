@@ -1,0 +1,6 @@
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.csproj.AssemblyReference.cache
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.AssemblyInfoInputs.cache
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.AssemblyInfo.cs
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.csproj.CoreCompileInputs.cache
+C:\Users\marco\Desktop\ParticleAnalyser\obj\Release\net9.0\MyFirstConsoleApp.sourcelink.json

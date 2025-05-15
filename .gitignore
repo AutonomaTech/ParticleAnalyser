@@ -1,4 +1,12 @@
-/test.py
+
+/checkpoints
+/tester.py
+.DS_Store
+file.log
+/TestModule/tester.py
+/TestModule/test_flow.py
+/TestModule/file.log
+=======
 *.log
 /__pycache__
 /.venv
