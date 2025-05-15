@@ -1,4 +1,3 @@
-
 import json
 import configparser
 import traceback
@@ -84,6 +83,21 @@ class ProcessStartModel:
             custom_fields = {key: value for key, value in json_data.items() if key.startswith('CustomField')}
             for idx, (key, value) in enumerate(custom_fields.items(), start=1):
                 setattr(self, f"CustomField{idx}", value)
+            
+            # Extract crop coordinates if they exist
+            crop_coords = {}
+            crop_keys = [
+                "CropTopLeftX", "CropTopLeftY",
+                "CropTopRightX", "CropTopRightY",
+                "CropBottomRightX", "CropBottomRightY",
+                "CropBottomLeftX", "CropBottomLeftY"
+            ]
+            for key in crop_keys:
+                if key in json_data:
+                    crop_coords[key] = json_data[key]
+            
+            if crop_coords:
+                custom_fields.update(crop_coords)
 
             with open(new_json_path, 'w') as f:
                 json.dump(json_data, f, indent=4)

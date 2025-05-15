@@ -1,5 +1,3 @@
-
-
 import ParticleSegmentationModel as psa
 from logger_config import get_logger
 import os
@@ -98,10 +96,20 @@ class ImageAnalysisModel:
         self.csv_filename = ""
         self.bins = None
         self.processNotCompleted=False
-        self.crop_top = 0
-        self.crop_left = 0
-        self.crop_height = 0
-        self.crop_width = 0
+        
+        # Initialize crop coordinates
+        self.crop_coords = {
+            "CropTopLeftX": 0, "CropTopLeftY": 0,
+            "CropTopRightX": 0, "CropTopRightY": 0,
+            "CropBottomRightX": 0, "CropBottomRightY": 0,
+            "CropBottomLeftX": 0, "CropBottomLeftY": 0
+        }
+        
+        # Update crop coordinates from customFields if provided
+        for key in self.crop_coords.keys():
+            if key in customFields:
+                self.crop_coords[key] = customFields[key]
+        
         self.mini_width = 100
         self.mini_height = 100
         self.config_path = config_path
@@ -118,6 +126,12 @@ class ImageAnalysisModel:
     def load_config(self):
         # Load configuration file
         self.config.read(self.config_path)
+        
+        # Load crop coordinates from config if not set by customFields
+        for key in self.crop_coords.keys():
+            if self.crop_coords[key] == 0:  # Only update if not set by customFields
+                self.crop_coords[key] = int(self.config.get('Crop', key, fallback='0'))
+        
         self.calculated_reminder_area = int(self.config.get(
             'switch', 'CalculateRemainderArea', fallback='0'))
         self.calculated_size = int(self.config.get(
@@ -136,11 +150,7 @@ class ImageAnalysisModel:
         self.industry_bins = self.parse_bins(industry_bins_string)
         if self.UseCalibratedBin != 0:
             self.load_calibrated_bins()
-            # Load cropping parameters
-        self.crop_top = abs(int(self.config.get('Crop', 'Top', fallback='0')))
-        self.crop_left = abs(int(self.config.get('Crop', 'Left', fallback='0')))
-        self.crop_height = abs(int(self.config.get('Crop', 'Height', fallback='0')))
-        self.crop_width = abs(int(self.config.get('Crop', 'Width', fallback='0')))
+        
         self.mini_width = abs(int(self.config.get('Crop', 'minimumWidth', fallback='100')))
         self.mini_height = abs(int(self.config.get('Crop', 'minimumHeight', fallback='100')))
 
@@ -799,8 +809,34 @@ class ImageAnalysisModel:
                 "Image not initialized. Please ensure that 'imageProcessor' is properly initialized.")
 
     def crop_image(self):
-        self.imageProcessor.cropImage(self.crop_width, self.crop_height, self.crop_left, self.crop_top,
-                                      self.mini_height, self.mini_width)
+        # Check if we have all corner coordinates
+        has_all_corners = all(self.crop_coords.values())
+        
+        if has_all_corners:
+            # Use the new crop_image_updated function with corner points
+            corner_points = [
+                (self.crop_coords["CropTopLeftX"], self.crop_coords["CropTopLeftY"]),
+                (self.crop_coords["CropTopRightX"], self.crop_coords["CropTopRightY"]),
+                (self.crop_coords["CropBottomRightX"], self.crop_coords["CropBottomRightY"]),
+                (self.crop_coords["CropBottomLeftX"], self.crop_coords["CropBottomLeftY"])
+            ]
+            self.imageProcessor.crop_image_updated(corner_points)
+        else:
+            # Even for rectangular crop, use crop_image_updated with calculated corner points
+            width = self.crop_coords["CropTopRightX"] - self.crop_coords["CropTopLeftX"]
+            height = self.crop_coords["CropBottomLeftY"] - self.crop_coords["CropTopLeftY"]
+            left = self.crop_coords["CropTopLeftX"]
+            top = self.crop_coords["CropTopLeftY"]
+            
+            # Create corner points for a rectangle
+            corner_points = [
+                (left, top),  # TopLeft
+                (left + width, top),  # TopRight
+                (left + width, top + height),  # BottomRight
+                (left, top + height)  # BottomLeft
+            ]
+            self.imageProcessor.crop_image_updated(corner_points)
+        
         self.imagePath = self.imageProcessor.getImagePath()
         self.Scaler.updateScalingFactor(self.imageProcessor.getWidth())
 

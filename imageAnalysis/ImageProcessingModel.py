@@ -6,7 +6,7 @@ import io
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
+from PIL import Image, ImageDraw
 import cv2
 import sys
 
@@ -448,7 +448,65 @@ class ImageProcessingModel:
             logger.error(
                 f"Error for image crop :{self.sampleID} Traceback: {traceback.format_exc()}")
             raise
+    def crop_image_updated(self, corner_points):
+        """
+        Crops an image using the exact corner points provided.
+        Returns a rectangular image containing only the quadrilateral content.
 
+        Args:
+            corner_points: List of 4 points [(x1,y1), (x2,y2), (x3,y3), (x4,y4)]
+                           in order: TopLeft, TopRight, BottomRight, BottomLeft
+        """
+        if len(corner_points) != 4:
+            raise ValueError("Four corner points are required.")
+
+        # Load the image
+        image = cv2.imread(self.imagePath)
+        if image is None:
+            raise ValueError("The image cannot be loaded, check the path.")
+        
+        # Convert OpenCV image to PIL Image
+        source_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        # Find the min/max X and Y coordinates to determine output size
+        all_x = [p[0] for p in corner_points]
+        all_y = [p[1] for p in corner_points]
+        min_x, max_x = int(min(all_x)), int(max(all_x))
+        min_y, max_y = int(min(all_y)), int(max(all_y))
+
+        output_width = max_x - min_x
+        output_height = max_y - min_y
+
+        if output_width <= 0 or output_height <= 0:
+            raise ValueError(f"Invalid crop dimensions: {output_width}x{output_height}")
+
+        # Create the rectangular region from the source image (bounding box)
+        image_bbox_crop = source_image.crop((min_x, min_y, max_x, max_y))
+
+        # Create a new transparent image for the output
+        output_img = Image.new('RGBA', (output_width, output_height), (0, 0, 0, 0))
+
+        # Create a mask for the quadrilateral
+        mask = Image.new('L', (output_width, output_height), 0)  # 'L' for 8-bit grayscale
+
+        # Translate corner points to be relative to the bounding box origin
+        translated_corners = [(int(p[0] - min_x), int(p[1] - min_y)) for p in corner_points]
+
+        # Draw the polygon on the mask
+        ImageDraw.Draw(mask).polygon(translated_corners, outline=1, fill=1)
+
+        # Paste the cropped bounding box content onto the output image, using the mask
+        output_img.paste(image_bbox_crop, (0, 0), mask)
+
+        # Convert PIL Image to OpenCV format
+        cropped_image = cv2.cvtColor(np.array(output_img), cv2.COLOR_RGBA2BGR)
+
+        # Save the cropped image
+        cropped_image_name = "crop_" + self.sampleID + ".png"
+        self.imagePath = os.path.join(self.image_folder_path, cropped_image_name)
+        cv2.imwrite(self.imagePath, cropped_image)
+
+        return cropped_image
     def __kelvin_to_rgb(self, temp_kelvin):
 
         if temp_kelvin < 1000:
