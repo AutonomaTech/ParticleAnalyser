@@ -45,12 +45,21 @@ try:
     FS_USERNAME = str(config.get('FileSystem', 'USERNAME', fallback=""))
     FS_PASSWORD = str(config.get('FileSystem', 'PASSWORD', fallback=""))
     
+    # Define the Destination configuration (for final results storage)
+    DEST_ENABLED = config.getboolean('Destination', 'ENABLED', fallback=False)
+    DEST_SERVER = str(config.get('Destination', 'SERVER', fallback=""))
+    DEST_FOLDER = str(config.get('Destination', 'FOLDER', fallback=""))
+    DEST_DIRECT_PATH = str(config.get('Destination', 'DIRECT_PATH', fallback=""))
+    DEST_USERNAME = str(config.get('Destination', 'USERNAME', fallback=""))
+    DEST_PASSWORD = str(config.get('Destination', 'PASSWORD', fallback=""))
+    
     # Get global credentials as fallback
     GLOBAL_USERNAME = str(config.get('Credentials', 'USERNAME', fallback=""))
     GLOBAL_PASSWORD = str(config.get('Credentials', 'PASSWORD', fallback=""))
 
 except Exception as e:
-    print(f"Unexpected error: {e}")
+    logger = get_logger("StartUp")
+    logger.error(f"Unexpected error: {e}")
     defaultContainerWidth = 180000
     defaultOutputfolder = "defaultProgram"
     # SMB server defaults
@@ -70,6 +79,13 @@ except Exception as e:
     FS_DELETE_AFTER_COPY = False
     FS_USERNAME = ""
     FS_PASSWORD = ""
+    # Destination defaults
+    DEST_ENABLED = False
+    DEST_SERVER = ""
+    DEST_FOLDER = ""
+    DEST_DIRECT_PATH = ""
+    DEST_USERNAME = ""
+    DEST_PASSWORD = ""
     # Global credentials fallback
     GLOBAL_USERNAME = ""
     GLOBAL_PASSWORD = ""
@@ -92,13 +108,19 @@ if FS_ENABLED:
 else:
     FS_BASEFOLDER = ""
 
+# Destination (for final results)
+if DEST_ENABLED:
+    DEST_BASEFOLDER = DEST_DIRECT_PATH if DEST_DIRECT_PATH else (f"\\\\{DEST_SERVER}\\{DEST_FOLDER}" if DEST_SERVER and DEST_FOLDER else "")
+else:
+    DEST_BASEFOLDER = ""
+
 # Logger setup
 logger = get_logger("StartUp")
 
 def analyze_folder(folder_path):
     """ Continuously analyze files in the folder for BMP and corresponding JSON files. """
     while True:
-        print("Monitoring GPU server folder...")
+        logger.info("Monitoring GPU server folder...")
         for filename in os.listdir(folder_path):
             file_path = os.path.join(folder_path, filename)
 
@@ -126,6 +148,79 @@ def analyze_folder(folder_path):
 
                             newImage.analyse(testing=False)
                             updateStatusJson()
+                            
+                            # Handle destination copy and cleanup if enabled
+                            if DEST_ENABLED:
+                                try:
+                                    # Get the result folder path from ProcessStartModel
+                                    result_folder_path = newImage.picturePath  # This is the SAMPLEFOLDER/program/sampleID path
+                                    sample_id = newImage.sampleID
+                                    program_number = newImage.programNumber if newImage.programNumber not in [None, 0] else "defaultProgram"
+                                    
+                                    logger.info(f"Starting destination copy for sample: {sample_id}")
+                                    
+                                    # Copy results to destination
+                                    copy_success = copy_results_to_destination(result_folder_path, sample_id, str(program_number))
+                                    
+                                    if copy_success:
+                                        logger.info(f"Destination copy successful for {sample_id}")
+                                        
+                                        # Read source file info for cleanup
+                                        source_info_file = bmp_file + ".source_info"
+                                        if os.path.exists(source_info_file):
+                                            try:
+                                                import json
+                                                with open(source_info_file, 'r') as f:
+                                                    source_info = json.load(f)
+                                                
+                                                source_bmp = source_info.get("source_bmp")
+                                                source_json = source_info.get("source_json")
+                                                source_type = source_info.get("source_type", "Unknown")
+                                                
+                                                # Only cleanup if we didn't delete source files during copy
+                                                if source_bmp and source_json and os.path.exists(source_bmp):
+                                                    logger.info(f"Cleaning up source files from {source_type}")
+                                                    cleanup_success = cleanup_after_destination_copy(
+                                                        source_bmp, source_json, result_folder_path
+                                                    )
+                                                    
+                                                    if cleanup_success:
+                                                        logger.info(f"Successfully cleaned up source files for {sample_id}")
+                                                    else:
+                                                        logger.warning(f"Partial cleanup failure for {sample_id}")
+                                                else:
+                                                    logger.info(f"Source files already deleted or not found, only cleaning SMB result folder")
+                                                    # Still clean up the SMB result folder
+                                                    try:
+                                                        if os.path.exists(result_folder_path):
+                                                            shutil.rmtree(result_folder_path)
+                                                            logger.info(f"Cleaned up SMB result folder: {result_folder_path}")
+                                                    except Exception as e:
+                                                        logger.error(f"Error cleaning up SMB result folder: {e}")
+                                                
+                                                # Clean up the source info file
+                                                os.remove(source_info_file)
+                                                logger.debug(f"Removed source info file: {source_info_file}")
+                                                
+                                            except Exception as e:
+                                                logger.error(f"Error reading source info file: {e}")
+                                        else:
+                                            logger.warning(f"Source info file not found: {source_info_file}")
+                                            # Still clean up the SMB result folder
+                                            try:
+                                                if os.path.exists(result_folder_path):
+                                                    shutil.rmtree(result_folder_path)
+                                                    logger.info(f"Cleaned up SMB result folder: {result_folder_path}")
+                                            except Exception as e:
+                                                logger.error(f"Error cleaning up SMB result folder: {e}")
+                                    else:
+                                        logger.error(f"Destination copy failed for {sample_id}, keeping all files")
+                                        
+                                except Exception as e:
+                                    logger.error(f"Error in destination handling: {e}")
+                            else:
+                                logger.debug("Destination not enabled, keeping all files")
+                                
                         except Exception as e:
                             logger.error(f"Error processing {bmp_file} and {json_file}: {str(e)}")
                             logger.error(f"Traceback: {traceback.format_exc()}")
@@ -148,10 +243,10 @@ def monitor_external_folder(folder_path, delete_after_copy=True, source_type="CP
     """
     if not folder_path:
         logger.error(f"{source_type} configuration is missing. Cannot monitor {source_type}.")
-        print(f"ERROR: {source_type} configuration is missing or empty. Cannot monitor.")
+        logger.error(f"ERROR: {source_type} configuration is missing or empty. Cannot monitor.")
         return
     
-    print(f"Starting {source_type} monitoring at {folder_path}")
+    logger.info(f"Starting {source_type} monitoring at {folder_path}")
     logger.info(f"Starting {source_type} monitoring at {folder_path}")
     
     # Try to establish the connection first
@@ -166,7 +261,7 @@ def monitor_external_folder(folder_path, delete_after_copy=True, source_type="CP
     
     while True:
         try:
-            print(f"Monitoring {source_type} folder and subfolders: {folder_path}...")
+            logger.info(f"Monitoring {source_type} folder and subfolders: {folder_path}...")
             
             # Function to find all BMP files in the folder and subfolders
             def find_bmp_files(base_folder):
@@ -185,14 +280,14 @@ def monitor_external_folder(folder_path, delete_after_copy=True, source_type="CP
                             bmp_files.extend(subfolder_files)
                             
                 except Exception as e:
-                    print(f"Error accessing directory {base_folder}: {str(e)}")
+                    logger.error(f"Error accessing directory {base_folder}: {str(e)}")
                 
                 return bmp_files
             
             # Find all BMP files
             try:
                 all_bmp_files = find_bmp_files(folder_path)
-                print(f"Found {len(all_bmp_files)} BMP files in total")
+                logger.info(f"Found {len(all_bmp_files)} BMP files in total")
                 
                 # Process each BMP file if it has a corresponding JSON
                 for bmp_file_path, bmp_filename in all_bmp_files:
@@ -205,31 +300,45 @@ def monitor_external_folder(folder_path, delete_after_copy=True, source_type="CP
                     
                     if os.path.exists(json_file):
                         try:
-                            print(f"Found matching pair: {bmp_file_path} and {json_file}")
+                            logger.info(f"Found matching pair: {bmp_file_path} and {json_file}")
                             
                             # Define destination paths
                             dest_bmp = os.path.join(BASEFOLDER, bmp_filename)
                             dest_json = os.path.join(BASEFOLDER, bmp_filename.replace('.bmp', '.json'))
                             
                             # Simple file copy operations
-                            print(f"Copying {bmp_file_path} to {dest_bmp}")
+                            logger.info(f"Copying {bmp_file_path} to {dest_bmp}")
                             shutil.copy2(bmp_file_path, dest_bmp)
                             
-                            print(f"Copying {json_file} to {dest_json}")
+                            logger.info(f"Copying {json_file} to {dest_json}")
                             shutil.copy2(json_file, dest_json)
                             
                             logger.info(f"Copied {bmp_filename} and its JSON from {source_type} to GPU server")
-                            print(f"SUCCESS: Copied {bmp_filename} and its JSON to GPU server")
+                            logger.info(f"SUCCESS: Copied {bmp_filename} and its JSON to GPU server")
+                            
+                            # Save source file paths for later cleanup (if destination is enabled)
+                            if DEST_ENABLED:
+                                source_info_file = dest_bmp + ".source_info"
+                                source_info = {
+                                    "source_bmp": bmp_file_path,
+                                    "source_json": json_file,
+                                    "source_type": source_type,
+                                    "copy_time": time.time()
+                                }
+                                import json
+                                with open(source_info_file, 'w') as f:
+                                    json.dump(source_info, f)
+                                logger.debug(f"Saved source info for cleanup: {source_info_file}")
                             
                             # Delete original files after successful copy if configured to do so
                             if delete_after_copy:
                                 os.remove(bmp_file_path)
                                 os.remove(json_file)
                                 logger.info(f"Removed original files from {source_type}")
-                                print(f"SUCCESS: Removed original files after successful copy")
+                                logger.info(f"SUCCESS: Removed original files after successful copy")
                             else:
                                 logger.info(f"Kept original files on {source_type} (deletion disabled)")
-                                print(f"INFO: Kept original files (deletion disabled)")
+                                logger.info(f"INFO: Kept original files (deletion disabled)")
                             
                             # Add to processed files cache
                             processed_files.add(bmp_file_path)
@@ -240,24 +349,24 @@ def monitor_external_folder(folder_path, delete_after_copy=True, source_type="CP
                                 
                         except Exception as e:
                             logger.error(f"Error copying files: {str(e)}")
-                            print(f"ERROR copying files: {str(e)}")
+                            logger.error(f"ERROR copying files: {str(e)}")
                     else:
-                        print(f"No matching JSON file found for {bmp_file_path}")
+                        logger.info(f"No matching JSON file found for {bmp_file_path}")
             except Exception as e:
-                print(f"Error scanning for files: {str(e)}")
+                logger.error(f"Error scanning for files: {str(e)}")
                 # Try to reconnect if access fails, using the appropriate credentials
                 if username and password:
-                    print(f"Attempting to reconnect to {source_type} network share...")
+                    logger.info(f"Attempting to reconnect to {source_type} network share...")
                     connect_network_share(folder_path, username, password)
                 elif GLOBAL_USERNAME and GLOBAL_PASSWORD:
-                    print(f"Attempting to reconnect to {source_type} network share using global credentials...")
+                    logger.info(f"Attempting to reconnect to {source_type} network share using global credentials...")
                     connect_network_share(folder_path, GLOBAL_USERNAME, GLOBAL_PASSWORD)
                 time.sleep(10)
                 continue
                 
         except Exception as e:
             logger.error(f"Error in {source_type} monitoring loop: {str(e)}")
-            print(f"ERROR in {source_type} monitoring loop: {str(e)}")
+            logger.error(f"ERROR in {source_type} monitoring loop: {str(e)}")
         
         time.sleep(5)  # Check every 5 seconds
 
@@ -281,7 +390,7 @@ def updateStatusJson():
             # Decrease the ProcessCount by 1
             data['ProcessCount'] = max(0, data['ProcessCount'] - 1)
 
-            print(f"Updated ProcessCount in {machineStatusJson}: {data['ProcessCount']}")
+            logger.info(f"Updated ProcessCount in {machineStatusJson}: {data['ProcessCount']}")
 
         else:
             data['ProcessCount'] = 0
@@ -290,7 +399,7 @@ def updateStatusJson():
             json.dump(data, f, indent=4)
 
     except Exception as e:
-        print(f"Error updating status file {machineStatusJson}: {e}")
+        logger.error(f"Error updating status file {machineStatusJson}: {e}")
 
 def get_remote_file_size(url):
     """Get the file size from the server (Content-Length)."""
@@ -348,7 +457,7 @@ def download_model():
 
 def check_remote_folder_available(remote_folder, timeout=10):
     """Check if the remote folder is accessible and openable with a timeout."""
-    print(f"Checking if remote folder {remote_folder} is accessible...")
+    logger.info(f"Checking if remote folder {remote_folder} is accessible...")
     
     try:
         # Use a timeout mechanism to prevent hanging
@@ -389,36 +498,36 @@ def check_remote_folder_available(remote_folder, timeout=10):
         # Wait for the result with timeout
         try:
             success, message = result_queue.get(timeout=timeout)
-            print(message)
+            logger.info(message)
             return success
         except queue.Empty:
-            print(f"TIMEOUT: Check for remote folder {remote_folder} took too long (>{timeout}s). Network path may be unreachable.")
+            logger.error(f"TIMEOUT: Check for remote folder {remote_folder} took too long (>{timeout}s). Network path may be unreachable.")
             return False
             
     except Exception as e:
-        print(f"Error in check_remote_folder_available: {e}")
+        logger.error(f"Error in check_remote_folder_available: {e}")
         return False
 
 def create_remote_folder(remote_folder, max_retries=5):
     """Checks if remote folder is available, retries up to max_retries times."""
-    print(f"Checking if remote folder {remote_folder} is available...")
+    logger.info(f"Checking if remote folder {remote_folder} is available...")
     retries = 0
     success = False
     
     while retries < max_retries:
         success = check_remote_folder_available(remote_folder, timeout=10)
         if success:
-            print(f"Remote folder {remote_folder} is now available.")
+            logger.info(f"Remote folder {remote_folder} is now available.")
             return True
         
         retries += 1
         if retries < max_retries:
-            print(f"Remote folder {remote_folder} not available. Retrying... Attempt {retries}/{max_retries}")
+            logger.info(f"Remote folder {remote_folder} not available. Retrying... Attempt {retries}/{max_retries}")
             time.sleep(5)  # Retry after 5 seconds
     
     if not success:
-        print(f"WARNING: Could not connect to {remote_folder} after {max_retries} attempts.")
-        print(f"Will continue with the program, but functionality may be limited.")
+        logger.warning(f"WARNING: Could not connect to {remote_folder} after {max_retries} attempts.")
+        logger.warning(f"Will continue with the program, but functionality may be limited.")
     
     return success
 
@@ -426,10 +535,10 @@ def connect_network_share(network_path, username=None, password=None):
     """Connect to a network share using explicit credentials if provided."""
     try:
         if not username or not password:
-            print(f"Attempting to connect to {network_path} with current user credentials")
+            logger.info(f"Attempting to connect to {network_path} with current user credentials")
             return True
             
-        print(f"Attempting to connect to {network_path} with provided credentials")
+        logger.info(f"Attempting to connect to {network_path} with provided credentials")
         
         # Use the NET USE command to connect with credentials
         cmd = f'NET USE "{network_path}" /USER:{username} "{password}"'
@@ -439,22 +548,158 @@ def connect_network_share(network_path, username=None, password=None):
         
         # Check if connection was successful
         if result.returncode == 0:
-            print(f"Successfully connected to {network_path}")
+            logger.info(f"Successfully connected to {network_path}")
             return True
         else:
             error_msg = result.stderr if result.stderr else result.stdout
-            print(f"Failed to connect to {network_path}: {error_msg}")
+            logger.error(f"Failed to connect to {network_path}: {error_msg}")
             # Try to connect without credentials as fallback
-            print("Trying to connect without explicit credentials...")
+            logger.info("Trying to connect without explicit credentials...")
             return True
             
     except Exception as e:
-        print(f"Error connecting to network share: {e}")
+        logger.error(f"Error connecting to network share: {e}")
         return False
+
+def copy_results_to_destination(source_folder_path, sample_id, program_number):
+    """
+    Copy analysis results to destination file system
+    
+    Args:
+        source_folder_path: Path to the SAMPLEFOLDER/program/sampleID folder
+        sample_id: Sample ID for the analysis
+        program_number: Program number for organization
+        
+    Returns:
+        bool: True if copy was successful, False otherwise
+    """
+    if not DEST_ENABLED or not DEST_BASEFOLDER:
+        logger.info("Destination not enabled or configured, skipping copy")
+        return True  # Consider this as "success" since it's not required
+    
+    try:
+        # Create destination path structure matching source
+        dest_program_folder = os.path.join(DEST_BASEFOLDER, program_number if program_number not in [None, 0] else "defaultProgram")
+        dest_sample_folder = os.path.join(dest_program_folder, sample_id)
+        
+        # Ensure destination folders exist
+        os.makedirs(dest_sample_folder, exist_ok=True)
+        logger.info(f"Created destination folder: {dest_sample_folder}")
+        
+        # Copy the entire sample folder
+        logger.info(f"Copying results from {source_folder_path} to {dest_sample_folder}")
+        
+        # Copy all files from source to destination
+        for item in os.listdir(source_folder_path):
+            source_item = os.path.join(source_folder_path, item)
+            dest_item = os.path.join(dest_sample_folder, item)
+            
+            if os.path.isfile(source_item):
+                shutil.copy2(source_item, dest_item)
+                logger.debug(f"Copied file: {item}")
+            elif os.path.isdir(source_item):
+                shutil.copytree(source_item, dest_item, dirs_exist_ok=True)
+                logger.debug(f"Copied directory: {item}")
+        
+        logger.info(f"Successfully copied results to destination: {dest_sample_folder}")
+        
+        # Verify the copy was successful
+        return verify_destination_copy(source_folder_path, dest_sample_folder)
+        
+    except Exception as e:
+        logger.error(f"Error copying results to destination: {e}")
+        return False
+
+def verify_destination_copy(source_folder, dest_folder):
+    """
+    Verify that all files were successfully copied to destination
+    
+    Args:
+        source_folder: Source folder path
+        dest_folder: Destination folder path
+        
+    Returns:
+        bool: True if verification successful, False otherwise
+    """
+    try:
+        logger.info(f"Verifying copy from {source_folder} to {dest_folder}")
+        
+        # Get list of all files in source
+        source_files = []
+        for root, dirs, files in os.walk(source_folder):
+            for file in files:
+                rel_path = os.path.relpath(os.path.join(root, file), source_folder)
+                source_files.append(rel_path)
+        
+        # Check if all files exist in destination and have same size
+        for rel_path in source_files:
+            source_file = os.path.join(source_folder, rel_path)
+            dest_file = os.path.join(dest_folder, rel_path)
+            
+            # Check if destination file exists
+            if not os.path.exists(dest_file):
+                logger.error(f"Destination file missing: {rel_path}")
+                return False
+            
+            # Check if file sizes match
+            source_size = os.path.getsize(source_file)
+            dest_size = os.path.getsize(dest_file)
+            
+            if source_size != dest_size:
+                logger.error(f"File size mismatch for {rel_path}: source={source_size}, dest={dest_size}")
+                return False
+        
+        logger.info(f"Verification successful: {len(source_files)} files verified")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error verifying destination copy: {e}")
+        return False
+
+def cleanup_after_destination_copy(source_bmp_path, source_json_path, smb_result_folder):
+    """
+    Clean up source files and SMB temp files after successful destination copy
+    
+    Args:
+        source_bmp_path: Original BMP file path in source FS
+        source_json_path: Original JSON file path in source FS  
+        smb_result_folder: Result folder path in SAMPLEFOLDER to clean up
+        
+    Returns:
+        bool: True if cleanup successful, False otherwise
+    """
+    cleanup_success = True
+    
+    try:
+        # Delete source files in FS
+        if os.path.exists(source_bmp_path):
+            os.remove(source_bmp_path)
+            logger.info(f"Deleted source BMP file: {source_bmp_path}")
+        
+        if os.path.exists(source_json_path):
+            os.remove(source_json_path)
+            logger.info(f"Deleted source JSON file: {source_json_path}")
+            
+    except Exception as e:
+        logger.error(f"Error deleting source files: {e}")
+        cleanup_success = False
+    
+    try:
+        # Clean up SMB result folder
+        if os.path.exists(smb_result_folder):
+            shutil.rmtree(smb_result_folder)
+            logger.info(f"Cleaned up SMB result folder: {smb_result_folder}")
+            
+    except Exception as e:
+        logger.error(f"Error cleaning up SMB result folder: {e}")
+        # SMB cleanup failure is not critical, don't set cleanup_success to False
+        logger.warning("SMB cleanup failed but continuing...")
+    
+    return cleanup_success
 
 if __name__ == '__main__':    
     # First try to connect to network shares using appropriate credentials
-    print("Attempting to connect to network shares...")
+    logger.info("Attempting to connect to network shares...")
     
     # Connect to GPU server using SMB credentials or global fallback
     if SMB_USERNAME and SMB_PASSWORD:
@@ -476,6 +721,13 @@ if __name__ == '__main__':
         elif GLOBAL_USERNAME and GLOBAL_PASSWORD:
             connect_network_share(FS_BASEFOLDER, GLOBAL_USERNAME, GLOBAL_PASSWORD)
     
+    # Connect to Destination if configured and enabled
+    if DEST_ENABLED and DEST_BASEFOLDER:
+        if DEST_USERNAME and DEST_PASSWORD:
+            connect_network_share(DEST_BASEFOLDER, DEST_USERNAME, DEST_PASSWORD)
+        elif GLOBAL_USERNAME and GLOBAL_PASSWORD:
+            connect_network_share(DEST_BASEFOLDER, GLOBAL_USERNAME, GLOBAL_PASSWORD)
+    
     # Try to connect to the GPU server, but continue even if it fails
     smb_available = create_remote_folder(BASEFOLDER)
     
@@ -483,62 +735,76 @@ if __name__ == '__main__':
         if not os.path.exists(SAMPLEFOLDER):
             try:
                 os.makedirs(SAMPLEFOLDER)
-                print(f"Local folder {SAMPLEFOLDER} created.")
+                logger.info(f"Local folder {SAMPLEFOLDER} created.")
             except Exception as e:
-                print(f"Error creating SAMPLEFOLDER: {e}")
+                logger.error(f"Error creating SAMPLEFOLDER: {e}")
                 logger.error(f"Error creating SAMPLEFOLDER: {e}")
         else:
-            print(f"Local folder {SAMPLEFOLDER} already exists.")
+            logger.info(f"Local folder {SAMPLEFOLDER} already exists.")
     else:
-        print(f"WARNING: GPU server folder {BASEFOLDER} not available. Analysis will be limited.")
+        logger.warning(f"WARNING: GPU server folder {BASEFOLDER} not available. Analysis will be limited.")
 
     # Try to download the model, but continue if it fails
     try:
         download_model()
     except Exception as e:
-        print(f"Error downloading model: {e}")
         logger.error(f"Error downloading model: {e}")
+        logger.error(f"Error downloading model: {e}")
+    
+    # Check destination availability if enabled
+    dest_available = False
+    if DEST_ENABLED and DEST_BASEFOLDER:
+        logger.info(f"Destination enabled: {DEST_BASEFOLDER}")
+        dest_available = create_remote_folder(DEST_BASEFOLDER)
+        if dest_available:
+            logger.info("Destination folder is available and accessible")
+        else:
+            logger.warning("Destination folder is not accessible - destination copy will fail")
+    elif DEST_ENABLED:
+        logger.warning("Destination enabled but no valid path configured")
+    else:
+        logger.info("Destination not enabled - analysis results will be kept in SAMPLEFOLDER only")
     
     # Start monitoring threads based on configuration
     monitor_threads = []
     
     # Check if FileSystem monitoring is enabled (takes precedence)
     if FS_ENABLED and FS_BASEFOLDER:
-        print(f"FileSystem monitoring enabled: {FS_BASEFOLDER}")
-        print(f"File deletion after copy: {'ENABLED' if FS_DELETE_AFTER_COPY else 'DISABLED'}")
+        logger.info(f"FileSystem monitoring enabled: {FS_BASEFOLDER}")
+        logger.info(f"File deletion after copy: {'ENABLED' if FS_DELETE_AFTER_COPY else 'DISABLED'}")
         
         # Start FileSystem monitoring thread
         fs_thread = threading.Thread(target=monitor_filesystem, daemon=True)
         fs_thread.start()
         monitor_threads.append(fs_thread)
-        print("Started FileSystem monitoring thread")
+        logger.info("Started FileSystem monitoring thread")
     # Otherwise use CPU workstation if configured
     elif CPU_BASEFOLDER:
-        print(f"CPU workstation configuration detected: {CPU_BASEFOLDER}")
-        print(f"File deletion after copy: {'ENABLED' if CPU_DELETE_AFTER_COPY else 'DISABLED'}")
+        logger.info(f"CPU workstation configuration detected: {CPU_BASEFOLDER}")
+        logger.info(f"File deletion after copy: {'ENABLED' if CPU_DELETE_AFTER_COPY else 'DISABLED'}")
         
         # Start CPU workstation monitoring thread
         cpu_thread = threading.Thread(target=monitor_cpu_workstation, daemon=True)
         cpu_thread.start()
         monitor_threads.append(cpu_thread)
-        print("Started CPU workstation monitoring thread")
+        logger.info("Started CPU workstation monitoring thread")
     else:
-        print("No external monitoring configuration found. No monitoring threads started.")
+        logger.info("No external monitoring configuration found. No monitoring threads started.")
     
     # Only start analyzing the GPU server folder if it's available
     if smb_available:
         # Start the main analysis function (this will run in the main thread)
-        print(f"Starting analysis on GPU server folder: {BASEFOLDER}")
+        logger.info(f"Starting analysis on GPU server folder: {BASEFOLDER}")
         analyze_folder(BASEFOLDER)
     else:
         # If GPU server is not available but we have monitoring threads running,
         # keep the main thread alive to allow monitoring to continue
         if monitor_threads:
-            print("GPU server folder not available. Only external monitoring will be active.")
+            logger.info("GPU server folder not available. Only external monitoring will be active.")
             while True:
                 time.sleep(60)
-                print("Main thread still alive, monitoring threads active...")
+                logger.info("Main thread still alive, monitoring threads active...")
         else:
-            print("No monitoring configuration and GPU server not available. Nothing to do.")
-            print("Exiting program.")
+            logger.info("No monitoring configuration and GPU server not available. Nothing to do.")
+            logger.info("Exiting program.")
             
