@@ -8,10 +8,11 @@ import numpy as np
 import configparser
 from PIL import Image
 from datetime import datetime
+import configparser
 
-logger = logger_config.get_logger(__name__)
-
-parameterPath = os.path.abspath(os.path.join(os.getcwd(), "imageAnalysis","samParameters.ini"))
+from Config_Manager import get_sam_parameters_path
+parameterPath = get_sam_parameters_path()
+#parameterPath = os.path.abspath(os.path.join(os.getcwd(), "imageAnalysis","samParameters.ini"))
 class ParticleSegmentationModel:
 
     """

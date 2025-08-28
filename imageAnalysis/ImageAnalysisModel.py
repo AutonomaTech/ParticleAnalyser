@@ -8,13 +8,12 @@ import threading
 import time
 import csv
 import configparser
-
 import traceback
+from Config_Manager import get_calibration_config_path
 parent_dir = os.path.dirname(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "imagePreprocessing"))
 cb = __import__("CalibrationModel")
 logger = get_logger("ParticleAnalyzer")
-
 import ImagePreprocessing.ContainerScalerModel as cs
 import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
@@ -69,7 +68,7 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        self.calibration_file_path = "calibration.ini"
+        self.calibration_file_path = get_calibration_config_path()
         self.calibratedSizeBin = None
         self.calibratedAreaBin = None
         self.sampleID = sampleID
@@ -214,10 +213,10 @@ class ImageAnalysisModel:
         try:
             # Step 1: Perform image processing
             logger.info(f"Starting image crop,sample_id: {self.sampleID}")
-            self.crop_image()
+          #  self.crop_image()
             logger.info(
                 f"Starting color correction,sample_id: {self.sampleID}")
-            self.color_correction()
+          #  self.color_correction()
             logger.info(f"Starting even light,sample_id: {self.sampleID}")
             self.evenLighting()
             logger.info(f"Starting over lay,sample_id: {self.sampleID}")

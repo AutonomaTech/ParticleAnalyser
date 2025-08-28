@@ -9,10 +9,90 @@ import threading
 import shutil
 import subprocess
 from logger_config import get_logger
-sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
-ProcessStartModel = __import__("ProcessStartModel")
+from Config_Manager import ConfigManager
 
-defaultConfigPath = 'config.ini'
+sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
+sys.path.append(os.path.join(os.getcwd(), 'ImagePreprocessing'))
+
+# if getattr(sys, 'frozen', False):
+#     # 打包后：exe文件所在目录
+#     exe_dir = os.path.dirname(sys.executable)
+# else:
+#     # 开发环境：脚本所在目录
+#     exe_dir = os.getcwd()
+#
+# sys.path.append(os.path.join(exe_dir, "ImageAnalysis"))
+# sys.path.append(os.path.join(exe_dir, "ImagePreprocessing"))
+#
+# ProcessStartModel = __import__("ProcessStartModel")
+
+
+def debug_import():
+    """Debug the import process"""
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Script location: {os.path.dirname(os.path.abspath(__file__))}")
+
+    if hasattr(sys, '_MEIPASS'):
+        print(f"Running from PyInstaller, _MEIPASS: {sys._MEIPASS}")
+        base_path = sys._MEIPASS
+    else:
+        print("Running from source")
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+    image_analysis_path = os.path.join(base_path, "ImageAnalysis")
+    print(f"Looking for ImageAnalysis at: {image_analysis_path}")
+    print(f"ImageAnalysis exists: {os.path.exists(image_analysis_path)}")
+
+    if os.path.exists(image_analysis_path):
+        print(f"Contents of ImageAnalysis: {os.listdir(image_analysis_path)}")
+
+    print(f"Current sys.path: {sys.path}")
+
+    # Add to path
+    if image_analysis_path not in sys.path:
+        sys.path.append(image_analysis_path)
+        print(f"Added {image_analysis_path} to sys.path")
+
+    # Try to find ProcessStartModel.py
+    process_start_model_path = os.path.join(image_analysis_path, "ProcessStartModel.py")
+    print(f"ProcessStartModel.py exists: {os.path.exists(process_start_model_path)}")
+
+
+# Run debug first
+debug_import()
+
+# Now try to import
+try:
+    import ProcessStartModel
+
+    print("Successfully imported ProcessStartModel")
+except ImportError as e:
+    print(f"Import error: {e}")
+    sys.exit(1)
+
+def get_main_config_path():
+    """Get main config file path"""
+    config_manager = ConfigManager()
+    return config_manager.get_config_path('main')
+
+
+def setup_config_environment():
+    """Set up environment variables so other modules can find config files"""
+    config_manager = ConfigManager()
+    exe_dir = config_manager._get_base_directory()
+
+    # Set environment variables for other modules
+    os.environ['CONFIG_BASE_PATH'] = exe_dir
+    os.environ['CALIBRATION_CONFIG_PATH'] = config_manager.get_config_path('calibration')
+    os.environ['SAM_PARAMETERS_CONFIG_PATH'] = config_manager.get_config_path('sam_parameters')
+
+    logger = get_logger("ConfigSetup")
+    logger.info(f"Config environment set up successfully. Base directory: {exe_dir}")
+
+
+# Set up config environment and get main config path
+setup_config_environment()
+defaultConfigPath = get_main_config_path()
 try:
     # Load configuration file
     config = configparser.ConfigParser()
@@ -63,6 +143,8 @@ except Exception as e:
     defaultContainerWidth = 180000
     defaultOutputfolder = "defaultProgram"
     # SMB server defaults
+    SMB_SERVER = ""
+    SMB_SHARE = "ImageDataShare"
     SMB_USERNAME = ""
     SMB_PASSWORD = ""
     # CPU workstation defaults
@@ -96,7 +178,11 @@ model_name = 'sam2.1_hiera_large.pt'
 model_url = 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt'
 
 # SMBServer
-BASEFOLDER = f"\\\\{SMB_SERVER}\\{SMB_SHARE}"
+# SMBServer - 处理本地路径
+if SMB_SERVER:
+    BASEFOLDER = f"\\\\{SMB_SERVER}\\{SMB_SHARE}"
+else:
+    BASEFOLDER = SMB_SHARE  # 直接使用本地路径
 SAMPLEFOLDER = os.path.abspath(os.path.join(BASEFOLDER, "Samples"))
 
 # CPU Workstation
