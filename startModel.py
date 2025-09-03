@@ -96,7 +96,7 @@ defaultConfigPath = get_main_config_path()
 try:
     # Load configuration file
     config = configparser.ConfigParser()
-    config.read(defaultConfigPath)
+    config.read(defaultConfigPath, encoding='utf-8')
 
     # Read values from config.ini
     defaultContainerWidth = int(config.get(
