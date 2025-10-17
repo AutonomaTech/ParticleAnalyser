@@ -1,6 +1,8 @@
 import ParticleSegmentationModel as psa
 from logger_config import get_logger
 import os
+# ===== Add at the beginning of your main file (before all imports) =====
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 import re
 import sys
 import multiprocessing
@@ -8,13 +10,14 @@ import threading
 import time
 import csv
 import configparser
-
 import traceback
+import gc
+import torch
+from Config_Manager import get_calibration_config_path
 parent_dir = os.path.dirname(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "imagePreprocessing"))
 cb = __import__("CalibrationModel")
 logger = get_logger("ParticleAnalyzer")
-
 import ImagePreprocessing.ContainerScalerModel as cs
 import sizeAnalysisModel as sa
 import ImageProcessingModel as ip
@@ -56,7 +59,105 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 # structured to integrate with other models and tools seamlessly.
 # -----------------------------------------------------------------------------
 
+class AggressiveGPUCleaner:
+    """More aggressive GPU memory manager"""
 
+    def __init__(self, cleanup_interval=10):  # Changed to cleanup every 10 images
+        self.cleanup_interval = cleanup_interval
+        self.processed_count = 0
+        self.initial_memory = None
+
+    def get_detailed_memory_info(self):
+        """Get detailed memory information"""
+        if not torch.cuda.is_available():
+            return "CUDA not available"
+
+        allocated = torch.cuda.memory_allocated() / 1024 ** 3
+        reserved = torch.cuda.memory_reserved() / 1024 ** 3
+        total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 3
+        free = total - allocated
+
+        return {
+            'allocated_gb': allocated,
+            'reserved_gb': reserved,
+            'free_gb': free,
+            'total_gb': total,
+            'usage_percent': (allocated / total) * 100
+        }
+
+    def aggressive_memory_cleanup(self):
+        """Aggressive memory cleanup"""
+        if torch.cuda.is_available():
+            logger.info("Starting aggressive memory cleanup...")
+
+            # 1. Force synchronize all CUDA operations (ensure all GPU computations are complete)
+            torch.cuda.synchronize()
+
+            # 2. Clear cache
+            torch.cuda.empty_cache()
+
+            # 3. Python garbage collection
+            gc.collect()
+
+            # 4. Clear cache again (garbage collection may have freed new CUDA objects)
+            torch.cuda.empty_cache()
+
+            # 5. Multi-GPU support
+            if torch.cuda.device_count() > 1:
+                for i in range(torch.cuda.device_count()):
+                    with torch.cuda.device(i):
+                        torch.cuda.empty_cache()
+
+            logger.info("Aggressive cleanup completed")
+
+    def force_memory_reset(self):
+        """Force memory reset (last resort)"""
+        if torch.cuda.is_available():
+            logger.warning("Force memory reset initiated...")
+
+            # Clear all possible references
+            if hasattr(torch.cuda, 'reset_accumulated_memory_stats'):
+                torch.cuda.reset_accumulated_memory_stats()
+
+            # Multiple rounds of aggressive cleanup
+            for _ in range(3):
+                torch.cuda.synchronize()
+                torch.cuda.empty_cache()
+                gc.collect()
+
+            logger.info("Force reset completed")
+
+    def check_memory_leak(self):
+        """Check if memory leak exists"""
+        current_info = self.get_detailed_memory_info()
+
+        if current_info['usage_percent'] > 90:
+            logger.warning(f"High memory usage detected: {current_info['usage_percent']:.1f}%")
+            logger.warning(
+                f"Allocated: {current_info['allocated_gb']:.2f}GB, Reserved: {current_info['reserved_gb']:.2f}GB")
+            return True
+        return False
+
+    def increment_and_check(self):
+        """Enhanced checking and cleanup"""
+        self.processed_count += 1
+
+        # Check if regular cleanup is needed
+        if self.processed_count % self.cleanup_interval == 0:
+            logger.info(f"Scheduled cleanup at image {self.processed_count}")
+            self.aggressive_memory_cleanup()
+
+        # Check memory usage rate
+        if self.check_memory_leak():
+            logger.warning("Memory leak detected, performing aggressive cleanup...")
+            self.force_memory_reset()
+            return True
+
+        return False
+
+
+# ===== Create enhanced cleaner =====
+gpu_cleaner = AggressiveGPUCleaner(cleanup_interval=10)
 class ImageAnalysisModel:
     def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, ori_temperature=None, temperature=None, config_path=None, **customFields):
         """
@@ -69,7 +170,7 @@ class ImageAnalysisModel:
 
         Output: None
         """
-        self.calibration_file_path = "calibration.ini"
+        self.calibration_file_path = get_calibration_config_path()
         self.calibratedSizeBin = None
         self.calibratedAreaBin = None
         self.sampleID = sampleID
@@ -80,7 +181,7 @@ class ImageAnalysisModel:
         self.Scaler = cs.ContainerScalerModel(containerWidth)
         self.Scaler.updateScalingFactor(
             imageWidth=self.imageProcessor.getWidth(), scalingNumber=scalingNumber, containerWidth=containerWidth)
-        self.diameter_threshold = 100000  # 10cm
+        self.diameter_threshold =  90000 # 9cm
         self.folder_path = image_folder_path
         self.meshingTotalSeconds = 0
         self.totalSeconds = 0
@@ -125,7 +226,7 @@ class ImageAnalysisModel:
 
     def load_config(self):
         # Load configuration file
-        self.config.read(self.config_path)
+        self.config.read(self.config_path,encoding='utf-8')
         
         # Load crop coordinates from config if not set by customFields
         for key in self.crop_coords.keys():
@@ -212,12 +313,13 @@ class ImageAnalysisModel:
     def run_analysis(self, testing=False):
 
         try:
+
             # Step 1: Perform image processing
             logger.info(f"Starting image crop,sample_id: {self.sampleID}")
             self.crop_image()
             logger.info(
                 f"Starting color correction,sample_id: {self.sampleID}")
-            self.color_correction()
+          #  self.color_correction()
             logger.info(f"Starting even light,sample_id: {self.sampleID}")
             self.evenLighting()
             logger.info(f"Starting over lay,sample_id: {self.sampleID}")
@@ -229,11 +331,15 @@ class ImageAnalysisModel:
             logger.info(
                 f"Starting particle analyzing,sample_id: {self.sampleID}")
 
-            self.startAnalyiswithTimer(self.checkpoint_folder, testing)
-            if not self.process_completed_on_time or self.processNotCompleted:
-                logger.error(f"Analysis process has not concluded appropriately, sample_id: {self.sampleID}")
-                self.non_analyzed_sample_function()
-                return
+
+
+            self.analyseParticles(self.checkpoint_folder, testing)
+
+            # self.startAnalyiswithTimer(self.checkpoint_folder, testing)
+            # if not self.process_completed_on_time or self.processNotCompleted:
+            #     logger.error(f"Analysis process has not concluded appropriately, sample_id: {self.sampleID}")
+            #     self.non_analyzed_sample_function()
+            #     return
 
             logger.info(f"Starting saving segments,sample_id: {self.sampleID}")
             self.saveSegments()
@@ -301,6 +407,7 @@ class ImageAnalysisModel:
             else:
                 print(
                     "No target distribution provided. Skipping advanced bin calculations.")
+
         except Exception as e:
             logger.error(
                 f"Fatal error in run_analysis: {str(e)} sample_id: {self.sampleID}")
@@ -410,19 +517,83 @@ class ImageAnalysisModel:
                 minutes = int(total_seconds // 60)
                 seconds = total_seconds % 60
                 self.analysisTime = f"PT{minutes}M{seconds:.1f}S"
+             # Pre-processing memory check
+            info = gpu_cleaner.get_detailed_memory_info()
+            logger.info(
+                    f"Memory status before analysis: Usage {info['usage_percent']:.1f}% ({info['allocated_gb']:.2f}GB/{info['total_gb']:.2f}GB)")
 
+            # If memory usage is too high, cleanup in advance
+            if info['usage_percent'] > 80:
+                    logger.warning("High memory usage detected, pre-cleaning...")
+            gpu_cleaner.force_memory_reset()
             self.loadModel(checkpoint_folder)
-            if testing:
-                self.p.testing_generate_mask()
-            else:
-                self.p.generate_mask()
+            # Check and possibly cleanup memory
+            gpu_cleaner.increment_and_check()
+            # Enhanced retry mechanism
+            max_retries = 3
+            for attempt in range(max_retries + 1):
+                try:
+                    # Check memory before each attempt
+                    current_info = gpu_cleaner.get_detailed_memory_info()
+                    logger.info(f"Attempt {attempt + 1}: Memory usage {current_info['usage_percent']:.1f}%")
 
+                    if testing:
+                        self.p.testing_generate_mask()
+                    else:
+                        self.p.generate_mask()
+
+                    # Cleanup immediately after success to prevent accumulation
+                    torch.cuda.empty_cache()
+                    break
+
+                except RuntimeError as e:
+                    if "out of memory" in str(e):
+                        logger.error(f"CUDA OOM on attempt {attempt + 1}/{max_retries + 1}: {str(e)}")
+
+                        if attempt < max_retries:
+                            logger.warning("Starting emergency recovery sequence...")
+
+                            # Emergency recovery sequence
+                            gpu_cleaner.force_memory_reset()
+
+                            # Wait longer for GPU to stabilize
+                            import time
+                            time.sleep(2)
+
+                            # Check recovery status again
+                            recovery_info = gpu_cleaner.get_detailed_memory_info()
+                            logger.info(f"After recovery: {recovery_info['usage_percent']:.1f}% usage")
+
+                            if recovery_info['usage_percent'] > 85:
+                                logger.error("Recovery insufficient, memory still high")
+                                # Consider more aggressive measures like restarting process
+                                raise RuntimeError(f"Unable to recover sufficient memory after {attempt + 1} attempts")
+
+                            logger.info("Retrying analysis...")
+                        else:
+                            logger.error(f"Failed after {max_retries + 1} attempts")
+                            logger.error("Suggestion: Consider reducing batch size or restarting process")
+                            raise e
+                    else:
+                        raise e
+            # if testing:
+            #     self.p.testing_generate_mask()
+            # else:
+            #     self.p.generate_mask()
+
+            # Post-processing
             calculateAnalysisTime(self.p.getExecutionTime())
             self.p.setdiameter_threshold(self.diameter_threshold)
             self.csv_filename = os.path.join(
                 self.folder_path, f"{self.sampleID}.csv")
             self.p.save_masks_to_csv(self.csv_filename)
             self.showMasks()
+            # Cleanup after processing
+            torch.cuda.empty_cache()
+
+            # Final status check
+            final_info = gpu_cleaner.get_detailed_memory_info()
+            logger.info(f"Analysis completed. Final memory usage: {final_info['usage_percent']:.1f}%")
         except Exception as e:
             logger.error(f"Error occur during particle analyzing: {str(e)}")
             logger.error(

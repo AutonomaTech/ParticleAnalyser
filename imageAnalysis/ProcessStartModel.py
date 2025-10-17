@@ -10,14 +10,13 @@ defaultConfigPath = 'config.ini'
 
 try:
     config = configparser.ConfigParser()
-    config.read(defaultConfigPath)
 
+    config.read(defaultConfigPath, encoding='utf-8')
     defaultContainerWidth = abs(int(config.get('analysis', 'containerWidth', fallback=180000)))
     defaultOutputfolder = config.get('analysis', 'defaultOutputfolder', fallback="defaultProgram")
     defaultScalingNumber = int(config.get('analysis', 'scalingNumber', fallback=0))
     # Define the SMB server and share
-    SMB_SERVER = str(config.get('SMBServer', 'SMB_SERVER', fallback="AT-SERVER"))
-    SMB_SHARE = str(config.get('SMBServer', 'SMB_SHARE', fallback="ImageDataShare"))
+    FS_DIRECT_PATH = str(config.get('FileSystem', 'DIRECT_PATH', fallback=""))
     
     defaultTemperature = int(config.get('analysis', 'temperature', fallback=3000))
     defaultOriTemperature = int(config.get('analysis', 'ori_temperature', fallback=2500))
@@ -39,28 +38,45 @@ class ProcessStartModel:
         base_sample_id, extracted_timestamp, sampleID = self.extract_sample_id_and_timestamp(sampleID)
         timestamp = timestamp or extracted_timestamp
 
-        # Create folder path
-        folder_path = os.path.join(
-            self.SAMPLEFOLDER, programNumber if programNumber not in [None, 0] else "defaultProgram", sampleID
-        )
-        os.makedirs(folder_path, exist_ok=True)
 
-        new_json_name = f"{base_sample_id}.json"
-        new_json_path = os.path.join(folder_path, new_json_name)
 
-        # Move .bmp and .json files from SMB share
-        for ext in ['.bmp', '.json']:
-            remote_file_path = f"\\\\{SMB_SERVER}\\{SMB_SHARE}\\{sampleID}{ext}"
-            new_file_path = os.path.join(folder_path, f"{base_sample_id}{ext}")
-            try:
-                shutil.move(remote_file_path, new_file_path)
-            except Exception as e:
-                logger.error(f"Error while copying {sampleID}{ext} from SMB: {str(e)}")
-                raise
+        #  create complete file path for the result folder
+        result_folder_path = os.path.join(self.SAMPLEFOLDER,  sampleID)
+        os.makedirs( result_folder_path, exist_ok=True)
 
+        # Original file path (in SMB)
+        source_bmp_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.bmp")
+        source_json_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.json")
+
+        #  Target file path (in the result folder)
+        target_bmp_path = os.path.join( result_folder_path, f"{sampleID}.bmp")
+        target_json_path = os.path.join( result_folder_path, f"{sampleID}.json")
+
+        #  check if original file existed
+        if not os.path.exists(source_json_path):
+            logger.error(f"JSON File does not exist: {source_json_path}")
+            raise FileNotFoundError(f"JSON file not found: {source_json_path}")
+        if not os.path.exists(source_bmp_path):
+            logger.error(f"BMP File does not exist: {source_bmp_path}")
+            raise FileNotFoundError(f"BMP file not found: {source_bmp_path}")
+
+        # move file to pre-created result folder
+        try:
+            shutil.move(source_bmp_path, target_bmp_path)
+            logger.info(f"Moved {sampleID}.bmp to { result_folder_path}")
+
+            shutil.move(source_json_path, target_json_path)
+            logger.info(f"Moved {sampleID}.json to { result_folder_path}")
+
+        except Exception as e:
+            logger.error(f"Error moving files to result folder: {str(e)}")
+            raise
+
+        self.bmp_file_path = target_bmp_path
+        self.json_file_path = target_json_path
         # Process JSON file
         try:
-            with open(new_json_path, 'r') as f:
+            with open(self.json_file_path, 'r') as f:
                 json_data = json.load(f)
 
             if 'Temperature' not in json_data:
@@ -99,7 +115,7 @@ class ProcessStartModel:
             if crop_coords:
                 custom_fields.update(crop_coords)
 
-            with open(new_json_path, 'w') as f:
+            with open(self.json_file_path, 'w') as f:
                 json.dump(json_data, f, indent=4)
 
         except FileNotFoundError:
@@ -110,8 +126,9 @@ class ProcessStartModel:
             raise
 
         # Update instance variables
-        self.picturePath = folder_path
-        self.sampleID = base_sample_id
+
+        self.picturePath = result_folder_path
+        self.sampleID = sampleID
         self.programNumber = programNumber
         self.weight = weight
         self.ori_temperature=ori_temperature
