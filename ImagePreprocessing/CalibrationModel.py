@@ -8,7 +8,7 @@ import configparser
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-
+from Config_Manager import get_calibration_config_path
 class CalibrationModel:
     def __init__(self, totArea=None,csv_filename=None,folder_path=None,sampleId=None,bins=None):
         self.totArea = totArea
@@ -23,7 +23,7 @@ class CalibrationModel:
         self.calibrated_bins_with_size = []
         self.particles=[]
         self.bins=bins
-        self.ini_file_path = os.path.join(self.folder_path, "calibration_bin.ini")
+        self.ini_file_path = get_calibration_config_path()
         self.config = configparser.ConfigParser()
         self.load_config()
 
