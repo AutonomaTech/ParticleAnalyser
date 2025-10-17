@@ -24,7 +24,7 @@ from scipy.optimize import curve_fit
 from PIL import Image
 import matplotlib.patches as patches
 from os import path
-
+import gc
 # JH added save_masks function 18082024
 # JH modified plot_diameters function to include default display = False parameter.
 #
@@ -45,6 +45,90 @@ crop_n_points_downscale_factor: This parameter may control how much the number o
 min_mask_region_area: This parameter likely represents the minimum area threshold for a mask region to be considered valid. Regions below this threshold might be discarded as noise or artifacts.
 
 """
+# Global cache for SAM2 model and generator
+_cached_sam2_model = None
+_cached_mask_generator = None
+_cached_checkpoint_path = None
+
+
+def generate_masks_updated(image, sam2_checkpoint,
+                   points_per_side, points_per_batch, pred_iou_thresh, stability_score_thresh, stability_score_offset,
+                   crop_n_layers, crop_n_points_downscale_factor, min_mask_region_area, box_nms_tresh, use_m2m):
+    global _cached_sam2_model, _cached_mask_generator, _cached_checkpoint_path
+
+    # Check if we need to load/reload the model
+    if (_cached_sam2_model is None or _cached_checkpoint_path != sam2_checkpoint):
+
+        # Clean up existing model if any
+        if _cached_sam2_model is not None:
+            print(f"Cleaning up existing SAM2 model...")
+            del _cached_sam2_model
+            del _cached_mask_generator
+            _cached_sam2_model = None
+            _cached_mask_generator = None
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        print(f"Loading SAM2 model from checkpoint: {sam2_checkpoint}")
+
+        # Original model loading code
+        model_type = "vit_h"
+
+        # select the device for computation
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+        elif torch.backends.mps.is_available():
+            device = torch.device("mps")
+        else:
+            device = torch.device("cpu")
+        print(f"using device: {device}")
+
+        if device.type == "cuda":
+            # use bfloat16 for the entire notebook
+            torch.autocast("cuda", dtype=torch.bfloat16).__enter__()
+            # turn on float32 for Ampere GPUs
+            if torch.cuda.get_device_properties(0).major >= 8:
+                torch.backends.cuda.matmul.allow_tf32 = True
+                torch.backends.cudnn.allow_tf32 = True
+        elif device.type == "mps":
+            print(
+                "\nSupport for MPS devices is preliminary. SAM 2 is trained with CUDA and might "
+                "give numerically different outputs and sometimes degraded performance on MPS. "
+                "See e.g. https://github.com/pytorch/pytorch/issues/84936 for a discussion."
+            )
+
+        current_model_cfg = "sam2\configs\sam2.1\sam2.1_hiera_l.yaml"
+        model_cfg = os.path.abspath(current_model_cfg)
+
+        # Build and cache the model
+        _cached_sam2_model = build_sam2(model_cfg, sam2_checkpoint,
+                                        device=device, apply_postprocessing=False)
+
+        # Create and cache the mask generator
+        _cached_mask_generator = SAM2AutomaticMaskGenerator(
+            model=_cached_sam2_model,
+            points_per_side=points_per_side,
+            points_per_batch=points_per_batch,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crop_n_layers=crop_n_layers,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            min_mask_region_area=min_mask_region_area,
+            box_nms_thresh=box_nms_tresh,
+            use_m2m=use_m2m
+        )
+
+        # Update cached checkpoint path
+        _cached_checkpoint_path = sam2_checkpoint
+        print(f"SAM2 model loaded and cached successfully")
+
+    else:
+        print(f"Using cached SAM2 model for analysis")
+
+    # Generate masks using cached generator
+    masks = _cached_mask_generator.generate(image)
+    return masks
 
 
 def generate_masks(image, sam2_checkpoint,
@@ -102,7 +186,56 @@ def generate_masks(image, sam2_checkpoint,
     return masks
 
 
+# def visualise_masks(image, masks, file_name):
+#     def show_anns(anns, borders=True):
+#         if len(anns) == 0:
+#             return
+#         sorted_anns = sorted(anns, key=lambda x: x['area'], reverse=True)
+#         ax = plt.gca()
+#         ax.set_autoscale_on(False)
+#
+#         img = np.ones((sorted_anns[0]['segmentation'].shape[0],
+#                       sorted_anns[0]['segmentation'].shape[1], 4))
+#         img[:, :, 3] = 0  # Set transparency to 0 (fully transparent)
+#
+#         for ann in sorted_anns:
+#             m = ann['segmentation']
+#             # Random color with 50% transparency
+#             color_mask = np.concatenate([np.random.random(3), [0.5]])
+#             img[m] = color_mask  # Apply mask with the color and alpha value
+#
+#             if borders:
+#                 contours, _ = cv2.findContours(
+#                     m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+#                 # Try to smooth contours
+#                 contours = [cv2.approxPolyDP(
+#                     contour, epsilon=0.01, closed=True) for contour in contours]
+#                 # Draw contour with transparency
+#                 cv2.drawContours(img, contours, -1,
+#                                  (0, 0, 1, 0.4), thickness=1)
+#
+#         ax.imshow(img)
+#
+#     # Plot the original image with masks overlaid
+#     plt.figure(figsize=(20, 20))
+#     plt.imshow(image)
+#     show_anns(masks)
+#     plt.axis('off')  # Hide axis
+#     plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
+#     # plt.show()
+#     # Save the generated image
+#
+#     print(f"Mask saved to {file_name}")
+
+##### Update visual_mask to make sure system force release resource and collect garbage
 def visualise_masks(image, masks, file_name):
+    import matplotlib
+    matplotlib.use('Agg')  # Must be set before importing pyplot
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import cv2
+    import gc
+
     def show_anns(anns, borders=True):
         if len(anns) == 0:
             return
@@ -111,7 +244,7 @@ def visualise_masks(image, masks, file_name):
         ax.set_autoscale_on(False)
 
         img = np.ones((sorted_anns[0]['segmentation'].shape[0],
-                      sorted_anns[0]['segmentation'].shape[1], 4))
+                       sorted_anns[0]['segmentation'].shape[1], 4))
         img[:, :, 3] = 0  # Set transparency to 0 (fully transparent)
 
         for ann in sorted_anns:
@@ -132,18 +265,22 @@ def visualise_masks(image, masks, file_name):
 
         ax.imshow(img)
 
-    # Plot the original image with masks overlaid
-    plt.figure(figsize=(20, 20))
-    plt.imshow(image)
-    show_anns(masks)
-    plt.axis('off')  # Hide axis
-    plt.savefig(file_name, dpi=300, bbox_inches='tight', pad_inches=0)
-    # plt.show()
-    # Save the generated image
+    try:
+        # Create figure
+        plt.figure(figsize=(20, 20))
+        plt.imshow(image)
+        show_anns(masks)
+        plt.axis('off')  # Hide axis
 
-    print(f"Mask saved to {file_name}")
+        # Reduce DPI to minimize memory usage
+        plt.savefig(file_name, dpi=150, bbox_inches='tight', pad_inches=0)
 
+        print(f"Mask saved to {file_name}")
 
+    finally:
+        # Ensure resources are released even if an error occurs
+        plt.close('all')  # Close all figures
+        gc.collect()  # Force garbage collection
 def visualiseRemainingfromMasks(image, masks, background_color=(255, 255, 255)):
     """
     Visualizes the image with masked areas removed, leaving only unmasked regions visible.

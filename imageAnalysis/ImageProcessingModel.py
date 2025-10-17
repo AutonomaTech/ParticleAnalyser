@@ -42,7 +42,7 @@ class ImageProcessingModel:
 
             if os.path.exists(self.imagePath):
                 self.image_extension = ext
-                print(f"Image found: {self.imagePath}")
+                logger.trace(f"Image found: {self.imagePath}")
                 break
         else:
             # If no file with the listed extensions is found, raise an error
@@ -85,7 +85,7 @@ class ImageProcessingModel:
             plt.axis('off')  # Optional: Turn off the axis for a cleaner view
             plt.show()  # Show the image
         else:
-            print(
+            logger.trace(
                 f"Error: Image {self.imageName} not found at {self.imagePath}")
 
     def getWidth(self):
@@ -103,7 +103,7 @@ class ImageProcessingModel:
                 width, _ = img.size
             return width
         except Exception as e:
-            print(f"Error opening image at {self.imagePath}: {e}")
+            logger.trace(f"Error opening image at {self.imagePath}: {e}")
             return None
 
     def getIntensity(self):
@@ -133,7 +133,7 @@ class ImageProcessingModel:
         """
         try:
             if not os.path.exists(self.imagePath):
-                print(
+                logger.trace(
                     f"Error: Image {self.imageName} not found at {self.imagePath}")
                 return
 
@@ -153,7 +153,7 @@ class ImageProcessingModel:
 
                 base_image = base_image.resize(
                     (new_width, new_height), Image.LANCZOS)
-                print(
+                logger.trace(
                     f"Image size was over 8MB, resized to {new_width}x{new_height}.")
 
                 image_size_mb = base_image.tell() / (1024 * 1024)
@@ -164,7 +164,7 @@ class ImageProcessingModel:
                     base_image = base_image.resize(
                         (width // 2, height // 2), Image.LANCZOS)
                     image_size_mb = base_image.tell() / (1024 * 1024)
-                    print(
+                    logger.trace(
                         f"Still too large, further resized to {width // 2}x{height // 2}. Current size: {image_size_mb:.2f}MB")
 
             final_image = base_image.copy()
@@ -177,16 +177,18 @@ class ImageProcessingModel:
             if not self.imagePath.lower().endswith('.png'):
                 base_image_path = os.path.join(
                     self.image_folder_path, f"base_image_{self.sampleID}.png")
-                base_image.save(base_image_path)
-                print(f"Base image saved as: {base_image_path}")
+                self.safe_save_image(base_image, base_image_path)
+                #base_image.save(base_image_path)
+                logger.trace(f"Base image saved as: {base_image_path}")
 
             # Save the final overlaid image with a new name
             final_image_name = "final_" + self.sampleID + ".png"
             self.imagePath = os.path.join(
                 self.image_folder_path, final_image_name)
-            final_image.save(self.imagePath)
-            print(f"Final overlaid image saved: {self.sampleID}")
-            print(f"Final overlaid image saved as: {self.imagePath}")
+            self.safe_save_image(final_image, self.imagePath)
+            #final_image.save(self.imagePath)
+            logger.trace(f"Final overlaid image saved: {self.sampleID}")
+            logger.trace(f"Final overlaid image saved as: {self.imagePath}")
         except Exception as e:
             logger.error(
                 f"Error occurred in over lay  : {str(e)},sample_id: {self.sampleID}")
@@ -194,6 +196,27 @@ class ImageProcessingModel:
                 f"Error for over lay :{self.sampleID} Traceback: {traceback.format_exc()}")
             raise
 
+    def safe_save_image(self, image, save_path):
+        """添加这个方法到您的类中"""
+        import io
+
+        try:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            # 尝试直接保存
+            image.save(save_path, "PNG")
+
+        except AttributeError as e:
+            if "fileno" in str(e):
+                # 使用BytesIO绕过fileno问题
+                buffer = io.BytesIO()
+                image.save(buffer, format='PNG')
+
+                with open(save_path, 'wb') as f:
+                    f.write(buffer.getvalue())
+            else:
+                raise e
     def pureOverlayImage(self, baseImage, flag):
         """
         Overlays the image on itself 10 times to improve the contrast of the image
@@ -226,7 +249,7 @@ class ImageProcessingModel:
 
         # Save the final overlaid image to the meshingImage directory
         final_image.save(final_image_path)
-        print(f"Final overlaid image saved as: {final_image_path}")
+        logger.trace(f"Final overlaid image saved as: {final_image_path}")
 
     def processImageWithMeshing(self):
         """
@@ -238,7 +261,7 @@ class ImageProcessingModel:
         """
 
         if not os.path.exists(self.evenLightingImagePath):
-            print(
+            logger.trace(
                 f"Error: Image {self.evenLightingImagePath} not found at {self.evenLightingImagePath}")
             return
 
@@ -288,12 +311,12 @@ class ImageProcessingModel:
                 # Append the resized block to the list
                 blocks.append(block)
 
-        print(
+        logger.trace(
             f"Image divided into {len(blocks)} blocks, and each block is under 8MB.")
 
         # Process each block with `pureOverlayImage`
         for i in range(1, len(blocks)+1):
-            print(type(blocks[i-1]))
+            logger.trace(type(blocks[i-1]))
             self.pureOverlayImage(blocks[i-1], i)
 
     def even_out_lighting(self):
@@ -333,7 +356,7 @@ class ImageProcessingModel:
             self.evenLightingImagePath = self.imagePath
             cv2.imwrite(self.imagePath, final_image)
             logger.info(f"Evened out lighting picture saved : {self.sampleID}")
-            print(f"Evened out lighting picture saved as : {self.imagePath}")
+            logger.trace(f"Evened out lighting picture saved as : {self.imagePath}")
         except Exception as e:
             logger.error(
                 f"Error occurred in even lighting   : {str(e)},sample_id: {self.sampleID}")
@@ -378,7 +401,7 @@ class ImageProcessingModel:
         # self.evenLightingImagePath
         self.evenLightingImagePath = self.imagePath
         cv2.imwrite(self.imagePath, final_image)
-        print(f"Evened out lighting picture saved as : {self.imagePath}")
+        logger.trace(f"Evened out lighting picture saved as : {self.imagePath}")
 
     # def cropImage(self):
     #     """
@@ -410,12 +433,12 @@ class ImageProcessingModel:
         try:
             # Check if all parameters are zero
             if width == 0 and height == 0 and left == 0 and top == 0:
-                print("No cropping needed, all parameters are zero.")
+                logger.trace("No cropping needed, all parameters are zero.")
                 return
 
             # Check if only one of width or height is provided
             if (width == 0 and height != 0) or (width != 0 and height == 0):
-                print("Incomplete size parameters, cropping cannot be performed.")
+                logger.trace("Incomplete size parameters, cropping cannot be performed.")
                 return
 
             # Load the image
@@ -427,7 +450,7 @@ class ImageProcessingModel:
             if (left + width > image.shape[1] or top + height > image.shape[0] or
                     (defaultWidth and width < defaultWidth) or
                     (defaultHeight and height < defaultHeight)):
-                print(
+                logger.trace(
                     "Requested dimensions exceed the original image size or do not meet minimum size requirements.")
                 return
 
@@ -441,7 +464,7 @@ class ImageProcessingModel:
             # Save the cropped image
             cv2.imwrite(self.imagePath, cropped_image)
             logger.info(f"Cropped image saved : {self.sampleID}")
-            print(f"Cropped image saved as: {self.imagePath}")
+            logger.trace(f"Cropped image saved as: {self.imagePath}")
         except Exception as e:
             logger.error(
                 f"Error in image cropping : {str(e)},sample_id: {self.sampleID}")
@@ -493,8 +516,8 @@ class ImageProcessingModel:
         translated_corners = [(int(p[0] - min_x), int(p[1] - min_y)) for p in corner_points]
 
         # Draw the polygon on the mask
-        ImageDraw.Draw(mask).polygon(translated_corners, outline=1, fill=1)
-
+        # ImageDraw.Draw(mask).polygon(translated_corners, outline=1, fill=1)
+        ImageDraw.Draw(mask).polygon(translated_corners, outline=255, fill=255)
         # Paste the cropped bounding box content onto the output image, using the mask
         output_img.paste(image_bbox_crop, (0, 0), mask)
 

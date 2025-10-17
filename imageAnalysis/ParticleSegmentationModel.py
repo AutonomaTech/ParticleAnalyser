@@ -2,18 +2,20 @@ import os.path
 
 import pyDeepP2SA as dp
 import cv2
-import logger_config
+
 import json
 import numpy as np
 import configparser
 from PIL import Image
 from datetime import datetime
-
-logger = logger_config.get_logger(__name__)
-
-parameterPath = os.path.abspath(os.path.join(os.getcwd(), "imageAnalysis","samParameters.ini"))
+import configparser
+from logger_config import get_logger
+from Config_Manager import get_sam_parameters_path
+parameterPath = get_sam_parameters_path()
+logger = get_logger("Particle Segmentation")
+#parameterPath = os.path.abspath(os.path.join(os.getcwd(), "imageAnalysis","samParameters.ini"))
 class ParticleSegmentationModel:
-
+ 
     """
 
     ParticleSegmentationAnalysis is a class that provides a high level interface to the pyDeepP2SA library. 
@@ -142,7 +144,7 @@ class ParticleSegmentationModel:
             self.min_mask_region_area, self.box_nms_tresh, self.use_m2m)
         start_time = datetime.now()
 
-        masks = dp.generate_masks(self.image, self.sam_checkpoint_path,
+        masks = dp.generate_masks_updated(self.image, self.sam_checkpoint_path,
                                   points_per_side=self.points_per_side,
                                   points_per_batch=self.points_per_batch,
                                   pred_iou_thresh=self.pred_iou_thresh,
