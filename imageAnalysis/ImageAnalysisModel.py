@@ -159,7 +159,7 @@ class AggressiveGPUCleaner:
 # ===== Create enhanced cleaner =====
 gpu_cleaner = AggressiveGPUCleaner(cleanup_interval=10)
 class ImageAnalysisModel:
-    def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, ori_temperature=None, temperature=None, config_path=None, **customFields):
+    def __init__(self, image_folder_path, scalingNumber=None, checkpoint_folder=None, containerWidth=None, sampleID=None, ori_temperature=None, temperature=None, config_path=None,crop_coords=None, **customFields):
         """
         Initializes the ImageAnalysisModel with an image folder path and container width. 
         Sets up the sample ID, image processor, and container scaler.
@@ -199,18 +199,10 @@ class ImageAnalysisModel:
         self.processNotCompleted=False
         
         # Initialize crop coordinates
-        self.crop_coords = {
-            "CropTopLeftX": 0, "CropTopLeftY": 0,
-            "CropTopRightX": 0, "CropTopRightY": 0,
-            "CropBottomRightX": 0, "CropBottomRightY": 0,
-            "CropBottomLeftX": 0, "CropBottomLeftY": 0
-        }
+    
+        self.crop_coords = crop_coords
         
-        # Update crop coordinates from customFields if provided
-        for key in self.crop_coords.keys():
-            if key in customFields:
-                self.crop_coords[key] = customFields[key]
-        
+
         self.mini_width = 100
         self.mini_height = 100
         self.config_path = config_path
