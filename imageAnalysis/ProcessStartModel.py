@@ -101,7 +101,7 @@ class ProcessStartModel:
                 setattr(self, f"CustomField{idx}", value)
             
             # Extract crop coordinates if they exist
-            crop_coords = {}
+            _crop_coords = {}
             crop_keys = [
                 "CropTopLeftX", "CropTopLeftY",
                 "CropTopRightX", "CropTopRightY",
@@ -110,10 +110,7 @@ class ProcessStartModel:
             ]
             for key in crop_keys:
                 if key in json_data:
-                    crop_coords[key] = json_data[key]
-            
-            if crop_coords:
-                custom_fields.update(crop_coords)
+                    _crop_coords[key] = json_data[key]
 
             with open(self.json_file_path, 'w') as f:
                 json.dump(json_data, f, indent=4)
@@ -135,6 +132,7 @@ class ProcessStartModel:
         self.temperature=temperature
         self.timestamp = timestamp
         self.checkpoint_folder = checkpoint_folder
+        self.crop_coords = _crop_coords
 
     def extract_sample_id_and_timestamp(self, sample_id):
         """ Extracts the base sample ID and timestamp from the filename. """
@@ -167,6 +165,7 @@ class ProcessStartModel:
                 temperature=self.temperature,
                 sampleID=self.sampleID,
                 config_path=config_path,
+                crop_coords=self.crop_coords,
                 **custom_fields
             )
             analyser.run_analysis(testing)
