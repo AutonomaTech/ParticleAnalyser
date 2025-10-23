@@ -12,21 +12,23 @@ import threading
 import shutil
 import subprocess
 import inspect
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 from logger_config import get_logger
+
 # Logger setup
 logger = get_logger("StartUp")
 from Config_Manager import ConfigManager
-
 
 sys.path.append(os.path.join(os.getcwd(), "imageAnalysis"))
 sys.path.append(os.path.join(os.getcwd(), 'ImagePreprocessing'))
 
 # fix inspect.getsource problem
 original_getsource = inspect.getsource
+
 
 def fixed_getsource(obj):
     try:
@@ -41,8 +43,8 @@ def fixed_getsource(obj):
     except (TypeError, IndexError):
         return count'''
 
-inspect.getsource = fixed_getsource
 
+inspect.getsource = fixed_getsource
 
 # Import Process Start Model
 try:
@@ -50,6 +52,7 @@ try:
 except ImportError as e:
     logger.error(f"Import error: {e}")
     sys.exit(1)
+
 
 def get_main_config_path():
     """Get main config file path"""
@@ -71,7 +74,7 @@ def setup_config_environment():
     logger.info(f"Config environment set up successfully. Base directory: {exe_dir}")
 
 
-#Set up config environment and get main config path
+# Set up config environment and get main config path
 setup_config_environment()
 defaultConfigPath = get_main_config_path()
 
@@ -80,15 +83,16 @@ processing_queue = queue.Queue()  # For coordinating processing order
 processing_lock = threading.Lock()  # For synchronization
 current_processing = {}  # Track currently processing samples
 
-
 config = configparser.ConfigParser()
 config.read(get_main_config_path(), encoding='utf-8')
 
 # ==================== Config File Path ====================
 
-FS_DIRECT_PATH = str(config.get('FileSystem', 'DIRECT_PATH', fallback=""))
+FS_DIRECT_PATH = str(config.get('FileIn', 'DIRECT_PATH', fallback=""))
 
-ERROR_FOLDER=str(config.get('ERROR_FOLDER', 'DIRECT_PATH', fallback=""))
+FS_Out_DIRECT_PATH = str(config.get('FileOut', 'DIRECT_PATH', fallback=""))
+
+ERROR_FOLDER = str(config.get('ERROR_FOLDER', 'DIRECT_PATH', fallback=""))
 
 DEST_DIRECT_PATH = str(config.get('Destination', 'DIRECT_PATH', fallback=""))
 
@@ -138,14 +142,14 @@ def analyze_image(image_path, json_path, checkpoint_folder, FS_DIRECT_PATH):
         # Get folder path containing the image (this is picturePath)
         picture_folder = os.path.dirname(image_path)
 
-
         # Call ProcessStartModel for analysis
         newImage = ProcessStartModel.ProcessStartModel(
-            picturePath=picture_folder,  # The File In  folder containing the image
+            picturePath=picture_folder,  # The Temp  folder containing the image
+            jsonPath=json_path,
             sampleID=sample_id,
             programNumber=program_id,
             checkpoint_folder=checkpoint_folder,
-            SAMPLEFOLDER=FS_DIRECT_PATH
+            SAMPLEFOLDER=FS_Out_DIRECT_PATH
         )
 
         # Execute analysis
@@ -156,7 +160,8 @@ def analyze_image(image_path, json_path, checkpoint_folder, FS_DIRECT_PATH):
 
     except Exception as e:
         logger.error(f"Analysis failed for {sample_id}: {e}", exc_info=True)
-        raise
+        return None, sample_id, "test"
+        # raise e
 
 
 def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id):
@@ -198,7 +203,7 @@ def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id
         camera_id,
         sample_id
     )
-
+    # raise Exception(f"Simulated copy to destination failure for sample: {sample_id}")
     # If destination folder already exists, remove it first to avoid conflicts
     if os.path.exists(dest_path):
         shutil.rmtree(dest_path)
@@ -218,171 +223,120 @@ def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id
 
     return True
 
-def delete_source_files(image_path, json_path, source_folder_path=None):
-    """
-    Delete original source files and analysis result folder after successful processing
-
-    Args:
-        image_path: Path to image file
-        json_path: Path to JSON file
-        source_folder_path: Path to the folder containing analysis results (optional)
-    """
-    try:
-        # Delete image file
-        if os.path.exists(image_path):
-            os.remove(image_path)
-            logger.info(f"Deleted image file: {os.path.basename(image_path)}")
-
-        # Delete JSON file
-        if os.path.exists(json_path):
-            os.remove(json_path)
-            logger.info(f"Deleted JSON file: {os.path.basename(json_path)}")
-
-        # Delete source folder with analysis results
-        if source_folder_path and os.path.exists(source_folder_path):
-            shutil.rmtree(source_folder_path)
-            logger.info(f"Deleted source folder: {source_folder_path}")
-
-    except Exception as e:
-        logger.error(f"Failed to delete source files: {e}", exc_info=True)
-        raise
-
-
-def transfer_to_error_folder(image_path, json_path, source_folder_path, error_folder):
-    """
-    Transfer files and analysis folder to error folder
-
-    Args:
-        image_path: Path to image file
-        json_path: Path to JSON file
-        source_folder_path: Path to the folder containing analysis results (can be None)
-        error_folder: Error folder path
-    """
-    try:
-        # Create error folder if not exists
-        os.makedirs(error_folder, exist_ok=True)
-
-        # Move image file to error folder
-        if os.path.exists(image_path):
-            shutil.move(image_path, os.path.join(error_folder, os.path.basename(image_path)))
-            logger.trace(f"Moved image to error folder: {os.path.basename(image_path)}")
-        else:
-            logger.trace(f"Image file not found: {image_path}")
-
-        # Move JSON file to error folder
-        if os.path.exists(json_path):
-            shutil.move(json_path, os.path.join(error_folder, os.path.basename(json_path)))
-            logger.trace(f"Moved JSON to error folder: {os.path.basename(json_path)}")
-        else:
-            logger.trace(f"JSON file not found: {json_path}")
-
-        # Move source folder to error folder (if exists and not None)
-        if source_folder_path and os.path.exists(source_folder_path):
-            error_folder_destination = os.path.join(error_folder, os.path.basename(source_folder_path))
-
-            # If folder already exists in error folder, remove it first
-            if os.path.exists(error_folder_destination):
-                shutil.rmtree(error_folder_destination)
-                logger.info(f"Removed existing folder in error directory: {os.path.basename(source_folder_path)}")
-
-            shutil.move(source_folder_path, error_folder_destination)
-            logger.info(f"Moved analysis folder to error folder: {os.path.basename(source_folder_path)}")
-        else:
-            if source_folder_path is None:
-                logger.info("No analysis folder to move (analysis failed early)")
-            else:
-                logger.warning(f"Analysis folder not found: {source_folder_path}")
-
-        logger.info(f"Error handling completed for files in: {error_folder}")
-
-    except Exception as e:
-        logger.error(f"Failed to move files to error folder: {e}", exc_info=True)
-        # Don't raise here to avoid cascading errors
-
-
-def migrate_all_folders(root_path):
-        """Migrate all folders to destination and delete source"""
-        for folder_name in os.listdir(root_path):
-            folder_path = os.path.join(root_path, folder_name)
-
-            if not os.path.isdir(folder_path):
-                continue
-
-            # Find JSON file
-            json_files = [f for f in os.listdir(folder_path) if f.endswith('.json')]
-            if not json_files:
-                print(f"No JSON in {folder_name}, skipping")
-                continue
-
-            # Read camera_id
-            with open(os.path.join(folder_path, json_files[0]), 'r') as f:
-                camera_id = json.load(f).get('SerialNumber', '')
-
-            # Copy and delete
-            try:
-                copy_results_to_destination_updated(folder_path, folder_name, camera_id)
-                shutil.rmtree(folder_path)
-                print(f"Processed: {folder_name}")
-            except Exception as e:
-                print(f"Error with {folder_name}: {e}")
 
 if __name__ == '__main__':
 
-    # migrate_all_folders(FS_DIRECT_PATH)
     while True:
-            files = os.listdir(FS_DIRECT_PATH)
+        files = os.listdir(FS_DIRECT_PATH)
 
-            # Find all .bmp image files
-            image_files = [f for f in files if f.endswith('.bmp')]
+        # Find all .bmp image files
+        image_files = [f for f in files if f.endswith('.bmp')]
 
-            if image_files:
-                logger.info(f"Found {len(image_files)} image file(s)")
+        if image_files:
+            logger.info(f"Found {len(image_files)} image file(s)")
 
-            # Loop through each image file
-            for image_file in image_files:
-                # Get base name without extension
-                base_name = os.path.splitext(image_file)[0]
+        # Loop through each image file
+        for image_file in image_files:
+            # Get base name without extension
+            base_name = os.path.splitext(image_file)[0]
 
-                # Construct JSON filename
-                json_file = base_name + '.json'
+            # Construct JSON filename
+            json_file = base_name + '.json'
 
-                # Check if corresponding JSON file exists
-                if json_file not in files:
-                    logger.warning(f"JSON file not found for {image_file}, skipping")
-                    continue
+            # Check if corresponding JSON file exists
+            if json_file not in files:
+                logger.warning(f"JSON file not found for {image_file}, skipping")
+                continue
 
-                # Get full paths
-                image_path = os.path.join(FS_DIRECT_PATH, image_file)
-                json_path = os.path.join(FS_DIRECT_PATH, json_file)
+            # Get full paths in FileIn
+            image_path_filein = os.path.join(FS_DIRECT_PATH, image_file)
+            json_path_filein = os.path.join(FS_DIRECT_PATH, json_file)
 
-                logger.info(f"Processing pair: {base_name}")
+            logger.info(f"Processing pair: {base_name}")
 
+            # Create temporary folder in FileOut
+            temp_folder_path = os.path.join(FS_Out_DIRECT_PATH, base_name)
 
-                picture_folder = os.path.dirname(image_path)
-                source_folder_path = os.path.join(picture_folder, base_name)
+            try:
+                # Create temp folder in FileOut
+                os.makedirs(temp_folder_path, exist_ok=True)
 
+                # Copy image and JSON to temp folder
+                image_path_temp = os.path.join(temp_folder_path, image_file)
+                json_path_temp = os.path.join(temp_folder_path, json_file)
+
+                shutil.copy2(image_path_filein, image_path_temp)
+                shutil.copy2(json_path_filein, json_path_temp)
+                logger.info(f"Created temp folder and copied files to: {temp_folder_path}")
+
+                # Analyze the image (using temp folder paths)
+                result, sample_id, camera_id = analyze_image(
+                    image_path_temp,
+                    json_path_temp,
+                    CHECKPOINT_FOLDER,
+                    FS_Out_DIRECT_PATH
+                )
+
+                logger.info(f"Analysis completed successfully for: {base_name}")
+
+                # Try to copy results to destination
                 try:
-                    #Analyze the image
-                    result, sample_id, camera_id=analyze_image(
-                        image_path,
-                        json_path,
-                        CHECKPOINT_FOLDER,
-                        FS_DIRECT_PATH
-                    )
+                    copy_results_to_destination_updated(temp_folder_path, base_name, camera_id)
+                    logger.info(f"Successfully copied to destination: {base_name}")
 
 
-                    #Store image outputs to network share drive
+                    # If copy successful: delete temp folder AND delete FileIn files
+                    if os.path.exists(temp_folder_path):
+                        shutil.rmtree(temp_folder_path)
+                        logger.info(f"Deleted temp folder: {temp_folder_path}")
 
-                    copy_results_to_destination_updated(source_folder_path, base_name, '17424009')
-                    delete_source_files(image_path, json_path,source_folder_path)
+                    # Delete original files in FileIn
+                    if os.path.exists(image_path_filein):
+                        os.remove(image_path_filein)
+                        logger.info(f"Deleted FileIn image: {image_file}")
 
+                    if os.path.exists(json_path_filein):
+                        os.remove(json_path_filein)
+                        logger.info(f"Deleted FileIn JSON: {json_file}")
 
-                except Exception as analysis_error:
+                except Exception as copy_error:
+                    # Analysis succeeded but copy to destination failed
+                    logger.error(f"Failed to copy {base_name} to destination: {copy_error}", exc_info=True)
 
-                    logger.error(f"Analysis error: {analysis_error}", exc_info=True)
+                    # Delete temp folder only (keep FileIn files)
+                    if os.path.exists(temp_folder_path):
+                        shutil.rmtree(temp_folder_path)
+                        logger.info(f"Deleted temp folder after copy failure: {temp_folder_path}")
 
-                    transfer_to_error_folder(image_path, json_path,source_folder_path, ERROR_FOLDER)
+            except Exception as analysis_error:
+                # Analysis failed
+                logger.error(f"Analysis failed for {base_name}: {analysis_error}", exc_info=True)
 
-            # Wait before next scan
-            time.sleep(SCAN_INTERVAL)
+                # Move temp folder to error folder
+                try:
+                    os.makedirs(ERROR_FOLDER, exist_ok=True)
+                    error_destination = os.path.join(ERROR_FOLDER, base_name)
 
+                    # Remove existing error folder if exists
+                    if os.path.exists(error_destination):
+                        shutil.rmtree(error_destination)
+
+                    # Move temp folder to error folder
+                    if os.path.exists(temp_folder_path):
+                        shutil.move(temp_folder_path, error_destination)
+                        logger.info(f"Moved temp folder to error folder: {base_name}")
+
+                    # Delete FileIn files after moving to error
+                    if os.path.exists(image_path_filein):
+                        os.remove(image_path_filein)
+                        logger.info(f"Deleted FileIn image after error: {image_file}")
+
+                    if os.path.exists(json_path_filein):
+                        os.remove(json_path_filein)
+                        logger.info(f"Deleted FileIn JSON after error: {json_file}")
+
+                except Exception as error_handling_exception:
+                    logger.error(f"Failed to handle error for {base_name}: {error_handling_exception}", exc_info=True)
+
+        # Wait before next scan
+        time.sleep(SCAN_INTERVAL)
