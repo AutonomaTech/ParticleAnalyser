@@ -160,10 +160,59 @@ def analyze_image(image_path, json_path, checkpoint_folder, FS_DIRECT_PATH):
 
     except Exception as e:
         logger.error(f"Analysis failed for {sample_id}: {e}", exc_info=True)
-        return None, sample_id, "test"
-        # raise e
+        # return None, sample_id, "test"
+        raise e
 
 
+def handle_successful_analysis_and_cleanup(temp_folder_path, base_name, camera_id,
+                                           image_path_filein, json_path_filein,
+                                           image_file, json_file):
+    """
+    Handle successful analysis: copy to destination and cleanup all files
+
+    Args:
+        temp_folder_path: Path to temporary folder in FileOut
+        base_name: Base name of the sample
+        camera_id: Camera ID for organizing files
+        image_path_filein: Path to image file in FileIn
+        json_path_filein: Path to JSON file in FileIn
+        image_file: Image filename
+        json_file: JSON filename
+
+    Returns:
+        bool: True if copy succeeded, False if copy failed (but cleanup still done)
+    """
+    # Try to copy results to destination
+    try:
+        copy_results_to_destination_updated(temp_folder_path, base_name, camera_id)
+        logger.info(f"Successfully copied to destination: {base_name}")
+
+        # If copy successful: delete temp folder AND delete FileIn files
+        if os.path.exists(temp_folder_path):
+            shutil.rmtree(temp_folder_path)
+            logger.info(f"Deleted temp folder: {temp_folder_path}")
+
+        # Delete original files in FileIn
+        if os.path.exists(image_path_filein):
+            os.remove(image_path_filein)
+            logger.info(f"Deleted FileIn image: {image_file}")
+
+        if os.path.exists(json_path_filein):
+            os.remove(json_path_filein)
+            logger.info(f"Deleted FileIn JSON: {json_file}")
+
+        return True
+
+    except Exception as copy_error:
+        # Analysis succeeded but copy to destination failed
+        logger.error(f"Failed to copy {base_name} to destination: {copy_error}", exc_info=True)
+
+        # Delete temp folder only (keep FileIn files)
+        if os.path.exists(temp_folder_path):
+            shutil.rmtree(temp_folder_path)
+            logger.info(f"Deleted temp folder after copy failure: {temp_folder_path}")
+
+        return False
 def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id):
     """
     Copy analysis results to destination file system with hierarchical folder structure
@@ -279,64 +328,66 @@ if __name__ == '__main__':
 
                 logger.info(f"Analysis completed successfully for: {base_name}")
 
-                # Try to copy results to destination
-                try:
-                    copy_results_to_destination_updated(temp_folder_path, base_name, camera_id)
-                    logger.info(f"Successfully copied to destination: {base_name}")
-
-
-                    # If copy successful: delete temp folder AND delete FileIn files
-                    if os.path.exists(temp_folder_path):
-                        shutil.rmtree(temp_folder_path)
-                        logger.info(f"Deleted temp folder: {temp_folder_path}")
-
-                    # Delete original files in FileIn
-                    if os.path.exists(image_path_filein):
-                        os.remove(image_path_filein)
-                        logger.info(f"Deleted FileIn image: {image_file}")
-
-                    if os.path.exists(json_path_filein):
-                        os.remove(json_path_filein)
-                        logger.info(f"Deleted FileIn JSON: {json_file}")
-
-                except Exception as copy_error:
-                    # Analysis succeeded but copy to destination failed
-                    logger.error(f"Failed to copy {base_name} to destination: {copy_error}", exc_info=True)
-
-                    # Delete temp folder only (keep FileIn files)
-                    if os.path.exists(temp_folder_path):
-                        shutil.rmtree(temp_folder_path)
-                        logger.info(f"Deleted temp folder after copy failure: {temp_folder_path}")
+                # Handle successful analysis: copy to destination and cleanup
+                handle_successful_analysis_and_cleanup(
+                    temp_folder_path, base_name, camera_id,
+                    image_path_filein, json_path_filein,
+                    image_file, json_file
+                )
 
             except Exception as analysis_error:
-                # Analysis failed
-                logger.error(f"Analysis failed for {base_name}: {analysis_error}", exc_info=True)
+                # Check if this is a CUDA out of memory error
+                error_message = str(analysis_error).lower()
+                is_cuda_oom = 'cuda out of memory' in error_message or 'out of memory' in error_message
 
-                # Move temp folder to error folder
-                try:
-                    os.makedirs(ERROR_FOLDER, exist_ok=True)
-                    error_destination = os.path.join(ERROR_FOLDER, base_name)
+                if is_cuda_oom:
+                    # Treat CUDA OOM as successful analysis - copy to destination and clean up all files
+                    logger.warning(f"CUDA out of memory for {base_name}, treating as successful and cleaning up files")
 
-                    # Remove existing error folder if exists
-                    if os.path.exists(error_destination):
-                        shutil.rmtree(error_destination)
+                    # Try to get camera_id from JSON file
+                    try:
+                        with open(json_path_temp, 'r', encoding='utf-8') as f:
+                            json_data = json.load(f)
+                        camera_id = json_data.get('SerialNumber', 'unknown')
+                    except:
+                        camera_id = 'unknown'
+
+                    # Handle as successful analysis: copy to destination and cleanup
+                    handle_successful_analysis_and_cleanup(
+                        temp_folder_path, base_name, camera_id,
+                        image_path_filein, json_path_filein,
+                        image_file, json_file
+                    )
+                else:
+                    # Regular analysis failure - move to error folder
+                    logger.error(f"Analysis failed for {base_name}: {analysis_error}", exc_info=True)
 
                     # Move temp folder to error folder
-                    if os.path.exists(temp_folder_path):
-                        shutil.move(temp_folder_path, error_destination)
-                        logger.info(f"Moved temp folder to error folder: {base_name}")
+                    try:
+                        os.makedirs(ERROR_FOLDER, exist_ok=True)
+                        error_destination = os.path.join(ERROR_FOLDER, base_name)
 
-                    # Delete FileIn files after moving to error
-                    if os.path.exists(image_path_filein):
-                        os.remove(image_path_filein)
-                        logger.info(f"Deleted FileIn image after error: {image_file}")
+                        # Remove existing error folder if exists
+                        if os.path.exists(error_destination):
+                            shutil.rmtree(error_destination)
 
-                    if os.path.exists(json_path_filein):
-                        os.remove(json_path_filein)
-                        logger.info(f"Deleted FileIn JSON after error: {json_file}")
+                        # Move temp folder to error folder
+                        if os.path.exists(temp_folder_path):
+                            shutil.move(temp_folder_path, error_destination)
+                            logger.info(f"Moved temp folder to error folder: {base_name}")
 
-                except Exception as error_handling_exception:
-                    logger.error(f"Failed to handle error for {base_name}: {error_handling_exception}", exc_info=True)
+                        # Delete FileIn files after moving to error
+                        if os.path.exists(image_path_filein):
+                            os.remove(image_path_filein)
+                            logger.info(f"Deleted FileIn image after error: {image_file}")
+
+                        if os.path.exists(json_path_filein):
+                            os.remove(json_path_filein)
+                            logger.info(f"Deleted FileIn JSON after error: {json_file}")
+
+                    except Exception as error_handling_exception:
+                        logger.error(f"Failed to handle error for {base_name}: {error_handling_exception}",
+                                     exc_info=True)
 
         # Wait before next scan
         time.sleep(SCAN_INTERVAL)
