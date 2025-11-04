@@ -206,7 +206,8 @@ def handle_successful_analysis_and_cleanup(temp_folder_path, base_name, camera_i
     except Exception as copy_error:
         # Analysis succeeded but copy to destination failed
         logger.error(f"Failed to copy {base_name} to destination: {copy_error}", exc_info=True)
-
+        logger.error(f"sample id: {base_name},  failed to save into destination",
+                     extra={"should_log_to_error_file": True})
         # Delete temp folder only (keep FileIn files)
         if os.path.exists(temp_folder_path):
             shutil.rmtree(temp_folder_path)
@@ -342,8 +343,9 @@ if __name__ == '__main__':
 
                 if is_cuda_oom:
                     # Treat CUDA OOM as successful analysis - copy to destination and clean up all files
-                    logger.warning(f"CUDA out of memory for {base_name}, treating as successful and cleaning up files")
-
+                    logger.error(f"CUDA out of memory for {base_name}, treating as successful and cleaning up files")
+                    logger.error(f"sample id: {base_name}, failed processing cuda out of memory error",
+                                   extra={"should_log_to_error_file": True})
                     # Try to get camera_id from JSON file
                     try:
                         with open(json_path_temp, 'r', encoding='utf-8') as f:
@@ -361,7 +363,8 @@ if __name__ == '__main__':
                 else:
                     # Regular analysis failure - move to error folder
                     logger.error(f"Analysis failed for {base_name}: {analysis_error}", exc_info=True)
-
+                    logger.error(f"sample id: {base_name}, failed segmenting",
+                                 extra={"should_log_to_error_file": True})
                     # Move temp folder to error folder
                     try:
                         os.makedirs(ERROR_FOLDER, exist_ok=True)
