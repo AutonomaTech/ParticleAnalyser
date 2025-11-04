@@ -27,6 +27,31 @@ logger.add(
     encoding="utf-8"       # Ensure proper display of non-ASCII characters
 )
 
+# --- Add a dedicated, filtered error logger ---
+def specific_error_filter(record):
+    """
+    Only log to error.log if the 'should_log_to_error_file' key in extra dict is True.
+    """
+    # record["extra"] includes all data that will be flagged as  extra
+    return record["extra"].get("process_error", False)
+
+
+# --- Add a dedicated error logger ---
+# This log file will append all ERROR level messages and won't rotate.
+logger.add(
+    os.path.join(LOG_DIR, "error.log"),
+    level="ERROR",  # This filter ensures only ERROR and above levels are caught
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {file}:{line} | {process} >>> {message}",
+    encoding="utf-8",
+    rotation=None,        # No rotation
+    retention=None,       # No deletion
+    compression=None      # No compression
+)
+def get_logger(name: str):
+    return logger.bind(name=name)
+
+# This ensures the logger is imported and configured in the main application
+__all__ = ["logger", "get_logger"]
 def get_logger(name: str):
     return logger.bind(name=name)
 
