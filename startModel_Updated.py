@@ -94,6 +94,9 @@ DEST_DIRECT_PATH = str(config.get('Destination', 'DIRECT_PATH', fallback=""))
 
 SAMPLEFOLDER = os.path.abspath(os.path.join(FS_DIRECT_PATH, "Samples"))
 
+# Export all images setting (1 = copy all, 0 = skip intermediate images)
+EXPORT_ALL_IMAGES = config.getboolean('Image', 'ExportAllImages', fallback=True)
+
 # ==================== Frequency of scanning file  ====================
 # Get scan interval from config, default to 5 if not found
 try:
@@ -205,8 +208,16 @@ def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id
     # Create destination folder (including all parent directories)
     os.makedirs(dest_path, exist_ok=True)
 
-    # Copy entire sample folder contents
+    # Copy sample folder contents
     for item in os.listdir(source_folder_path):
+        # Skip intermediate images if ExportAllImages=0
+        if not EXPORT_ALL_IMAGES:
+            if (item.startswith("even_lighting_") or
+                item.startswith(f"base_image_{sample_id}") or
+                item.startswith(f"final_{sample_id}") or
+                item.startswith(f"{sample_id}_mask")):
+                continue
+
         source_item = os.path.join(source_folder_path, item)
         dest_item = os.path.join(dest_path, item)
 
