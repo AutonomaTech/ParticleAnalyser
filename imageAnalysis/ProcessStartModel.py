@@ -16,7 +16,7 @@ try:
     defaultOutputfolder = config.get('analysis', 'defaultOutputfolder', fallback="defaultProgram")
     defaultScalingNumber = int(config.get('analysis', 'scalingNumber', fallback=0))
     # Define the SMB server and share
-    FS_DIRECT_PATH = str(config.get('FileIn', 'DIRECT_PATH', fallback=""))
+    FS_DIRECT_PATH = str(config.get('FileSystem', 'DIRECT_PATH', fallback=""))
     
     defaultTemperature = int(config.get('analysis', 'temperature', fallback=3000))
     defaultOriTemperature = int(config.get('analysis', 'ori_temperature', fallback=2500))
@@ -32,7 +32,7 @@ logger = get_logger("StartUp")
 
 class ProcessStartModel:
 
-    def __init__(self, picturePath=None, jsonPath=None,sampleID=None, programNumber=None, weight=None, timestamp=None, checkpoint_folder=None, SAMPLEFOLDER=None):
+    def __init__(self, picturePath=None, sampleID=None, programNumber=None, weight=None, timestamp=None, checkpoint_folder=None, SAMPLEFOLDER=None):
         self.SAMPLEFOLDER=SAMPLEFOLDER
         # Extract sample ID and timestamp
         base_sample_id, extracted_timestamp, sampleID = self.extract_sample_id_and_timestamp(sampleID)
@@ -41,42 +41,57 @@ class ProcessStartModel:
 
 
         #  create complete file path for the result folder
-        # result_folder_path = os.path.join(self.SAMPLEFOLDER,  sampleID)
-        # os.makedirs( result_folder_path, exist_ok=True)
-        #
-        # # Original file path (in SMB)
-        # source_bmp_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.bmp")
-        # source_json_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.json")
+        result_folder_path = os.path.join(self.SAMPLEFOLDER,  sampleID)
+        os.makedirs( result_folder_path, exist_ok=True)
+
+        # Original file path (in SMB)
+        source_bmp_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.bmp")
+        source_json_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.json")
+
+        # move the new tiff file now
+        source_tiff_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.tiff")
+        source_tiff_raw_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}_raw.tiff")
 
         #  Target file path (in the result folder)
-        # target_bmp_path = os.path.join( result_folder_path, f"{sampleID}.bmp")
-        # target_json_path = os.path.join( result_folder_path, f"{sampleID}.json")
-        #
-        # #  check if original file existed
-        # if not os.path.exists(source_json_path):
-        #     logger.error(f"JSON File does not exist: {source_json_path}")
-        #     raise FileNotFoundError(f"JSON file not found: {source_json_path}")
-        # if not os.path.exists(source_bmp_path):
-        #     logger.error(f"BMP File does not exist: {source_bmp_path}")
-        #     raise FileNotFoundError(f"BMP file not found: {source_bmp_path}")
-        #
-        # # move file to pre-created result folder
-        # try:
-        #     shutil.move(source_bmp_path, target_bmp_path)
-        #     logger.info(f"Moved {sampleID}.bmp to { result_folder_path}")
-        #
-        #     shutil.move(source_json_path, target_json_path)
-        #     logger.info(f"Moved {sampleID}.json to { result_folder_path}")
-        #
-        # except Exception as e:
-        #     logger.error(f"Error moving files to result folder: {str(e)}")
-        #     raise
-        #
-        # self.bmp_file_path = target_bmp_path
-        # self.json_file_path = target_json_path
+        target_bmp_path = os.path.join( result_folder_path, f"{sampleID}.bmp")
+        target_json_path = os.path.join( result_folder_path, f"{sampleID}.json")
+        target_tiff_path = os.path.join(result_folder_path, f"{sampleID}.tiff")
+        target_tiff_raw_path = os.path.join(result_folder_path, f"{sampleID}_raw.tiff")
+
+
+        #  check if original file existed
+        if not os.path.exists(source_json_path):
+            logger.error({FS_DIRECT_PATH})
+            logger.error(f"JSON File does not exist: {source_json_path}")
+            raise FileNotFoundError(f"JSON file not found: {source_json_path}")
+        if not os.path.exists(source_bmp_path):
+            logger.error(f"BMP File does not exist: {source_bmp_path}")
+            raise FileNotFoundError(f"BMP file not found: {source_bmp_path}")
+
+        # move file to pre-created result folder
+        try:
+            shutil.move(source_bmp_path, target_bmp_path)
+            logger.info(f"Moved {sampleID}.bmp to { result_folder_path}")
+
+            shutil.move(source_json_path, target_json_path)
+            logger.info(f"Moved {sampleID}.json to { result_folder_path}")
+
+            shutil.move(source_tiff_path, target_tiff_path)
+            shutil.move(source_tiff_raw_path, target_tiff_raw_path)
+
+            logger.info(f"Moved {sampleID}.tiff to { result_folder_path}")
+
+
+
+        except Exception as e:
+            logger.error(f"Error moving files to result folder: {str(e)}")
+            raise
+
+        self.bmp_file_path = target_bmp_path
+        self.json_file_path = target_json_path
         # Process JSON file
         try:
-            with open(jsonPath, 'r') as f:
+            with open(self.json_file_path, 'r') as f:
                 json_data = json.load(f)
 
             if 'Temperature' not in json_data:
@@ -111,8 +126,9 @@ class ProcessStartModel:
             for key in crop_keys:
                 if key in json_data:
                     _crop_coords[key] = json_data[key]
+            
 
-            with open(jsonPath, 'w') as f:
+            with open(self.json_file_path, 'w') as f:
                 json.dump(json_data, f, indent=4)
 
         except FileNotFoundError:
@@ -124,7 +140,7 @@ class ProcessStartModel:
 
         # Update instance variables
 
-        self.picturePath = picturePath
+        self.picturePath = result_folder_path
         self.sampleID = sampleID
         self.programNumber = programNumber
         self.weight = weight
