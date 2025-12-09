@@ -138,7 +138,6 @@ def analyze_image(image_path, json_path, checkpoint_folder, FS_DIRECT_PATH):
         # Get folder path containing the image (this is picturePath)
         picture_folder = os.path.dirname(image_path)
 
-
         # Call ProcessStartModel for analysis
         newImage = ProcessStartModel.ProcessStartModel(
             picturePath=picture_folder,  # The File In  folder containing the image
@@ -300,6 +299,7 @@ def transfer_to_error_folder(image_path, json_path, source_folder_path, error_fo
         # Don't raise here to avoid cascading errors
 
 
+
 def migrate_all_folders(root_path):
         """Migrate all folders to destination and delete source"""
         for folder_name in os.listdir(root_path):
@@ -326,9 +326,9 @@ def migrate_all_folders(root_path):
             except Exception as e:
                 print(f"Error with {folder_name}: {e}")
 
-if __name__ == '__main__':
 
-    # migrate_all_folders(FS_DIRECT_PATH)
+def start():
+        # migrate_all_folders(FS_DIRECT_PATH)
     while True:
             files = os.listdir(FS_DIRECT_PATH)
 
@@ -349,6 +349,14 @@ if __name__ == '__main__':
                 # Check if corresponding JSON file exists
                 if json_file not in files:
                     logger.warning(f"JSON file not found for {image_file}, skipping")
+                    continue
+
+                # Construct tiff file path
+                tiff_file_raw = base_name + '.tiff' 
+                tiff_file = base_name + '_raw.tiff'
+
+                if (tiff_file not in files) or (tiff_file_raw not in files):
+                    logger.warning(f"TIFF files not found for {image_file}, skipping")
                     continue
 
                 # Get full paths
@@ -373,7 +381,7 @@ if __name__ == '__main__':
 
                     #Store image outputs to network share drive
 
-                    copy_results_to_destination_updated(source_folder_path, base_name, '17424009')
+                    copy_results_to_destination_updated(source_folder_path, base_name, camera_id)
                     delete_source_files(image_path, json_path,source_folder_path)
 
 
@@ -386,3 +394,6 @@ if __name__ == '__main__':
             # Wait before next scan
             time.sleep(SCAN_INTERVAL)
 
+if __name__ == '__main__':
+
+    start()
