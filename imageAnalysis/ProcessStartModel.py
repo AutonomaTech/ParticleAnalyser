@@ -48,12 +48,20 @@ class ProcessStartModel:
         source_bmp_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.bmp")
         source_json_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.json")
 
+        # move the new tiff file now
+        source_tiff_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}.tiff")
+        source_tiff_raw_path = os.path.join(FS_DIRECT_PATH, f"{sampleID}_raw.tiff")
+
         #  Target file path (in the result folder)
         target_bmp_path = os.path.join( result_folder_path, f"{sampleID}.bmp")
         target_json_path = os.path.join( result_folder_path, f"{sampleID}.json")
+        target_tiff_path = os.path.join(result_folder_path, f"{sampleID}.tiff")
+        target_tiff_raw_path = os.path.join(result_folder_path, f"{sampleID}_raw.tiff")
+
 
         #  check if original file existed
         if not os.path.exists(source_json_path):
+            logger.error({FS_DIRECT_PATH})
             logger.error(f"JSON File does not exist: {source_json_path}")
             raise FileNotFoundError(f"JSON file not found: {source_json_path}")
         if not os.path.exists(source_bmp_path):
@@ -67,6 +75,13 @@ class ProcessStartModel:
 
             shutil.move(source_json_path, target_json_path)
             logger.info(f"Moved {sampleID}.json to { result_folder_path}")
+
+            shutil.move(source_tiff_path, target_tiff_path)
+            shutil.move(source_tiff_raw_path, target_tiff_raw_path)
+
+            logger.info(f"Moved {sampleID}.tiff to { result_folder_path}")
+
+
 
         except Exception as e:
             logger.error(f"Error moving files to result folder: {str(e)}")
@@ -111,6 +126,7 @@ class ProcessStartModel:
             for key in crop_keys:
                 if key in json_data:
                     _crop_coords[key] = json_data[key]
+            
 
             with open(self.json_file_path, 'w') as f:
                 json.dump(json_data, f, indent=4)
