@@ -249,10 +249,6 @@ class ImageAnalysisModel:
             'analysis', 'maximumTime', fallback='1200')))
         self.rounding= abs(int(self.config.get('output', 'rounding', fallback=4)))
 
-        # Load intermediate image cleanup setting
-        self.cleanup_intermediate_images_enabled = self.str_to_bool(
-            self.config.get('IntermediateImages', 'cleanup_intermediate_images', fallback='0'))
-
     def load_calibrated_bins(self):
         calibration_config = configparser.ConfigParser()
         calibration_config.read(self.calibration_file_path)
@@ -401,9 +397,6 @@ class ImageAnalysisModel:
             else:
                 print(
                     "No target distribution provided. Skipping advanced bin calculations.")
-
-            # Cleanup intermediate images after successful analysis
-            self.cleanup_intermediate_images()
 
         except Exception as e:
             logger.error(
@@ -1314,39 +1307,3 @@ class ImageAnalysisModel:
         """
         self.imageProcessor.colorCorrection(self.temperature, self.ori_temperature)
         self.imagePath = self.imageProcessor.getImagePath()
-
-    def cleanup_intermediate_images(self):
-        """
-        Delete intermediate images after analysis completion to save disk space.
-        Controlled by config: [IntermediateImages] cleanup_intermediate_images
-
-        Deletes: even_lighting_*, base_image_*, final_*, *_mask.png
-        Keeps: crop_* images
-
-        Input: None
-        Output: None (deletes files from disk)
-        """
-        if not self.cleanup_intermediate_images_enabled:
-            return
-
-        import glob
-
-        patterns_to_delete = [
-            os.path.join(self.folder_path, "even_lighting_*"),
-            os.path.join(self.folder_path, f"base_image_{self.sampleID}.*"),
-            os.path.join(self.folder_path, f"final_{self.sampleID}.*"),
-            os.path.join(self.folder_path, f"{self.sampleID}_mask.*"),
-        ]
-
-        deleted_count = 0
-        for pattern in patterns_to_delete:
-            for file_path in glob.glob(pattern):
-                try:
-                    os.remove(file_path)
-                    logger.info(f"Cleaned up intermediate image: {file_path}")
-                    deleted_count += 1
-                except Exception as e:
-                    logger.warning(f"Failed to delete intermediate image {file_path}: {e}")
-
-        if deleted_count > 0:
-            logger.info(f"Intermediate image cleanup completed: {deleted_count} file(s) deleted")
