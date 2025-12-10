@@ -95,7 +95,7 @@ DEST_DIRECT_PATH = str(config.get('Destination', 'DIRECT_PATH', fallback=""))
 SAMPLEFOLDER = os.path.abspath(os.path.join(FS_DIRECT_PATH, "Samples"))
 
 # Export all images setting (1 = copy all, 0 = skip intermediate images)
-EXPORT_ALL_IMAGES = config.getboolean('Image', 'ExportAllImages', fallback=True)
+EXPORT_ALL_IMAGES = config.getboolean('Image', 'ExportAllImages')
 
 # ==================== Frequency of scanning file  ====================
 # Get scan interval from config, default to 5 if not found
@@ -212,7 +212,7 @@ def copy_results_to_destination_updated(source_folder_path, sample_id, camera_id
     for item in os.listdir(source_folder_path):
         # Skip intermediate images if ExportAllImages=0
         if not EXPORT_ALL_IMAGES:
-            if (item.startswith("even_lighting_") or
+            if (item.startswith("even_lighting_{sample_id}") or
                 item.startswith(f"base_image_{sample_id}") or
                 item.startswith(f"final_{sample_id}") or
                 item.startswith(f"{sample_id}_mask")):
